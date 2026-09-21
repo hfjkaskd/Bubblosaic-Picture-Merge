@@ -98,7 +98,6 @@ public static class VFXUtils
     private static float ItemCollectFxBurstEndScale => ItemCollectFxConfig.BurstEndScale;
     private static float ItemCollectFxBurstAlpha => ItemCollectFxConfig.BurstAlpha;
     private static readonly Queue<float> itemCollectFxStartTimes = new();
-    private static readonly Queue<float> freeItemCollectFxStartTimes = new();
     private static readonly Vector2[] itemCollectFxScatterClusterAnchors =
     {
         new Vector2(-0.72f, 0.78f),
@@ -1143,19 +1142,19 @@ public static class VFXUtils
 
     internal static bool CanBeginItemCollectFx(int count, RewardCollectAnimation animation = RewardCollectAnimation.BurstCollect)
     {
-        bool free = animation == RewardCollectAnimation.Legacy;
-        Queue<float> starts = free ? freeItemCollectFxStartTimes : itemCollectFxStartTimes;
-        float window = free ? ItemCollectFxConfig.FreeStartWindowSeconds : ItemCollectFxStartWindowSeconds;
+        // Free rewards start immediately whenever a concurrent slot is available.
+        if (animation == RewardCollectAnimation.Legacy)
+            return count > 0 && activeFreeItemCollectFxCount + count <= ItemCollectFxConfig.MaxConcurrentFreeFx;
+        Queue<float> starts = itemCollectFxStartTimes;
+        float window = ItemCollectFxStartWindowSeconds;
         float now = Time.unscaledTime;
         while (starts.Count > 0 && now - starts.Peek() >= window)
         {
             starts.Dequeue();
         }
 
-        int active = free ? activeFreeItemCollectFxCount : activeItemCollectFxCount;
-        int maxActive = free ? ItemCollectFxConfig.MaxConcurrentFreeFx : MaxConcurrentItemCollectFx;
-        int maxStarts = free ? ItemCollectFxConfig.MaxFreeStartsPerSecond : MaxItemCollectFxStartsPerSecond;
-        return count > 0 && active + count <= maxActive && starts.Count + count <= maxStarts;
+        return count > 0 && activeItemCollectFxCount + count <= MaxConcurrentItemCollectFx &&
+            starts.Count + count <= MaxItemCollectFxStartsPerSecond;
     }
 
     internal static bool TryBeginItemCollectFx(E_ItemType itemType, string prefabName, RewardCollectAnimation animation)
@@ -1169,7 +1168,6 @@ public static class VFXUtils
         if (animation == RewardCollectAnimation.Legacy)
         {
             activeFreeItemCollectFxCount++;
-            freeItemCollectFxStartTimes.Enqueue(Time.unscaledTime);
         }
         else
         {

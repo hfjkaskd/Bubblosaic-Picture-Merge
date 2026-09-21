@@ -1,0 +1,15 @@
+{
+  "source_order": [
+    "streaming",
+    "bundled",
+    "cache",
+    "cdn"
+  ],
+  "network_enabled": true,
+  "offline_fallback_enabled": true,
+  "cdn_resize_enabled": true,
+  "max_concurrent_downloads": 4,
+  "request_timeout_seconds": 20,
+  "memory_cache_limit": 48,
+  "cache_directory": "level_images"
+}

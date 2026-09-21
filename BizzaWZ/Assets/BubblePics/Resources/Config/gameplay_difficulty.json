@@ -1,0 +1,11 @@
+{
+  "foundationLevels": 5,
+  "foundation": { "label": "Normal", "targetFailureRate": 0.0, "extraStepsRatio": 1.5, "minimumExtraSteps": 20, "retainOriginalMinimum": true },
+  "cycle": [
+    { "label": "Normal", "targetFailureRate": 0.0, "extraStepsRatio": 1.5, "minimumExtraSteps": 20, "retainOriginalMinimum": true },
+    { "label": "Normal", "targetFailureRate": 0.0, "extraStepsRatio": 1.5, "minimumExtraSteps": 20, "retainOriginalMinimum": true },
+    { "label": "Hard", "targetFailureRate": 0.2, "extraStepsRatio": 0.30, "minimumExtraSteps": 4, "retainOriginalMinimum": false },
+    { "label": "Normal", "targetFailureRate": 0.0, "extraStepsRatio": 1.5, "minimumExtraSteps": 20, "retainOriginalMinimum": true },
+    { "label": "Hard", "targetFailureRate": 0.4, "extraStepsRatio": 0.15, "minimumExtraSteps": 2, "retainOriginalMinimum": false }
+  ]
+}

@@ -10,12 +10,18 @@ public class LoadingPanel : UIPageBase
     public TMP_Text progressTxt;
     public RectTransform busRect;
     public GameObject CameraObj;
+    [SerializeField] private BubblePics.SplashPage gameplayVisual;
 
     private readonly Vector3[] _progressBarWorldCorners = new Vector3[4];
 
     void OnLoadingProgress(float progress)
     {
         progress = Mathf.Clamp01(progress);
+        if (gameplayVisual != null)
+        {
+            gameplayVisual.ApplyProgress(progress);
+            return;
+        }
         progressBar.fillAmount = progress;
         progressTxt.text = Mathf.RoundToInt((progress * 100)) + "%";
         UpdateBusPosition(progress);
@@ -48,16 +54,28 @@ public class LoadingPanel : UIPageBase
     {
         BizzaEventSystem.Set(EventDefine.Frame.LoadingProgress, OnLoadingProgress, true);
         var initWzCameraObj = GameObject.Find("InitWzCamera");
-        if (initWzCameraObj != null)
+        if (initWzCameraObj != null && gameplayVisual == null)
         {
             initWzCameraObj.SetActive(false);
         }
-        CameraObj.SetActive(true);
+        if (gameplayVisual != null)
+        {
+            gameplayVisual.InitializePrefabRuntime();
+            if (!SaveDataUtils.gameStrategy.Loaded)
+                SaveDataUtils.gameStrategy.OnLoad(RefreshGameplayQuote);
+        }
+        if (CameraObj != null) CameraObj.SetActive(true);
         OnLoadingProgress(0f);
     }
 
     protected override void OnClose()
     {
+        SaveDataUtils.gameStrategy.OffLoad(RefreshGameplayQuote);
         BizzaEventSystem.Set(EventDefine.Frame.LoadingProgress, OnLoadingProgress, false);
+    }
+
+    private void RefreshGameplayQuote()
+    {
+        if (gameplayVisual != null) gameplayVisual.SetupQuoteForToday();
     }
 }

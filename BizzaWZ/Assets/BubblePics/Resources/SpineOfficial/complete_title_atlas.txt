@@ -1,0 +1,10 @@
+Effect_GamePageUI_title_01.png
+size:2048,1024
+filter:Linear,Linear
+pma:true
+images/Hard
+bounds:2,406,1526,402
+offsets:0,7,1526,409
+images/Normal
+bounds:2,2,1526,402
+offsets:0,7,1526,409

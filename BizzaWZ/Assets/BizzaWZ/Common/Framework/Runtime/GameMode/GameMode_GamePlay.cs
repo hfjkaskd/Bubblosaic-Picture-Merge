@@ -35,7 +35,7 @@ public class GameMode_GamePlay : GameModeBase<GameMode_GamePlay>
                     return;
                 }
 
-                BridgingUtil.CanShowGuide();
+                await BridgingUtil.EnterGamePlayAsync();
             }
             catch (System.Exception)
             {

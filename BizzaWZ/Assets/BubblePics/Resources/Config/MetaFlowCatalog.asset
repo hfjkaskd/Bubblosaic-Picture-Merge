@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2935a128ec50cb43a4baecc4c87817e, type: 3}
+  m_Name: MetaFlowCatalog
+  m_EditorClassIdentifier: 
+  _entries:
+  - Id: 0
+    Prefab: {fileID: 7704396199311787133, guid: 05cc7ceb1b2061445b2fbd77c0ee74de, type: 3}
+  - Id: 16
+    Prefab: {fileID: 7704396199311787133, guid: 8b24e19e60384be091a9d53c09410049, type: 3}
+  _dailyFirstStepEnabled: 0
+  _dailyIncentiveWinEnabled: 0
+  _completeEncourageEnabled: 0
+  _dailyFirstStepBonus: 3
+  _completeEncourageThreshold: 60
+  _chapterSize: 25

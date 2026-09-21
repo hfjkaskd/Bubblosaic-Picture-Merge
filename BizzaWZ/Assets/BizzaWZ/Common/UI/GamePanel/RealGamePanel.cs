@@ -35,9 +35,9 @@ public class RealGamePanel : UIPageBase
 
     void Awake()
     {
-        CreateRecoveredTopHud();
         CreateGameUi();
         InitPropEntries();
+        BindGameplayToolbar();
     }
 
     private void CreateGameUi()
@@ -53,6 +53,8 @@ public class RealGamePanel : UIPageBase
     {
         propEntries ??= new List<UIPropEntry>();
         propEntries.Clear();
+        var toolbar = BubblePics.App.I != null ? BubblePics.App.I.Page?.Toolbar : null;
+        if (toolbar != null) propsRoot = toolbar.PropRoot;
 
         if (uIPropPrefab == null || propsRoot == null)
         {
@@ -79,7 +81,17 @@ public class RealGamePanel : UIPageBase
 
             _propEntry.Init(propInfo);
             propEntries.Add(_propEntry);
+            propEntryGo.transform.SetSiblingIndex(propEntries.Count - 1);
         }
+    }
+
+    private void BindGameplayToolbar()
+    {
+        var toolbar = BubblePics.App.I.Page.Toolbar;
+        toolbar.Hint = propEntries[0].GetComponent<BubblePics.ToolButton>();
+        toolbar.Drop = propEntries[1].GetComponent<BubblePics.ToolButton>();
+        toolbar.Magnet = propEntries[2].GetComponent<BubblePics.ToolButton>();
+        toolbar.BindPrefabRuntime();
     }
 
     private void CreateRecoveredTopHud()

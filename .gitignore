@@ -5,6 +5,21 @@
 **/.DS_Store
 **/Thumbs.db
 
+# Local validation exports, migration reports, and art review copies
+/Validation/
+/APIReplaceReports/
+/ArtChanges/
+/output/
+
+# Generated files from opening the repository root instead of BizzaWZ
+/[Ll]ibrary/
+/[Ll]ogs/
+/[Tt]emp/
+/[Oo]bj/
+/[Uu]ser[Ss]ettings/
+/Packages/
+/ProjectSettings/
+
 # Unity-generated caches, local settings, and build output
 /BizzaWZ/[Ll]ibrary/
 /BizzaWZ/[Tt]emp/
@@ -33,6 +48,7 @@
 /BizzaWZ/*.userprefs
 /BizzaWZ/*.pidb
 *.log
+*.log.meta
 
 # Private signing credentials and local environment secrets
 *.jks

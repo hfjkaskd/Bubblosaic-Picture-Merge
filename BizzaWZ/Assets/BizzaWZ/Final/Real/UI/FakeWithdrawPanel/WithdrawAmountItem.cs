@@ -15,27 +15,31 @@ public class WithdrawAmountItem : MonoBehaviour
     public GameObject selectObj;
     public BizzaButton btn;
     private int _index;
+    private bool _isStarterItem;
+    private FakeWithdrawPanel _panel;
 
-    public void Init(FakeWithdrawPanel panel, int index, string amount, bool canGet)
+    public void Init(FakeWithdrawPanel panel, int index, string amount, bool canGet, bool isStarterItem)
     {
+        _panel = panel;
         _index = index;
         amountTxt.text = amount;
-        Refresh(canGet);
-        btn.onClick.AddListener(() =>
-        {
-            if (_index == 0 && panel.isReward)
-            {
-                return;
-            }
-            panel.SetSelectIndex(_index);
-            panel.OnRefresh();
-        });
+        Refresh(canGet, isStarterItem);
+        btn.onClick.RemoveListener(OnClick);
+        btn.onClick.AddListener(OnClick);
+    }
+
+    private void OnClick()
+    {
+        if (_isStarterItem && _panel.isReward) return;
+        _panel.SetSelectIndex(_index);
+        _panel.OnRefresh();
     }
     
-    public void Refresh(bool canGet)
+    public void Refresh(bool canGet, bool isStarterItem)
     {
-        getObj.SetActive(canGet);
-        getedObj.SetActive(!canGet && _index == 0);
+        _isStarterItem = isStarterItem;
+        getObj.SetActive(isStarterItem && canGet);
+        getedObj.SetActive(isStarterItem && !canGet);
     }
 
     public void OnSelectState(bool isSelect)

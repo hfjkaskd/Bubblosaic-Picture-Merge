@@ -13,7 +13,8 @@ public class UIPropEntry : MonoBehaviour
     private const string LockedPropIconResource = "Recovered/UI/hud_booster_button";
     private static Sprite lockedPropIconSprite;
 
-    public BizzaButton btn;
+    public Button btn;
+    private BubblePics.ToolButton gameplayView;
     public E_ItemType itemType;
     public TMP_Text itemNumTxt;
 
@@ -30,6 +31,8 @@ public class UIPropEntry : MonoBehaviour
     private bool isUnLock = false; public bool IsUnLock => isUnLock;
     void Awake()
     {
+        gameplayView = GetComponent<BubblePics.ToolButton>();
+        if (gameplayView != null) return; // Its standard Button forwards through the tutorial-aware callback.
         btn.onClick.AddListener(() =>
         {
             OnClickProp();
@@ -75,11 +78,19 @@ public class UIPropEntry : MonoBehaviour
         this.propConfigInfo = propConfigInfo;
         propIcon.sprite = propConfigInfo.propIcon;
         itemType = propConfigInfo.propType;
+        if (gameplayView != null)
+        {
+            int index = itemType == E_ItemType.GameProp_1 ? 0 : itemType == E_ItemType.GameProp_2 ? 1 : 2;
+            gameplayView.InitializePrefabRuntime(BubblePics.ToolDef.All[index], _ => OnClickProp());
+        }
         Refresh();
     }
 
-    private void Refresh()
+    public void RequestUse() => OnClickProp();
+
+    public void Refresh()
     {
+        if (propConfigInfo == null) return;
         isUnLock = true;
         if (propConfigInfo.unlockFunction)
         {
@@ -98,6 +109,7 @@ public class UIPropEntry : MonoBehaviour
 
     public void SetLockState()
     {
+        if (RefreshGameplayView()) return;
         haveTips.SetActive(false);
         addTips.SetActive(false);
         cancelTips.SetActive(false);
@@ -193,6 +205,7 @@ public class UIPropEntry : MonoBehaviour
 
     public void SetNormalState()
     {
+        if (RefreshGameplayView()) return;
         bool isHave = ItemUtils.GetItemCount(itemType) > 0;
         if (isHave)
         {
@@ -202,6 +215,15 @@ public class UIPropEntry : MonoBehaviour
         {
             SetAddState();
         }
+    }
+
+    private bool RefreshGameplayView()
+    {
+        if (gameplayView == null || propConfigInfo == null) return false;
+        var page = BubblePics.BizzaGameplayBridge.Page;
+        bool hasEffect = itemType != E_ItemType.GameProp_2 || page == null || page.HasPendingTokens();
+        gameplayView.Refresh(SaveDataUtils.GameData.playerSelectedLv, Mathf.RoundToInt(ItemUtils.GetItemCount(itemType)), false, true, hasEffect);
+        return true;
     }
 
     private void RefreshUnlockLevelTxt()

@@ -25,14 +25,12 @@ public static class RewardFlyConfigChecks
         {
             config.autoLowNativeQuality = false;
             Require(config.MaxConcurrentFx == 4 && config.MaxStartsPerSecond == 4, "Standard profile accepts four starts");
-            Require(config.MaxConcurrentFreeFx == 4 && config.MaxFreeStartsPerSecond == 4, "Free channel has its own limits");
+            Require(config.MaxConcurrentFreeFx == 16, "Free channel accepts sixteen concurrent animations");
             config.maxConcurrentFreeFx = 1;
-            config.maxFreeStartsPerSecond = 1;
             Require(config.MaxConcurrentFx == 4 && config.MaxStartsPerSecond == 4, "Free limits do not change ad limits");
             config.maxConcurrentFreeFx = 500;
             Require(config.MaxConcurrentFreeFx == RewardItemCollectFlow.FreeConcurrencyLimit, "Free channel remains bounded");
-            config.maxConcurrentFreeFx = 4;
-            config.maxFreeStartsPerSecond = 4;
+            config.maxConcurrentFreeFx = RewardItemCollectFlow.FreeConcurrencyLimit;
             config.forceLowNativeQuality = true;
             Require(config.MaxConcurrentFx == 4, "Low profile retains four concurrent slots");
             config.maxConcurrentFx = 500;

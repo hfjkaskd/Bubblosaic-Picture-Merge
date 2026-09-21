@@ -62,7 +62,7 @@ public class ServicePanel : UIPageBase
         canNotSendBtn.onClick.AddListener(() => { OnClickSend(); });
         clearBtn.onClick.AddListener(() => { OnClickClearInput(); });
         defaultQABtn.onClick.AddListener(() => { OnClickOpenSelectPanel(); });
-
+        inputText.OnValueChanged.AddListener(OnInputValueChanged);
     }
 
     public List<ChatElement> chatElements = new();
@@ -88,6 +88,14 @@ public class ServicePanel : UIPageBase
     private void OnDisable()
     {
         NativeKeyboardManager.RemoveKeyboardHeightChangedListener(OnKeyboardHeightChanged);
+    }
+
+    private void OnDestroy()
+    {
+        if (inputText != null)
+        {
+            inputText.OnValueChanged.RemoveListener(OnInputValueChanged);
+        }
     }
 
     protected override void OnClose()
@@ -189,12 +197,9 @@ public class ServicePanel : UIPageBase
 
     }
 
-    private float gapTime = 0.5f; private float currentTime = 0f;
-    private void Update()
+    private void OnInputValueChanged(string value)
     {
-        currentTime += Time.deltaTime;
-        if (currentTime <= gapTime) { return; }
-        currentTime = 0f;
+        // AdvancedInputField defers this event by a frame; the field may already be cleared.
         RefreshSendState(CanSend);
     }
 
@@ -233,6 +238,7 @@ public class ServicePanel : UIPageBase
     {
         inputText.Text = "";
         selectQuestionText.text = LanguageUtils.GetText("ServicePanel_Please");
+        RefreshSendState(false);
     }
 
     private ChatInfo chatInfo = new ChatInfo();
@@ -263,6 +269,7 @@ public class ServicePanel : UIPageBase
         selectQuestionText.text = info;
         inputText.Text = info;
         selectIndex = index;
+        RefreshSendState(CanSend);
     }
 
     public void FillCustomQuent() // 自定义信息填充到输入框
@@ -270,6 +277,7 @@ public class ServicePanel : UIPageBase
         SwitchDefaultInputState(false);
         inputText.Text = "";
         selectIndex = customIndex;
+        RefreshSendState(false);
     }
 
     public void OnClickInputClose() // 点击输入框丢失

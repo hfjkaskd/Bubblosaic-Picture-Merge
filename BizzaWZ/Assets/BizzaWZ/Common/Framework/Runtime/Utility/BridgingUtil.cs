@@ -1,137 +1,36 @@
-using System;
+using BubblePics;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 
 public static class BridgingUtil
 {
     public static int GameLevel
     {
         get => SaveDataUtils.GameData != null ? SaveDataUtils.GameData.playerSelectedLv : 1;
-        set
-        {
-            if (SaveDataUtils.GameData != null)
-            {
-                SaveDataUtils.GameData.playerSelectedLv = value;
-            }
-        }
+        set { SaveDataUtils.GameData.playerSelectedLv = value; SaveDataUtils.Save(); }
     }
-
     public const int MAX_REVIVE_COUNT = 1;
-
-    public static void GameStart()
-    {
-        
-    }
-
-    public static async UniTask LoadGamePlayAsync()
-    {
-        await UniTask.CompletedTask;
-    }
-
-    public static void NewPlayerEnter()
-    {
-        
-    }
-
-    public static bool PropUse_1()
-    {
-        return true;
-    }
-
-    public static bool PropUse_2()
-    {
-        return true;
-    }
-
-    public static bool PropUse_3()
-    {
-
-        return true;
-    }
-
-    public static bool PropUse_4()
-    {
-        return true;
-    }
-
-    public static bool PropUse_5()
-    {
-        return true;
-    }
-
-    public static void PropUseOver(E_ItemType itemType, bool breakFlow)
-    {
-        switch (itemType)
-        {
-            case E_ItemType.GameProp_1:
-                PropUse_1_Over(breakFlow);
-                break;
-            case E_ItemType.GameProp_2:
-                PropUse_2_Over(breakFlow);
-                break;
-            case E_ItemType.GameProp_3:
-                PropUse_3_Over(breakFlow);
-                break;
-            case E_ItemType.GameProp_4:
-                PropUse_4_Over(breakFlow);
-                break;
-            case E_ItemType.GameProp_5:
-                PropUse_5_Over(breakFlow);
-                break;
-        }
-    }
-
-    public static void PropUse_1_Over(bool breakFlow)
-    {
-    }
-
-    public static void PropUse_2_Over(bool breakFlow)
-    {
-    }
-
-    public static void PropUse_3_Over(bool breakFlow)
-    {
-    }
-
-    public static void PropUse_4_Over(bool breakFlow)
-    {
-    }
-
-    public static void PropUse_5_Over(bool breakFlow)
-    {
-    }
-
-    public static void CanShowGuide()
-    {
-    }
-
-    public static void NewPlayerGuideEnd()
-    {
-        
-    }
-
-    public static void LoadGameLevel()
-    {
-        TransitionBlock.ToGamePlay(true);
-    }
-
-    public static void OnOpenGameWinPanel()
-    {
-
-    }
-
-    public static void OnOpenGameLosePanel()
-    {
-        
-    }
-
-    public static void OnOpenGameRevivePanel()
-    {
-        
-    }
-
-    public static void OnReviveResult(bool isRevive)
-    {
-        
-    }
+    public static bool CanRevive => BizzaGameplayBridge.CanRevive;
+    public static UniTask LoadGamePlayAsync() => BizzaGameplayBridge.LoadResourcesAsync();
+    public static UniTask EnterGamePlayAsync() => BizzaGameplayBridge.EnterAsync();
+    public static void GameStart() => BizzaGameplayBridge.OnFrameworkGameStarted();
+    public static void NewPlayerEnter() => BizzaGameplayBridge.GrantUnlockGifts();
+    public static void CanShowGuide() => BizzaGameplayBridge.OnFrameworkGuideReady();
+    public static void BeginGameplayTutorial() => BizzaGameplayBridge.BeginBaseTutorial();
+    public static void NewPlayerGuideEnd() => BizzaGameplayBridge.OnFrameworkTutorialEnded();
+    public static void LoadGameLevel() => BizzaGameplayBridge.ReloadLevelAsync().Forget();
+    public static bool PropUse_1() => BizzaGameplayBridge.UseTool(0);
+    public static bool PropUse_2() => BizzaGameplayBridge.UseTool(1);
+    public static bool PropUse_3() => BizzaGameplayBridge.UseTool(2);
+    public static bool PropUse_4() => false;
+    public static bool PropUse_5() => false;
+    public static void PropUseOver(E_ItemType type, bool breakFlow) { if (breakFlow) BizzaGameplayBridge.CancelToolEffect(); }
+    public static void PropUse_1_Over(bool breakFlow) => PropUseOver(E_ItemType.GameProp_1, breakFlow);
+    public static void PropUse_2_Over(bool breakFlow) => PropUseOver(E_ItemType.GameProp_2, breakFlow);
+    public static void PropUse_3_Over(bool breakFlow) => PropUseOver(E_ItemType.GameProp_3, breakFlow);
+    public static void PropUse_4_Over(bool breakFlow) => PropUseOver(E_ItemType.GameProp_4, breakFlow);
+    public static void PropUse_5_Over(bool breakFlow) => PropUseOver(E_ItemType.GameProp_5, breakFlow);
+    public static void OnOpenGameWinPanel() => BizzaGameplayBridge.OnSettlementOpened();
+    public static void OnOpenGameLosePanel() => BizzaGameplayBridge.OnSettlementOpened();
+    public static void OnOpenGameRevivePanel() => BizzaGameplayBridge.OnSettlementOpened();
+    public static void OnReviveResult(bool isRevive) => BizzaGameplayBridge.ApplyRevive(isRevive);
 }

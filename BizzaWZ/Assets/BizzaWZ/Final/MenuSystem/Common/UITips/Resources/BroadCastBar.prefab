@@ -1102,10 +1102,10 @@ MonoBehaviour:
   entryBObj: {fileID: 5808846481513048993}
   entryBImage: {fileID: 681965632924159314}
   entryBText: {fileID: 2497826302603414406}
-  stayDuration: 1
-  animDuration: 0.3
-  minInterval: 0.3
-  minTwoInterval: 0.3
+  stayDuration: 0.35
+  animDuration: 0.15
+  minInterval: 0.35
+  minTwoInterval: 0.35
 --- !u!1 &9078400589222547021
 GameObject:
   m_ObjectHideFlags: 0

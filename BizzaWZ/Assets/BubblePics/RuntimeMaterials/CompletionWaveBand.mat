@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: CompletionWaveBand
+  m_Shader: {fileID: 4800000, guid: f74e7f0b87bac4c128aec36e9400bf49, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties:
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _CausticsTex:
+        m_Texture: {fileID: 2800000, guid: d91909c9d1d6a4e4590a4009a8c27ae0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Aspect: 0.52
+    - _BandFade: 0.833
+    - _BandHeight: 0.167
+    - _GlobalAlpha: 0.8
+    - _HStretch: 1.6
+    - _Intensity: 0.25
+    - _Persp: 5
+    - _PerspCurve: 3
+    - _RippleAmp: 0.05
+    - _RippleFreq: 2.4
+    - _ScaleU: 3.46
+    m_Colors:
+    - _ScrollA: {r: 0.05, g: 0.03, b: 0, a: 0}
+    - _ScrollB: {r: -0.045, g: 0.0375, b: 0, a: 0}
+    - _Tint: {r: 0.85, g: 0.95, b: 1, a: 1}
+  m_BuildTextureStacks: []

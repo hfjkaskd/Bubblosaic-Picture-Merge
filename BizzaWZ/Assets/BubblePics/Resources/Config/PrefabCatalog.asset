@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8aaf9666089ad343a5d35010c858566, type: 3}
+  m_Name: PrefabCatalog
+  m_EditorClassIdentifier: 
+  SplashPage: {fileID: 659696274060465228, guid: 8abb086ddf5797f439f20c95de1309fe, type: 3}
+  HomePage: {fileID: 0}
+  BubblePage: {fileID: 982133206788807891, guid: c488b2a1fe14bb64c933acec0117dc9b, type: 3}
+  PrivacyDialog: {fileID: 8124829617382771771, guid: dcf90b4e1dfc38749a2c89b3b5264402, type: 3}
+  LoadingOverlay: {fileID: 996251847134321070, guid: 94e687068dbfff24e840b129e668d64c, type: 3}
+  SettingPage: {fileID: 1966663551918034250, guid: a886b68e1e1a4c847b26419185074e77, type: 3}
+  ToolUnlockPage: {fileID: 1025674336631909802, guid: f14362e7ab01efb47a45a11f261cb078, type: 3}
+  HardLevelBanner: {fileID: 5295441497904079666, guid: 070bd7f2ba4800441a2363246127d555, type: 3}
+  BubbleWorld: {fileID: 8183834228627235211, guid: 03b90c4901f9a2c409ac06f82c04528c, type: 3}
+  TopGameBar: {fileID: 9152486312245090039, guid: 46599046b6cc6eb49adb2eb6ac8092d8, type: 3}
+  BubbleToolbar: {fileID: 1869908044712163133, guid: c455a481d8d601d4cab33b334f52e407, type: 3}
+  ComboOverlay: {fileID: 8402634185127592498, guid: 3845199b913f9994aa39dd43dd779cb8, type: 3}
+  CompletionWaveBand: {fileID: 2911118528198722419, guid: f836596db3850a84f9435791e1da365f, type: 3}
+  CompletePanel: {fileID: 4963632593515493858, guid: 2a20cb35560081b47adfeeb7e072f8a5, type: 3}
+  ContinuePanel: {fileID: 4226633834740740854, guid: 44316d504d0c0ba4fa75391b50e50339, type: 3}
+  BombRevivalPanel: {fileID: 0}
+  BombExitConfirmPanel: {fileID: 0}
+  MovesIntroPanel: {fileID: 7674703282246533010, guid: 7a4a40bbabca3634385c73370e730e22, type: 3}
+  BubbleTutorial: {fileID: 240570835834259317, guid: 242a23e86c3b2d445b701e932533605f, type: 3}
+  BubbleEntity: {fileID: 3912846353153670590, guid: 88e2262f2cc1ec149a41f576d11c6101, type: 3}
+  CommonButton: {fileID: 367322493743433765, guid: cd8161fea182a274a856847c87187962, type: 3}
+  ToolButton: {fileID: 7670810759134324723, guid: 15d63c4e7af7baf4cafec6acdd93ff2b, type: 3}
+  Toast: {fileID: 2550535387005612413, guid: bc950f4a5f6c31043ada70b60c7e77bc, type: 3}
+  ConfettiFx: {fileID: 0}
+  ClearLevelBanner: {fileID: 0}
+  DolphinDecoration: {fileID: 85686845352525233, guid: 3aeffcb3ea0ff7c47a5e38520391f258, type: 3}
+  UiFont: {fileID: 11400000, guid: b87791258a80cd44abac4d0abd082ee0, type: 2}
+  SpineStraightAlphaMaterial: {fileID: 2100000, guid: afc3f0d8e58d4b19a2796019047b70c5, type: 2}
+  RuntimeAssets: {fileID: 11400000, guid: a0a607ae950dfb14ab68477da7bc7805, type: 2}

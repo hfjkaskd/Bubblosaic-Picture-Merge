@@ -26,19 +26,19 @@ MonoBehaviour:
     enabledPasses: -1
     ruleFiles: []
   secretSettings:
-    defaultStaticSecretKey: com.corona.busstopmaster
-    defaultDynamicSecretKey: com.corona.busstopmaster
+    defaultStaticSecretKey: com.webpack.picturemerge
+    defaultDynamicSecretKey: com.webpack.picturemerge
     staticSecretKeyOutputPath: Assets/Resources/Obfuz/defaultStaticSecretKey.bytes
     dynamicSecretKeyOutputPath: Assets/Resources/Obfuz/defaultDynamicSecretKey.bytes
     randomSeed: 0
     assembliesUsingDynamicSecretKeys: []
   encryptionVMSettings:
-    codeGenerationSecretKey: busstopmaster
+    codeGenerationSecretKey: picturemerge
     encryptionOpCodeCount: 256
     codeOutputPath: Assets/Obfuz/GeneratedEncryptionVirtualMachine.cs
   symbolObfusSettings:
     debug: 0
-    obfuscatedNamePrefix: btr
+    obfuscatedNamePrefix: yfc
     useConsistentNamespaceObfuscation: 1
     detectReflectionCompatibility: 1
     keepUnknownSymbolInSymbolMappingFile: 1

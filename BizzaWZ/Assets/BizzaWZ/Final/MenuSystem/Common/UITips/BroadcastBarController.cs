@@ -94,10 +94,14 @@ public class BroadcastBarController : BaseSingleton<BroadcastBarController>
             return;
         }
 
-        GameUtils.DelayDo(() => { onVisible?.Invoke(pos1, pos2); }, animDuration);
+        GameUtils.DelayDo(() => { onVisible?.Invoke(pos1, pos2); }, RewardFlyDelay);
     }
 
-    public bool CanShowRewardImmediately => Time.time - itemlastShowTime >= Mathf.Max(minTwoInterval, animDuration);
+    // Let the amount finish fading in and remain readable before spawning the money effects.
+    public float RewardFlyDelay => animDuration + stayDuration;
+
+    public bool CanShowRewardImmediately =>
+        Time.time - itemlastShowTime >= Mathf.Max(minTwoInterval, RewardFlyDelay + animDuration);
 
     public bool ShowRewardImmediately(ItemEntry a, ItemEntry b, out Vector3 pos1, out Vector3 pos2)
     {
@@ -114,7 +118,7 @@ public class BroadcastBarController : BaseSingleton<BroadcastBarController>
 
     private bool ShowItemMessage(ItemEntry a, ItemEntry b)
     {
-        if (Time.time - itemlastShowTime < minTwoInterval)
+        if (!CanShowRewardImmediately)
             return false;
 
         // 第一个是金币

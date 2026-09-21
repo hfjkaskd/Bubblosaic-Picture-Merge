@@ -58,9 +58,10 @@ MonoBehaviour:
     customCashColor: {r: 1, g: 1, b: 1, a: 1}
     coinStyle: 4
     customCoinColor: {r: 1, g: 1, b: 1, a: 1}
-  maxConcurrentFx: 2
-  maxStartsPerSecond: 2
+  maxConcurrentFx: 4
+  maxStartsPerSecond: 4
   startWindowSeconds: 1
+  maxConcurrentFreeFx: 16
   iconCount: 15
   heroCount: 4
   trailCount: 1

@@ -1,0 +1,14 @@
+hbdk.png
+size:413,272
+filter:Linear,Linear
+pma:true
+dg
+bounds:2,2,268,269
+offsets:16,15,300,300
+rotate:90
+guang
+bounds:273,132,138,138
+offsets:5,7,150,150
+xx
+bounds:273,55,85,75
+offsets:5,6,100,83

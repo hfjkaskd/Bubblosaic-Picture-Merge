@@ -166,6 +166,7 @@ MonoBehaviour:
         - rid: 3211365056070025721
         - rid: 3211365056070025722
         - rid: 3211365056070025723
+        - rid: 3211365056070025995
         unconnectedNodes:
         - rid: 3211365056070025724
         - rid: 3211365056070025725
@@ -2535,11 +2536,8 @@ MonoBehaviour:
         - rid: 3211365056070025904
         - rid: 3211365056070025905
         - rid: 3211365056070025906
-        - rid: 3211365056070025907
-        - rid: 3211365056070025908
-        - rid: 3211365056070025909
-        - rid: 3211365056070025910
-        - rid: 3211365056070025911
+        - rid: 3211365056070025992
+        - rid: 3211365056070025997
         - rid: 3211365056070025912
         - rid: 3211365056070025913
         titleNote: "\u5047\u63D0\u73B0"
@@ -3712,6 +3710,66 @@ MonoBehaviour:
         editorPos: {x: 0, y: 0}
         directValue: FakeWithdrawPanel
     - rid: 3211365056070025991
+      type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 0, y: 0}
+        directValue: UI_TeachMask
+    - rid: 3211365056070025992
+      type: {class: SuccessNode, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 2840, y: 4734}
+        children:
+        - rid: 3211365056070025993
+        titleNote: Skip US starter withdrawal
+        note:
+    - rid: 3211365056070025993
+      type: {class: Condition_BoolVariable, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 2940, y: 4734}
+        children:
+        - rid: 3211365056070025994
+        titleNote:
+        note:
+        boolVar:
+          internalValue:
+            rid: 3211365056070025996
+          idxInList: 136
+          nodeIdx: -1
+          nodeVarIdx: -1
+    - rid: 3211365056070025994
+      type: {class: SequenceNode, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 3020, y: 4734}
+        children:
+        - rid: 3211365056070025907
+        - rid: 3211365056070025908
+        - rid: 3211365056070025909
+        - rid: 3211365056070025910
+        - rid: 3211365056070025911
+        titleNote: Starter withdrawal
+        note:
+    - rid: 3211365056070025995
+      type: {class: Action_Bool_IsNotUS, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 2700, y: 4734}
+    - rid: 3211365056070025996
+      type: {class: Action_Bool_IsNotUS, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 0, y: 0}
+    - rid: 3211365056070025997
+      type: {class: Action_UI_ClosePage, ns: , asm: Assembly-CSharp}
+      data:
+        editorPos: {x: 2940, y: 5450}
+        children: []
+        titleNote:
+        note:
+        pageId:
+          internalValue:
+            rid: 3211365056070025998
+          idxInList: -1
+          nodeIdx: -1
+          nodeVarIdx: -1
+    - rid: 3211365056070025998
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 0, y: 0}

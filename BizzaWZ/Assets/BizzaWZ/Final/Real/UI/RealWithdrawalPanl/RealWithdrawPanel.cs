@@ -1,4 +1,4 @@
-#if BIZZA_REAL_WITHDRAW
+﻿#if BIZZA_REAL_WITHDRAW
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -129,11 +129,11 @@ public class RealWithdrawPanel : UIPageBase
         OriginalCanWithdrawHandleHint();
         if (ChannelConfig.Instance.real_CustomConfig.realWithdrawPassMode)
         {
-            passLevelText.text = LanguageUtils.GetFormatText("RealPage_PassLevel", $":{currentLevel}");
+            passLevelText.text = LanguageUtils.GetFormatText("RealPage_PassLevel", $":<color={withdrawValueKeyColor}>{currentLevel}</color>");
         }
         else
         {
-            passLevelText.text = $"{LanguageUtils.GetFormatText("RealPage_CurrentLevel", currentLevel)}";
+            passLevelText.text = $"{LanguageUtils.GetFormatText("RealPage_CurrentLevel", $"<color={withdrawValueKeyColor}>{currentLevel}</color>")}";
         }
 
         OnRefresh();

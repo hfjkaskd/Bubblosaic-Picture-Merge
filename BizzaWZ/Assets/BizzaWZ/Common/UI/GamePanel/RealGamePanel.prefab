@@ -115,7 +115,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5449451863381335325
 RectTransform:
   m_ObjectHideFlags: 0
@@ -333,11 +333,11 @@ MonoBehaviour:
   m_zIndex: 1000
   m_animOnShow: 
   m_animOnHide: 
-  uIPropPrefab: {fileID: 6163747820808760941, guid: 23914ee706962944bb0eb43cd4b92cf9, type: 3}
+  uIPropPrefab: {fileID: 6698117508474450466, guid: 9b34b42ede1e0fc4aac26046dfddaced, type: 3}
   propsRoot: {fileID: 2409309468198948376}
   propEntries: []
   content: {fileID: 286965525586277233}
-  whiteUiPrefab: {fileID: 5777444965433391258, guid: 3c37b2d8ae07f5348b87405e5c66958a, type: 3}
+  whiteUiPrefab: {fileID: 0}
 --- !u!225 &3027575139081704461
 CanvasGroup:
   m_ObjectHideFlags: 0

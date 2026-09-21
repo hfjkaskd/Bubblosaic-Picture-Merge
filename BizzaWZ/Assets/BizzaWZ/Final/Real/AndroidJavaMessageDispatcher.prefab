@@ -10,8 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4970953858205969258}
   - component: {fileID: 6059312002663237201}
-  - component: {fileID: 710124339916346937}
-  - component: {fileID: 8682168822843019158}
   m_Layer: 0
   m_Name: AndroidJavaMessageDispatcher
   m_TagString: Untagged
@@ -43,30 +41,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 7564846814208457179}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a656d72e0af7f6340a64f435d0ac9ffb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &710124339916346937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7564846814208457179}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f55584f1bc9a78142a07fadb76e8389d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8682168822843019158
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7564846814208457179}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cf6c265f88cbf7438b7e692ee8fdb03, type: 3}
+  m_Script: {fileID: 11500000, guid: 41d57bc0e5bc616498759860db5fce17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

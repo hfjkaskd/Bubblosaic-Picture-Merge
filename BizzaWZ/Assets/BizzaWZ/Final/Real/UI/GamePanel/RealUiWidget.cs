@@ -23,8 +23,15 @@ public class RealUiWidget : MonoBehaviour
 
     void OnEnable()
     {
+        // The HUD stays active while the next level loads.
+        BizzaEventSystem.Set(EventDefine.Item.GameStart, RefreshLevelText, true);
         RefreshLevelText();
         itemForCountry.OnRefresh();
+    }
+
+    void OnDisable()
+    {
+        BizzaEventSystem.Set(EventDefine.Item.GameStart, RefreshLevelText, false);
     }
 
     public void RefreshLevelText()

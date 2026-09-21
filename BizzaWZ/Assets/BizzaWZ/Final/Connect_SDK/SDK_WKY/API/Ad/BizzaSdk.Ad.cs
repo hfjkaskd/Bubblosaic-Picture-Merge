@@ -59,9 +59,22 @@ namespace BizzaSdk
         public static bool IsInterReady => AdSdk != null && AdSdk.IsInterReady;
         public static bool IsInterShowing => AdSdk != null && AdSdk.IsInterShowing;
         public static bool CheckInterAdReady(CheckAdReadyArgs args = default) => AdSdk != null && AdSdk.CheckInterAdReady(args);
-        public static void ShowInterAd(ShowAdArgs args = default) => AdSdk?.ShowInterAd(args);
+        public static void ShowInterAd(ShowAdArgs args = default)
+        {
+            if (InterstitialProtection.IsBlocked)
+            {
+                args.onFinish?.Invoke(default);
+                return;
+            }
+            AdSdk?.ShowInterAd(args);
+        }
         public static void ShowInterAd(string adPos, float dollarNum, Action<Bizza.Sdk.ShowAdResult> onFinish, bool forceCount)
         {
+            if (InterstitialProtection.IsBlocked)
+            {
+                onFinish?.Invoke(default);
+                return;
+            }
             #if !COMMONGAME
             if (UIModule.Instance.isStatistics || forceCount) SaveDataUtils.GameData.totalbeLookAdCount++;
             #else

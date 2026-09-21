@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public sealed class RewardItemCollectFlow : MonoBehaviour
 {
-    public const int FreeConcurrencyLimit = 4;
+    public const int FreeConcurrencyLimit = 16;
     private static RewardItemCollectFlow instance;
     public static int Generation { get; private set; }
     private readonly Request[] requests = new Request[FlyMoneyPlayer.HardConcurrencyLimit];
@@ -68,7 +68,6 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
         internal bool notified;
         internal GameObject legacyRoot;
         internal bool native;
-        internal Vector2 destination;
         internal bool IsValid => !ended && flow != null && flow.isActiveAndEnabled &&
             generation == Generation && target != null && target.gameObject.activeInHierarchy && scope.IsValid;
 
@@ -225,7 +224,7 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
             { request.End(false); return; }
             var config = RewardItemCollectFxConfig.Instance;
             request.native = true;
-            request.destination = destination;
+            // Keep this flight's endpoint fixed; currency-bar arrival tweens may move the icon.
             FlyMoneySettings settings = config.GetNativeSettings(AccountModule.CountryType, cash);
             player.concurrentLimit = config.MaxConcurrentFx;
             SyncSound();
@@ -270,10 +269,6 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
             Request request = channel[i];
             if (request == null) continue;
             if (!request.IsValid) { request.End(false); continue; }
-            if (request.native && !request.notified &&
-                (!VFXUtils.TryGetAnchoredPosition(request.target.position, rect, canvas, out Vector2 targetPosition) ||
-                 (targetPosition - request.destination).sqrMagnitude > 144f))
-            { request.End(false); continue; }
             request.lifetime += wallDelta;
             if (request.lifetime > 8f) { request.End(false); continue; }
             if (delta <= 0f) continue;
@@ -400,8 +395,8 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
             // Showing the UI can synchronously close a page or destroy this manager.
             if (!IsPending(pending) || !shown) return;
             TakePendingReward();
-            pending.first?.Play(fromA, bar.animDuration);
-            pending.second?.Play(fromB, bar.animDuration);
+            pending.first?.Play(fromA, bar.RewardFlyDelay);
+            pending.second?.Play(fromB, bar.RewardFlyDelay);
         }
         catch (Exception exception)
         {

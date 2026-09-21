@@ -112,20 +112,20 @@ public class ChatElement : MonoBehaviour
         {
             IssueImage.gameObject.SetActive(isIssue);
             IssueImage.type = Image.Type.Sliced;
-            IssueImage.color = Color.white;
+            IssueImage.color = issueBubbleColor;
         }
 
         if (PlayerImage != null)
         {
             PlayerImage.gameObject.SetActive(!isIssue);
             PlayerImage.type = Image.Type.Sliced;
-            PlayerImage.color = Color.white;
+            PlayerImage.color = playerBubbleColor;
         }
 
         if (IssueImage == null && PlayerImage == null && bgImage != null)
         {
             bgImage.type = Image.Type.Sliced;
-            bgImage.color = Color.white;
+            bgImage.color = isIssue ? issueBubbleColor : playerBubbleColor;
         }
 
         if (chatTxt != null)

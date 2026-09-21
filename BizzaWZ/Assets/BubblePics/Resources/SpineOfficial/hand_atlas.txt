@@ -1,0 +1,12 @@
+ui_fx_hand.png
+size:216,128
+filter:Linear,Linear
+pma:true
+HandClick/img_Guiding_Bottom
+bounds:144,2,66,42
+offsets:0,0,66,54
+HandClick/img_Guiding_Finger
+bounds:144,46,69,79
+HandClick/img_Guiding_Hand
+bounds:2,3,140,122
+offsets:0,0,140,132

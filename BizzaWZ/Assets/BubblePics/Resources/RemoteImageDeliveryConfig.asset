@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e74347e98a6a71d41ad16b3cd389d1d7, type: 3}
+  m_Name: RemoteImageDeliveryConfig
+  m_EditorClassIdentifier:
+  remoteEnabled: 1
+  baseUrl: https://bubblepics-and.popemusic.us
+  contentRoot:
+  urlMode: 2
+  urlTemplate: '{base}/{root}/{path}'
+  allowAbsoluteFallbackUrl: 0
+  resizeAbsoluteFallbackWithImageView: 0
+  acceptHeader: image/webp
+  itemsPerGroup: 25
+  highPriorityConcurrency: 10
+  lowPriorityConcurrency: 5
+  cacheDecodesPerFrame: 1
+  foregroundMaxAttempts: 1
+  backgroundMaxAttempts: 1
+  cancelNetworkRequestOnTimeout: 0
+  requestTimeoutSeconds: 20
+  foregroundBatchTimeoutSeconds: 20
+  retryBaseDelaySeconds: 0.75
+  retryJitter: 0.15
+  prefetchNextItemHigh: 1
+  prefetchCurrentAndNextGroup: 1
+  advancePrefetchWindow: 11
+  nextGroupThreshold: 5
+  pruneItemsBeforeCurrent: 1
+  bundledSeedItemCount: 10
+  preferRemoteAfterSeedItems: 1
+  cacheNamespace: level_images
+  memoryTextureLimit: 48
+  enforceDiskCacheBudget: 0
+  maxDiskCacheMiB: 1024
+  resumePartialDownloads: 0
+  resumeMinimumBytes: 524288
+  validateImageHeader: 1
+  validateDecodedTexture: 1
+  verifySha256WhenProvided: 1
+  verifyByteCountWhenProvided: 1
+  verboseLogging: 0
+  keepRequestHistory: 1
+  requestHistoryLimit: 200

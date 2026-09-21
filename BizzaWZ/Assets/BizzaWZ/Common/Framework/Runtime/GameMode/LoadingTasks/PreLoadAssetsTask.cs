@@ -9,7 +9,7 @@ namespace Bizza.Loading
     {
         public override LoadingTaskName TaskName => LoadingTaskName.PreLoadAsset;
         public override float Weight => 0.3f;
-        public override LoadingTaskName[] Dependencies => Array.Empty<LoadingTaskName>();
+        public override LoadingTaskName[] Dependencies => new[] { LoadingTaskName.LoadGameData };
         
         public override async UniTask Execute()
         {
@@ -24,7 +24,7 @@ namespace Bizza.Loading
 #if UNITY_EDITOR
             Debug.Log("[WhiteBootstrap] PreLoadAssetsTask preload RealGamePanel request");
 #endif
-            AssetUtils.LoadAssetAsync<GameObject>("UIPanel/RealGamePanel").Forget();
+            await AssetUtils.LoadAssetAsync<GameObject>("UIPanel/RealGamePanel");
 
 #if UNITY_EDITOR
             Debug.Log("[WhiteBootstrap] PreLoadAssetsTask BridgingUtil.LoadGamePlayAsync begin");

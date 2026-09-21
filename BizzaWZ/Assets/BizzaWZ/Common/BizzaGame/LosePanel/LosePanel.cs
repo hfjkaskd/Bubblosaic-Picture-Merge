@@ -42,9 +42,13 @@ public class LosePanel : UIPageBase<LoseReason, LevelInfo>
 
     private LoseReason loseReason;
     private LevelInfo levelInfo;
+    private int openGeneration;
+    private bool rewardPending;
 
     protected override void OnClose()
     {
+        openGeneration++;
+        rewardPending = false;
         if (reviveButton != null)
         {
             reviveButton.onClick.RemoveListener(OnClickReviveButton);
@@ -63,6 +67,8 @@ public class LosePanel : UIPageBase<LoseReason, LevelInfo>
 
     protected override void OnOpen(LoseReason loseReason, LevelInfo levelInfo)
     {
+        openGeneration++;
+        rewardPending = false;
         this.loseReason = loseReason;
         this.levelInfo = levelInfo;
         if (reviveButton != null)
@@ -79,15 +85,26 @@ public class LosePanel : UIPageBase<LoseReason, LevelInfo>
         {
             bizzaLoseButton2.onClick.AddListener(RestartLevel);
         }
-        bool isHaveRevive = SaveDataUtils.GameData.currentReviveCount < BridgingUtil.MAX_REVIVE_COUNT;
+        bool isHaveRevive = BridgingUtil.CanRevive && SaveDataUtils.GameData.currentReviveCount < BridgingUtil.MAX_REVIVE_COUNT;
+        if (reviveButton != null) reviveButton.interactable = isHaveRevive;
         SetObjsActive(reviveObjs, isHaveRevive);
         SetObjsActive(loseObjs, !isHaveRevive);
     }
 
     private void OnClickReviveButton()
     {
+        if (rewardPending || !BridgingUtil.CanRevive) return;
+        rewardPending = true;
+        int generation = openGeneration;
+        reviveButton.interactable = false;
         #if BIZZA_REAL_WITHDRAW
-        BizzaSdk.Ad.ShowRewardAd(E_AdPos.Revive.ToString(), WithdrawalUtil.GetDollarCountBtFree(), (a) => FlowModule.OnReviveResult(a.success, loseReason, levelInfo));
+        BizzaSdk.Ad.ShowRewardAd(E_AdPos.Revive.ToString(), WithdrawalUtil.GetDollarCountBtFree(), (a) =>
+        {
+            if (this == null || generation != openGeneration || !rewardPending || !BridgingUtil.CanRevive) return;
+            rewardPending = false;
+            reviveButton.interactable = true;
+            FlowModule.OnReviveResult(a.success, loseReason, levelInfo);
+        });
         #else
         FlowModule.OnReviveResult(true, loseReason, levelInfo);
         #endif

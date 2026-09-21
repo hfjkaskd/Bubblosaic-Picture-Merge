@@ -38,6 +38,7 @@ public class EnterCustomTutorial : ActionNodeBase
     protected override E_ExecuteState OnExecute(in ExecuteArgs executeArgs)
     {
         SaveDataUtils.GameData.customTutorialEnd = false;
+        BridgingUtil.BeginGameplayTutorial();
         return E_ExecuteState.Success;
     }
 }

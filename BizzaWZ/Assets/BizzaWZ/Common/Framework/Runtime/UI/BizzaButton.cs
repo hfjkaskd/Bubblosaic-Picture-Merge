@@ -42,10 +42,14 @@ public class ButtonState
     }
 }
 
-public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IBeginDragHandler, IEndDragHandler
+public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IBeginDragHandler, IEndDragHandler, IInitializePotentialDragHandler
 {
     public Transform scaleTarget;
     public bool canDrag = true;
+
+    // Optional standard Unity Button, configured only on migrated withdrawal prefabs.
+    [SerializeField] private Button standardButton;
+    private ScrollRect standardScroll;
 
     [SerializeField, Min(0f)]
     private float pressScaleRatio = 0.92f;
@@ -72,6 +76,7 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     private void Awake()
     {
+        if (standardButton != null) standardScroll = GetComponentInParent<ScrollRect>();
         if (scaleTarget == null)
         {
             scaleTarget = transform.Find("Scale");
@@ -85,13 +90,20 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         ChangeButtonState(0);
     }
 
+    private void OnEnable()
+    {
+        if (standardButton != null) standardButton.interactable = interactable;
+    }
+
     private void OnDisable()
     {
+        if (standardButton != null) standardButton.interactable = false;
         RestoreNormalScale();
     }
 
     private void Update()
     {
+        if (standardButton != null) return;
         if (interactable && isLongClick)
         {
             if (Time.time - m_LastInvokeTime >= longClickPeriod)
@@ -106,6 +118,7 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     // 按下事件
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (standardButton != null) return;
         if (scaleTarget != null)
         {
             if (!m_IsPointerDown)
@@ -126,6 +139,7 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     // 抬起事件
     public void OnPointerUp(PointerEventData eventData)
     {
+        if (standardButton != null) return;
         RestoreNormalScale();
         // isLongClick = false;
         if (interactable && RectTransformUtility.RectangleContainsScreenPoint(gameObject.GetComponent<RectTransform>(), eventData.position))
@@ -143,6 +157,11 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     }
     public void OnDrag(PointerEventData eventData)
     {
+        if (standardButton != null)
+        {
+            if (canDrag) standardScroll?.OnDrag(eventData);
+            return;
+        }
         if (canDrag)
         {
             GetComponentInParent<ScrollRect>()?.OnDrag(eventData);
@@ -151,6 +170,15 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (standardButton != null)
+        {
+            if (canDrag && standardScroll != null)
+            {
+                eventData.eligibleForClick = false;
+                standardScroll.OnBeginDrag(eventData);
+            }
+            return;
+        }
         if (canDrag)
         {
             GetComponentInParent<ScrollRect>()?.OnBeginDrag(eventData);
@@ -159,6 +187,11 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
+        if (standardButton != null)
+        {
+            if (canDrag) standardScroll?.OnEndDrag(eventData);
+            return;
+        }
         if (canDrag)
         {
             GetComponentInParent<ScrollRect>()?.OnEndDrag(eventData);
@@ -174,6 +207,11 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
         scaleTarget.localScale = m_NormalScale;
         m_IsPointerDown = false;
+    }
+
+    public void OnInitializePotentialDrag(PointerEventData eventData)
+    {
+        if (standardButton != null && canDrag) standardScroll?.OnInitializePotentialDrag(eventData);
     }
 
 

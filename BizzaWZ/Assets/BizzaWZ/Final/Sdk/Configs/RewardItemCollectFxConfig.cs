@@ -74,12 +74,6 @@ public class RewardItemCollectFxConfig : ChannelConfigBase<RewardItemCollectFxCo
     [LabelText("免费动画最大同时播放数")]
     [Range(1, RewardItemCollectFlow.FreeConcurrencyLimit)]
     public int maxConcurrentFreeFx = RewardItemCollectFlow.FreeConcurrencyLimit;
-    [FoldoutGroup("免费领取并发限制")]
-    [LabelText("免费动画每秒最大触发数"), MinValue(1)]
-    public int maxFreeStartsPerSecond = 4;
-    [FoldoutGroup("免费领取并发限制")]
-    [LabelText("免费动画触发统计窗口"), MinValue(0.05f)]
-    public float freeStartWindowSeconds = 1f;
 
     [FoldoutGroup("数量")]
     [LabelText("钞票数量")]
@@ -327,8 +321,6 @@ public class RewardItemCollectFxConfig : ChannelConfigBase<RewardItemCollectFxCo
     public int MaxStartsPerSecond => Mathf.Max(1, maxStartsPerSecond);
     public float StartWindowSeconds => Mathf.Max(0.05f, startWindowSeconds);
     public int MaxConcurrentFreeFx => Mathf.Clamp(maxConcurrentFreeFx, 1, RewardItemCollectFlow.FreeConcurrencyLimit);
-    public int MaxFreeStartsPerSecond => Mathf.Max(1, maxFreeStartsPerSecond);
-    public float FreeStartWindowSeconds => Mathf.Max(0.05f, freeStartWindowSeconds);
     public int IconCount => Mathf.Clamp(iconCount, 1, 32);
     public int HeroCount => Mathf.Clamp(heroCount, 0, IconCount);
     public int TrailCount => Mathf.Clamp(trailCount, 0, 4);

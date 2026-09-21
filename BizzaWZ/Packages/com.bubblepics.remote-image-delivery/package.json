@@ -1,0 +1,10 @@
+{
+  "name": "com.bubblepics.remote-image-delivery",
+  "version": "1.0.0",
+  "displayName": "Remote Image Delivery",
+  "description": "Reusable prioritized remote-image delivery, validation, cache, prefetch and editor publishing tools for Unity.",
+  "unity": "2022.3",
+  "author": {
+    "name": "BubblePics"
+  }
+}

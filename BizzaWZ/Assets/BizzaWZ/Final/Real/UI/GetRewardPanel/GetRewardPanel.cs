@@ -207,6 +207,7 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
         Action<bool> _callback)
     {
         LogLogger.LogVerbose(BaseConst.LOG_Game, $"打开了界面 GetRewardPanel");
+        RewardPopupTiming.OnPanelShown();
         itemA = a;
         itemB = b;
         callback = _callback;
@@ -288,7 +289,8 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
             if (!Bizza.Sdk.ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode)
             {
                 string _clash = LanguageUtils.GetText("CurrencyToken") + WithdrawalUtil.GetCustomizedFloatByCountryType(dollarCount);
-                noThanksText.text = $"{LanguageUtils.GetFormatText("GetRewardPage_NoThanks", iconName, _clash)}";
+                noThanksText.text = LanguageUtils.GetFormatText("GetRewardPage_NoThanks", iconName, _clash)
+                    .Replace("<u>", string.Empty).Replace("</u>", string.Empty);
             }
 #endif
             levelTips.SetObjActive(_useScene == DoubleGetRewardPanel.E_UseScene.WinPanel);

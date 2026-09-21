@@ -14,10 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   propCfgInfos:
   - propType: 24
-    propIcon: {fileID: 21300000, guid: 9ff10a21a203364448bd45cd29ffeb35, type: 3}
-    unlockFunction: 0
+    propIcon: {fileID: 21300000, guid: dbce458ba5888be40a91f8bb4eca0810, type: 3}
+    unlockFunction: 1
     unlockCondition:
       unlockLevel: 3
     cancelFunction: 0
-    preLimitNum: 3
+    preLimitNum: 2147483647
+    newPlayerPropCount: 3
+  - propType: 25
+    propIcon: {fileID: 21300000, guid: d35f9284310844f439c0f5e0dfce513c, type: 3}
+    unlockFunction: 1
+    unlockCondition:
+      unlockLevel: 5
+    cancelFunction: 0
+    preLimitNum: 2147483647
+    newPlayerPropCount: 2
+  - propType: 26
+    propIcon: {fileID: 21300000, guid: 588febfffe00a554cabdb727c28e81b8, type: 3}
+    unlockFunction: 1
+    unlockCondition:
+      unlockLevel: 10
+    cancelFunction: 0
+    preLimitNum: 2147483647
     newPlayerPropCount: 1

@@ -1,0 +1,17 @@
+bubble_unclock.png
+size:393,393
+filter:Linear,Linear
+R 1
+bounds:2,197,223,194
+offsets:4,15,240,240
+gp_bubble_chain_l
+bounds:2,2,216,193
+offsets:18,16,240,240
+lightPoint_y2
+bounds:227,300,43,45
+offsets:3,3,49,48
+lock_1
+bounds:281,358,37,33
+lock_body
+bounds:227,347,52,44
+offsets:1,0,53,46

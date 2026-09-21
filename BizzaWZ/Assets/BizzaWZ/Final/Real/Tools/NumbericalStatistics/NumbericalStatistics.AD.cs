@@ -39,12 +39,16 @@ public partial class NumbericalStatistics
     /// 合成指定次数打开   恭喜获得界面
     /// </summary>
     /// <returns></returns>
-    public static bool CheckShowGetReward()
+    public static bool CheckShowGetReward(Vector3 pos)
     {
         ShowGetRewardNum++;
         bool show = ShowGetRewardNum >= ShowGetRewardCount;
         LogLogger.LogVerbose(LogTag.ADNumericalStatistics, $"打开恭喜获得界面 - 进度:{ShowGetRewardNum},最大次数:{ShowGetRewardCount},是否显示:{show}");
-        if (!show) return false;
+        if (!show)
+        {
+            CheckGetDollar(pos);
+            return false;
+        }
         ShowGetRewardNum = 0;
         Real_GetRewardPanelUtil.OpenGetRewardPanel(DoubleGetRewardPanel.E_UseScene.MatchReward);
         return true;
@@ -59,14 +63,25 @@ public partial class NumbericalStatistics
     /// <returns></returns>
     public static bool CheckCloseGetReward(E_AdPos pos, float money, Action<Bizza.Sdk.ShowAdResult> action)
     {
-        CloseGetRewardNum++;
-        bool show = CloseGetRewardNum >= CloseGetRewardCount;
+        if (InterstitialProtection.IsBlocked)
+        {
+            CloseGetRewardNum = 0;
+            return false;
+        }
+        bool show = AdvanceRewardCloseCounter(CloseGetRewardCount);
         LogLogger.LogVerbose(LogTag.ADNumericalStatistics, $"关闭界面弹插屏 - 进度:{CloseGetRewardNum},最大次数:{CloseGetRewardCount},是否显示:{show}");
         if (!show) return false;
-        CloseGetRewardNum = 0;
         UIModule.Instance.RecoverAdvertistics();
         BizzaSdk.Ad.ShowInterAd(pos.ToString(), money, action, true);
         UIModule.Instance.m_curadvertistics--;
+        return true;
+    }
+
+    public static bool AdvanceRewardCloseCounter(int threshold)
+    {
+        CloseGetRewardNum++;
+        if (CloseGetRewardNum < System.Math.Max(1, threshold)) return false;
+        CloseGetRewardNum = 0;
         return true;
     }
 
@@ -74,7 +89,7 @@ public partial class NumbericalStatistics
     /// 合成多少次出现Dollar界面
     /// </summary>
     /// <returns></returns>
-    public static bool CheckGetDollar()
+    public static bool CheckGetDollar(Vector3 pos)
     {
         var showDollarCount = ShowDollarCount;
         bool show = !ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode &&
@@ -88,19 +103,20 @@ public partial class NumbericalStatistics
         ItemEntry dollar = new()
         {
             Type = E_ItemType.Dollar,
-            Count = WithdrawalUtil.GetCustomizedFloatByCountryType(moneyValue)
+            Count = WithdrawalUtil.GetCustomizedFloatByCountryType(moneyValue) / 5
         };
 
-        UIUtils.ShowTips(dollar, default, (pos1, pos2) =>
+        // UIUtils.ShowTips(dollar, default, (pos1, pos2) =>
+        // {
+
+        // });
+        ItemUtils.AddItem(dollar, new AddItemParam
         {
-            ItemUtils.AddItem(dollar, new AddItemParam
-            {
-                playAnim = true,
-                isAd = false,
-                startPos = pos2,
-                bUiPos = false,
-                source = DoubleGetRewardPanel.GetItemSource(DoubleGetRewardPanel.E_UseScene.Ad),
-            });
+            playAnim = true,
+            isAd = false,
+            startPos = pos,
+            bUiPos = false,
+            source = DoubleGetRewardPanel.GetItemSource(DoubleGetRewardPanel.E_UseScene.Ad),
         });
         return true;
     }

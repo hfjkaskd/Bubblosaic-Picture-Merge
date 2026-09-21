@@ -1,0 +1,702 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c22b6bba761a456aa833a320017a5a15, type: 3}
+  m_Name: RuntimeAssetCatalog
+  m_EditorClassIdentifier: 
+  _entries:
+  - Path: Art/Effect/water_ripple
+    ResourcePath: BubblePicsDynamic/3b9cab58cb3864054b8c102c1e8658c3/water_ripple
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/bubble_special_effects_Bubble_special_effects
+    ResourcePath: BubblePicsDynamic/027eefe3c558c4ff9aa07a070a34ac23/bubble_special_effects_Bubble_special_effects
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/bubble_unlock_bubble_unclock
+    ResourcePath: BubblePicsDynamic/de3fc22b73ab24604b207bc048c0c3cf/bubble_unlock_bubble_unclock
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/combo_combo_title
+    ResourcePath: BubblePicsDynamic/a949ff7ba6c9e46ec880fcf1711cf873/combo_combo_title
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/complete_title_Effect_GamePageUI_title_01
+    ResourcePath: BubblePicsDynamic/64e44dd3c04f448c1ae3f11285c191a5/complete_title_Effect_GamePageUI_title_01
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_complete_dolphin_complete
+    ResourcePath: BubblePicsDynamic/71c5905c1a7214baf8d1e2f653928572/dolphin_complete_dolphin_complete
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_complete_dolphin_complete_2
+    ResourcePath: BubblePicsDynamic/2d67b9623c94435b95c7462b010289ac/dolphin_complete_dolphin_complete_2
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_complete_dolphin_complete_3
+    ResourcePath: BubblePicsDynamic/16e1e6f29f604399ac0a27320411e94e/dolphin_complete_dolphin_complete_3
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_complete_dolphin_complete_4
+    ResourcePath: BubblePicsDynamic/5fc84c42440f4b689bb8dd5b5d8d0ce4/dolphin_complete_dolphin_complete_4
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_dolphin
+    ResourcePath: BubblePicsDynamic/91a0a9e83edac463fadf38aca3216fc1/dolphin_dolphin
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_dolphin_2
+    ResourcePath: BubblePicsDynamic/1d4a51a97ae84207b6f42f874cbe4b11/dolphin_dolphin_2
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_dolphin_3
+    ResourcePath: BubblePicsDynamic/87b44a75e0154dfb90a170effe25c66d/dolphin_dolphin_3
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/dolphin_dolphin_4
+    ResourcePath: BubblePicsDynamic/8d32966ea5434eb79d5ce484c04e163c/dolphin_dolphin_4
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/hand_ui_fx_hand
+    ResourcePath: BubblePicsDynamic/c456e5fc4b4dc44f09cfd3d54b3f4c35/hand_ui_fx_hand
+    Asset: {fileID: 0}
+  - Path: Art/SpinePages/hbdk_hbdk
+    ResourcePath: BubblePicsDynamic/69858c74ebfe149d69ada3a57e031a29/hbdk_hbdk
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/active_bubble
+    ResourcePath: BubblePicsDynamic/a8c417a9fcec24e1fb014b675032171f/active_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/active_bubble
+    ResourcePath: BubblePicsDynamic/a8c417a9fcec24e1fb014b675032171f/active_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/aiming_bubble
+    ResourcePath: BubblePicsDynamic/66aa609351e1e43b0afaf430496c10bb/aiming_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/aiming_bubble
+    ResourcePath: BubblePicsDynamic/66aa609351e1e43b0afaf430496c10bb/aiming_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/ambient_bubble
+    ResourcePath: BubblePicsDynamic/c25bf7efebc1f43ff8a9e7f6aa1f4a96/ambient_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/ambient_bubble
+    ResourcePath: BubblePicsDynamic/c25bf7efebc1f43ff8a9e7f6aa1f4a96/ambient_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/badge_count_bg
+    ResourcePath: BubblePicsDynamic/bf3ce23cb45304e8c88f15e5f9405965/badge_count_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/badge_count_bg
+    ResourcePath: BubblePicsDynamic/bf3ce23cb45304e8c88f15e5f9405965/badge_count_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/bubble_glow
+    ResourcePath: BubblePicsDynamic/3270ee4c1512c4527a5ff1af15533c50/bubble_glow
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/bubble_glow
+    ResourcePath: BubblePicsDynamic/3270ee4c1512c4527a5ff1af15533c50/bubble_glow
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/bubble_ripple
+    ResourcePath: BubblePicsDynamic/034129513341541a598ef41d61e0ed3d/bubble_ripple
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/bubble_ripple
+    ResourcePath: BubblePicsDynamic/034129513341541a598ef41d61e0ed3d/bubble_ripple
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/category_merge_banner
+    ResourcePath: BubblePicsDynamic/6c3705fa803fde44cab93b5f7f0eda66/category_merge_banner
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/category_merge_banner
+    ResourcePath: BubblePicsDynamic/6c3705fa803fde44cab93b5f7f0eda66/category_merge_banner
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/disc
+    ResourcePath: BubblePicsDynamic/eee8d1514dcff4fb38cd1d220f0b1946/disc
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/disc
+    ResourcePath: BubblePicsDynamic/eee8d1514dcff4fb38cd1d220f0b1946/disc
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/eff_star15
+    ResourcePath: BubblePicsDynamic/1cab5157dad574603811307196af93f2/eff_star15
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/eff_star15
+    ResourcePath: BubblePicsDynamic/1cab5157dad574603811307196af93f2/eff_star15
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/eff_star5
+    ResourcePath: BubblePicsDynamic/85229e9208f8a4c8abdc6d50420e5447/eff_star5
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/eff_star5
+    ResourcePath: BubblePicsDynamic/85229e9208f8a4c8abdc6d50420e5447/eff_star5
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/fly_card_frame
+    ResourcePath: BubblePicsDynamic/a2535c2d263134a1bb5c5d51837c1fd9/fly_card_frame
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/fly_card_frame
+    ResourcePath: BubblePicsDynamic/a2535c2d263134a1bb5c5d51837c1fd9/fly_card_frame
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_pic_bubble_number
+    ResourcePath: BubblePicsDynamic/98824eeb4384f49a580a574eb76a69b5/gp_pic_bubble_number
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_pic_bubble_number
+    ResourcePath: BubblePicsDynamic/98824eeb4384f49a580a574eb76a69b5/gp_pic_bubble_number
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_pic_locked_bubble
+    ResourcePath: BubblePicsDynamic/daf64b861e7b3457e91f7ba070eeee7d/gp_pic_locked_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_pic_locked_bubble
+    ResourcePath: BubblePicsDynamic/daf64b861e7b3457e91f7ba070eeee7d/gp_pic_locked_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_tool_hint
+    ResourcePath: BubblePicsDynamic/2a9f3a26683fb46489f31e382c53cae5/gp_tool_hint
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_tool_hint
+    ResourcePath: BubblePicsDynamic/2a9f3a26683fb46489f31e382c53cae5/gp_tool_hint
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_tool_hint_disable
+    ResourcePath: BubblePicsDynamic/24328a30067da41fd94a34887a94fdd6/gp_tool_hint_disable
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/gp_tool_hint_disable
+    ResourcePath: BubblePicsDynamic/24328a30067da41fd94a34887a94fdd6/gp_tool_hint_disable
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/hard_level_bubbles
+    ResourcePath: BubblePicsDynamic/791b5fcf9b89d4e95b7b867738832ecc/hard_level_bubbles
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/hard_level_bubbles
+    ResourcePath: BubblePicsDynamic/791b5fcf9b89d4e95b7b867738832ecc/hard_level_bubbles
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/hint_glow
+    ResourcePath: BubblePicsDynamic/485b16506937a497596685ef0b92f0a3/hint_glow
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/hint_glow
+    ResourcePath: BubblePicsDynamic/485b16506937a497596685ef0b92f0a3/hint_glow
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/icon_settings
+    ResourcePath: BubblePicsDynamic/d0b97b85ad589485f92dccead247f12a/icon_settings
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/icon_settings
+    ResourcePath: BubblePicsDynamic/d0b97b85ad589485f92dccead247f12a/icon_settings
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/moves_intro_card
+    ResourcePath: BubblePicsDynamic/98922fb8cc59944c5957e277063fbb82/moves_intro_card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/moves_intro_card
+    ResourcePath: BubblePicsDynamic/98922fb8cc59944c5957e277063fbb82/moves_intro_card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/number_match_banner
+    ResourcePath: BubblePicsDynamic/0ad27c9285e0c4cdb8a5750b653f8bdc/number_match_banner
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/number_match_banner
+    ResourcePath: BubblePicsDynamic/0ad27c9285e0c4cdb8a5750b653f8bdc/number_match_banner
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/number_match_icon
+    ResourcePath: BubblePicsDynamic/9c9161bad96084ce09840064fc7ac64f/number_match_icon
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/number_match_icon
+    ResourcePath: BubblePicsDynamic/9c9161bad96084ce09840064fc7ac64f/number_match_icon
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/reject_flash
+    ResourcePath: BubblePicsDynamic/7aca59ab3ae9e4e44b3c128977e61378/reject_flash
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/reject_flash
+    ResourcePath: BubblePicsDynamic/7aca59ab3ae9e4e44b3c128977e61378/reject_flash
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/revival_popup_img
+    ResourcePath: BubblePicsDynamic/5f7b33ddf413e441591643923bea5ddb/revival_popup_img
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/revival_popup_img
+    ResourcePath: BubblePicsDynamic/5f7b33ddf413e441591643923bea5ddb/revival_popup_img
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/tutorial_toast_bg
+    ResourcePath: BubblePicsDynamic/99479221a4d41484d92f9e9d0d6cf1ac/tutorial_toast_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Bubble/tutorial_toast_bg
+    ResourcePath: BubblePicsDynamic/99479221a4d41484d92f9e9d0d6cf1ac/tutorial_toast_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_blue_front
+    ResourcePath: BubblePicsDynamic/e651d4f0686e44732a65a788b7f8ad7a/btn_blue_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_blue_front
+    ResourcePath: BubblePicsDynamic/e651d4f0686e44732a65a788b7f8ad7a/btn_blue_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_green_front
+    ResourcePath: BubblePicsDynamic/47c2110fba0a947e288d423ef2489bcb/btn_green_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_green_front
+    ResourcePath: BubblePicsDynamic/47c2110fba0a947e288d423ef2489bcb/btn_green_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_orange_front
+    ResourcePath: BubblePicsDynamic/cebec4a3080354e30b39504c9a415977/btn_orange_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_orange_front
+    ResourcePath: BubblePicsDynamic/cebec4a3080354e30b39504c9a415977/btn_orange_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_red_front
+    ResourcePath: BubblePicsDynamic/d660a33a3fd7f43dbaa649f4cc6f408f/btn_red_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/btn_red_front
+    ResourcePath: BubblePicsDynamic/d660a33a3fd7f43dbaa649f4cc6f408f/btn_red_front
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/coin_spin_sheet
+    ResourcePath: BubblePicsDynamic/8fdd6bde855c34ad688333b17f626303/coin_spin_sheet
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/coin_spin_sheet
+    ResourcePath: BubblePicsDynamic/8fdd6bde855c34ad688333b17f626303/coin_spin_sheet
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/common_decorations_bubble
+    ResourcePath: BubblePicsDynamic/26411a695f3964d958d3a9a63aa3044d/common_decorations_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/common_decorations_bubble
+    ResourcePath: BubblePicsDynamic/26411a695f3964d958d3a9a63aa3044d/common_decorations_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/common_toast_bg_9s
+    ResourcePath: BubblePicsDynamic/2782cff5b831543cbb098f6fb6b9f4c7/common_toast_bg_9s
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/common_toast_bg_9s
+    ResourcePath: BubblePicsDynamic/2782cff5b831543cbb098f6fb6b9f4c7/common_toast_bg_9s
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_card_bg_blue_9s
+    ResourcePath: BubblePicsDynamic/b5182474ba0a7425ab2be55aa7a48632/dialog_card_bg_blue_9s
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_card_bg_blue_9s
+    ResourcePath: BubblePicsDynamic/b5182474ba0a7425ab2be55aa7a48632/dialog_card_bg_blue_9s
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_bubble_l
+    ResourcePath: BubblePicsDynamic/6f57b3389e00041e4850e887187b733c/dialog_deco_bubble_l
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_bubble_l
+    ResourcePath: BubblePicsDynamic/6f57b3389e00041e4850e887187b733c/dialog_deco_bubble_l
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_bubble_r
+    ResourcePath: BubblePicsDynamic/1941486bcdbc04b608669184f871cb1d/dialog_deco_bubble_r
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_bubble_r
+    ResourcePath: BubblePicsDynamic/1941486bcdbc04b608669184f871cb1d/dialog_deco_bubble_r
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_starfish
+    ResourcePath: BubblePicsDynamic/48d30e661529447b4800198c7bf475e1/dialog_deco_starfish
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_starfish
+    ResourcePath: BubblePicsDynamic/48d30e661529447b4800198c7bf475e1/dialog_deco_starfish
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_top
+    ResourcePath: BubblePicsDynamic/8feed4b00ae3d47868935f91c91179c9/dialog_deco_top
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_deco_top
+    ResourcePath: BubblePicsDynamic/8feed4b00ae3d47868935f91c91179c9/dialog_deco_top
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_title_banner_green
+    ResourcePath: BubblePicsDynamic/91e35e473fff641a29a15c6c94c7b19c/dialog_title_banner_green
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/dialog_title_banner_green
+    ResourcePath: BubblePicsDynamic/91e35e473fff641a29a15c6c94c7b19c/dialog_title_banner_green
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/et_ribbon_007
+    ResourcePath: BubblePicsDynamic/ed1455444af3447b0841612891b283e5/et_ribbon_007
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/et_ribbon_007
+    ResourcePath: BubblePicsDynamic/ed1455444af3447b0841612891b283e5/et_ribbon_007
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/loading_dots
+    ResourcePath: BubblePicsDynamic/89fb8a90f563949f8be3acc5137a10be/loading_dots
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Common/loading_dots
+    ResourcePath: BubblePicsDynamic/89fb8a90f563949f8be3acc5137a10be/loading_dots
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/banner_oom_bg
+    ResourcePath: BubblePicsDynamic/b5523a86eda4d40158e9b158c252cb69/banner_oom_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/banner_oom_bg
+    ResourcePath: BubblePicsDynamic/b5523a86eda4d40158e9b158c252cb69/banner_oom_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/close_x
+    ResourcePath: BubblePicsDynamic/3293dc5048bde4deaa15c8e9fc4c551b/close_x
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/close_x
+    ResourcePath: BubblePicsDynamic/3293dc5048bde4deaa15c8e9fc4c551b/close_x
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/coin_icon
+    ResourcePath: BubblePicsDynamic/e6f2bf3c87ca64ff38301bf69123a29e/coin_icon
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/coin_icon
+    ResourcePath: BubblePicsDynamic/e6f2bf3c87ca64ff38301bf69123a29e/coin_icon
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/common_ad
+    ResourcePath: BubblePicsDynamic/c5a30ef4ec03b426991c2b91797ba768/common_ad
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/common_ad
+    ResourcePath: BubblePicsDynamic/c5a30ef4ec03b426991c2b91797ba768/common_ad
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/dialog_card_slot
+    ResourcePath: BubblePicsDynamic/7f70f62840f784d89ac18d64ab7f524a/dialog_card_slot
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/dialog_card_slot
+    ResourcePath: BubblePicsDynamic/7f70f62840f784d89ac18d64ab7f524a/dialog_card_slot
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/moves_plus15
+    ResourcePath: BubblePicsDynamic/6709e3a8fc593440daf5de84c453ad11/moves_plus15
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Continue/moves_plus15
+    ResourcePath: BubblePicsDynamic/6709e3a8fc593440daf5de84c453ad11/moves_plus15
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/bubble_bg_underwater
+    ResourcePath: BubblePicsDynamic/5d056da9f3b214a4695b435de5586eb0/bubble_bg_underwater
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/bubble_bg_underwater
+    ResourcePath: BubblePicsDynamic/5d056da9f3b214a4695b435de5586eb0/bubble_bg_underwater
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/coin_pill_bg
+    ResourcePath: BubblePicsDynamic/f499d40173153463e88a75d34186a710/coin_pill_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/coin_pill_bg
+    ResourcePath: BubblePicsDynamic/f499d40173153463e88a75d34186a710/coin_pill_bg
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/deco_bubble
+    ResourcePath: BubblePicsDynamic/1dd99624b073542f686a6d92f9d4f826/deco_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/deco_bubble
+    ResourcePath: BubblePicsDynamic/1dd99624b073542f686a6d92f9d4f826/deco_bubble
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/home_light
+    ResourcePath: BubblePicsDynamic/2941c2383bcdd40f09e98dfa8c929de9/home_light
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/home_light
+    ResourcePath: BubblePicsDynamic/2941c2383bcdd40f09e98dfa8c929de9/home_light
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/water_caustics
+    ResourcePath: BubblePicsDynamic/d91909c9d1d6a4e4590a4009a8c27ae0/water_caustics
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Home/water_caustics
+    ResourcePath: BubblePicsDynamic/d91909c9d1d6a4e4590a4009a8c27ae0/water_caustics
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Complete/next_button
+    ResourcePath: BubblePicsDynamic/b7814284f7fd96e4e9019513999787e8/next_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Complete/next_button
+    ResourcePath: BubblePicsDynamic/b7814284f7fd96e4e9019513999787e8/next_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/background
+    ResourcePath: BubblePicsDynamic/7bcac622fdd1b014490b4714b036981a/background
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/background
+    ResourcePath: BubblePicsDynamic/7bcac622fdd1b014490b4714b036981a/background
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/bubble_frame
+    ResourcePath: BubblePicsDynamic/b1fc4bdc65e36d443a2cc1ed98504763/bubble_frame
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/bubble_frame
+    ResourcePath: BubblePicsDynamic/b1fc4bdc65e36d443a2cc1ed98504763/bubble_frame
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/hint_icon_small
+    ResourcePath: BubblePicsDynamic/dbce458ba5888be40a91f8bb4eca0810/hint_icon_small
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/hint_icon_small
+    ResourcePath: BubblePicsDynamic/dbce458ba5888be40a91f8bb4eca0810/hint_icon_small
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/moves_card
+    ResourcePath: BubblePicsDynamic/d61c905535154a349bd85eba867acfed/moves_card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/moves_card
+    ResourcePath: BubblePicsDynamic/d61c905535154a349bd85eba867acfed/moves_card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/settings_button
+    ResourcePath: BubblePicsDynamic/44b4dceda59c2ea4d8eeb038fc01200b/settings_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/settings_button
+    ResourcePath: BubblePicsDynamic/44b4dceda59c2ea4d8eeb038fc01200b/settings_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/target_card
+    ResourcePath: BubblePicsDynamic/ffb5dad10b3ee714f89530966fe6331d/target_card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/target_card
+    ResourcePath: BubblePicsDynamic/ffb5dad10b3ee714f89530966fe6331d/target_card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/tool_button_disabled
+    ResourcePath: BubblePicsDynamic/9b70be7981b511d46a25e09cc29819a0/tool_button_disabled
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/tool_button_disabled
+    ResourcePath: BubblePicsDynamic/9b70be7981b511d46a25e09cc29819a0/tool_button_disabled
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/tool_button_enabled
+    ResourcePath: BubblePicsDynamic/a8ccfe704b91ec348b8e2b08ba413c8b/tool_button_enabled
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/tool_button_enabled
+    ResourcePath: BubblePicsDynamic/a8ccfe704b91ec348b8e2b08ba413c8b/tool_button_enabled
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/tool_lock
+    ResourcePath: BubblePicsDynamic/387387ea451d2224aac3919b1da89e2f/tool_lock
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/tool_lock
+    ResourcePath: BubblePicsDynamic/387387ea451d2224aac3919b1da89e2f/tool_lock
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/toolbar
+    ResourcePath: BubblePicsDynamic/4cc392927fdcec149a62762c9a9d9efa/toolbar
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Gameplay/toolbar
+    ResourcePath: BubblePicsDynamic/4cc392927fdcec149a62762c9a9d9efa/toolbar
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/HardLevel/card
+    ResourcePath: BubblePicsDynamic/dd41e228d08adeb438a38f25b3d0f1e5/card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/HardLevel/card
+    ResourcePath: BubblePicsDynamic/dd41e228d08adeb438a38f25b3d0f1e5/card
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/HardLevel/fire_icon
+    ResourcePath: BubblePicsDynamic/2192f1f1567f6be498c969d98efe417b/fire_icon
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/HardLevel/fire_icon
+    ResourcePath: BubblePicsDynamic/2192f1f1567f6be498c969d98efe417b/fire_icon
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Home/progress_fill
+    ResourcePath: BubblePicsDynamic/7ecca67d239b045489794adabb44ec16/progress_fill
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Home/progress_fill
+    ResourcePath: BubblePicsDynamic/7ecca67d239b045489794adabb44ec16/progress_fill
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Home/progress_track
+    ResourcePath: BubblePicsDynamic/a1f4e4dea440c254bb0cf5aa375a3a6f/progress_track
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Home/progress_track
+    ResourcePath: BubblePicsDynamic/a1f4e4dea440c254bb0cf5aa375a3a6f/progress_track
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Home/splash_logo
+    ResourcePath: BubblePicsDynamic/20fcc7c3da052d545a0b5d604f9b37f8/splash_logo
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Home/splash_logo
+    ResourcePath: BubblePicsDynamic/20fcc7c3da052d545a0b5d604f9b37f8/splash_logo
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/close
+    ResourcePath: BubblePicsDynamic/648c4dfd1eb4603418ebb5d5000af474/close
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/close
+    ResourcePath: BubblePicsDynamic/648c4dfd1eb4603418ebb5d5000af474/close
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/home_button
+    ResourcePath: BubblePicsDynamic/fbb1024f86a5d364f9be9fe489413930/home_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/home_button
+    ResourcePath: BubblePicsDynamic/fbb1024f86a5d364f9be9fe489413930/home_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/panel
+    ResourcePath: BubblePicsDynamic/a27c1d27129801645b7e4851e406c83e/panel
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/panel
+    ResourcePath: BubblePicsDynamic/a27c1d27129801645b7e4851e406c83e/panel
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/restart_button
+    ResourcePath: BubblePicsDynamic/cb7f7436719984a4da956bc1aa1b6fd0/restart_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/restart_button
+    ResourcePath: BubblePicsDynamic/cb7f7436719984a4da956bc1aa1b6fd0/restart_button
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/sound_off
+    ResourcePath: BubblePicsDynamic/79802c0276598c249a1a45e95dcc1f96/sound_off
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/sound_off
+    ResourcePath: BubblePicsDynamic/79802c0276598c249a1a45e95dcc1f96/sound_off
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/sound_on
+    ResourcePath: BubblePicsDynamic/a80c228b315d4f9458bf385547df8b6d/sound_on
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/sound_on
+    ResourcePath: BubblePicsDynamic/a80c228b315d4f9458bf385547df8b6d/sound_on
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/vibration_off
+    ResourcePath: BubblePicsDynamic/5e02d0716700de9479a1ce9c3ec62822/vibration_off
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/vibration_off
+    ResourcePath: BubblePicsDynamic/5e02d0716700de9479a1ce9c3ec62822/vibration_off
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/vibration_on
+    ResourcePath: BubblePicsDynamic/46d3e8955b3d78941bfc5949714f55c7/vibration_on
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/Setting/vibration_on
+    ResourcePath: BubblePicsDynamic/46d3e8955b3d78941bfc5949714f55c7/vibration_on
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/drop_large
+    ResourcePath: BubblePicsDynamic/944e99ddc83f29f45b4f9e0ed43f04c3/drop_large
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/drop_large
+    ResourcePath: BubblePicsDynamic/944e99ddc83f29f45b4f9e0ed43f04c3/drop_large
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/drop_small
+    ResourcePath: BubblePicsDynamic/588febfffe00a554cabdb727c28e81b8/drop_small
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/drop_small
+    ResourcePath: BubblePicsDynamic/588febfffe00a554cabdb727c28e81b8/drop_small
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/free_badge
+    ResourcePath: BubblePicsDynamic/f0a497f6e9c113043894ef72c50dee8b/free_badge
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/free_badge
+    ResourcePath: BubblePicsDynamic/f0a497f6e9c113043894ef72c50dee8b/free_badge
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/hint_large
+    ResourcePath: BubblePicsDynamic/9687ee8414df24849a921f5d50adef4e/hint_large
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/hint_large
+    ResourcePath: BubblePicsDynamic/9687ee8414df24849a921f5d50adef4e/hint_large
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/magnet_large
+    ResourcePath: BubblePicsDynamic/d434e84fc03c6f04891231fd130e9793/magnet_large
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/magnet_large
+    ResourcePath: BubblePicsDynamic/d434e84fc03c6f04891231fd130e9793/magnet_large
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/magnet_small
+    ResourcePath: BubblePicsDynamic/d35f9284310844f439c0f5e0dfce513c/magnet_small
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/PsdSkin20260807/ToolUnlock/magnet_small
+    ResourcePath: BubblePicsDynamic/d35f9284310844f439c0f5e0dfce513c/magnet_small
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/btn_close_red
+    ResourcePath: BubblePicsDynamic/95342812bb24e4bd28be8ff06dbf10b3/btn_close_red
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/btn_close_red
+    ResourcePath: BubblePicsDynamic/95342812bb24e4bd28be8ff06dbf10b3/btn_close_red
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/common_reddot
+    ResourcePath: BubblePicsDynamic/53b870c1e311d44ae997838ec63a128d/common_reddot
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/common_reddot
+    ResourcePath: BubblePicsDynamic/53b870c1e311d44ae997838ec63a128d/common_reddot
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/dialog_card_bg_blue
+    ResourcePath: BubblePicsDynamic/39023d44c5d7046dda975986481fd202/dialog_card_bg_blue
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/dialog_card_bg_blue
+    ResourcePath: BubblePicsDynamic/39023d44c5d7046dda975986481fd202/dialog_card_bg_blue
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/dialog_card_bg_blue_9
+    ResourcePath: BubblePicsDynamic/32015489f24f24bd8a6010cc76bc3251/dialog_card_bg_blue_9
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/dialog_card_bg_blue_9
+    ResourcePath: BubblePicsDynamic/32015489f24f24bd8a6010cc76bc3251/dialog_card_bg_blue_9
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/dialog_card_slot
+    ResourcePath: BubblePicsDynamic/3c942b4fbbb8c4c4b85f9aa79b88ef0e/dialog_card_slot
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/dialog_card_slot
+    ResourcePath: BubblePicsDynamic/3c942b4fbbb8c4c4b85f9aa79b88ef0e/dialog_card_slot
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_help
+    ResourcePath: BubblePicsDynamic/3a357a730f9904c7d9e869a86034aa67/setting_ic_weak_help
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_help
+    ResourcePath: BubblePicsDynamic/3a357a730f9904c7d9e869a86034aa67/setting_ic_weak_help
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_privacy
+    ResourcePath: BubblePicsDynamic/07ed743496e8b443b8931afe143fd7e6/setting_ic_weak_privacy
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_privacy
+    ResourcePath: BubblePicsDynamic/07ed743496e8b443b8931afe143fd7e6/setting_ic_weak_privacy
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_privacy_preference
+    ResourcePath: BubblePicsDynamic/f2f86c809a271455693f6bf67731401b/setting_ic_weak_privacy_preference
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_privacy_preference
+    ResourcePath: BubblePicsDynamic/f2f86c809a271455693f6bf67731401b/setting_ic_weak_privacy_preference
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_rate
+    ResourcePath: BubblePicsDynamic/cedd44b6b722546b3ae514a391ce668c/setting_ic_weak_rate
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_rate
+    ResourcePath: BubblePicsDynamic/cedd44b6b722546b3ae514a391ce668c/setting_ic_weak_rate
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_service
+    ResourcePath: BubblePicsDynamic/7f3dd5b26594e461594f45a2e5c3e858/setting_ic_weak_service
+    Asset: {fileID: 0}
+  - Path: Art/Sprites/Setting/setting_ic_weak_service
+    ResourcePath: BubblePicsDynamic/7f3dd5b26594e461594f45a2e5c3e858/setting_ic_weak_service
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/big_merge
+    ResourcePath: BubblePicsDynamic/c6126df1ae56b4bdba0241d383daf720/big_merge
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/btn_click_2
+    ResourcePath: BubblePicsDynamic/374596087a37b409f83965d54956d277/btn_click_2
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/bubble_collide_1
+    ResourcePath: BubblePicsDynamic/e08133c00c66f4d7fa309c21be2b5327/bubble_collide_1
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/bubble_death
+    ResourcePath: BubblePicsDynamic/94cfb59d27a744bcaa89cb3fdc0f8205/bubble_death
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/bubble_merge
+    ResourcePath: BubblePicsDynamic/aeaf96230eec043adaef73273ff3deea/bubble_merge
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/bubble_merge_new
+    ResourcePath: BubblePicsDynamic/dde4d92a4fac244abb22f290d7c10732/bubble_merge_new
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/bubble_pop
+    ResourcePath: BubblePicsDynamic/e315f0b3c0f124efa95ab02003fb82a2/bubble_pop
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/bubble_unlock
+    ResourcePath: BubblePicsDynamic/8d157bfc3feca43a5b9d660030f8c2f7/bubble_unlock
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/coin_fly
+    ResourcePath: BubblePicsDynamic/36bdbe9e46af841d98721830a1d0c460/coin_fly
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/combo_link_1
+    ResourcePath: BubblePicsDynamic/bcc64360eb92942948f02e3ab7d1aa66/combo_link_1
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/combo_link_2
+    ResourcePath: BubblePicsDynamic/d8b2ba334f0794b8c954a7e67ceaaf81/combo_link_2
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/combo_link_3
+    ResourcePath: BubblePicsDynamic/a8f7015e4544d4d5cbab3738b40037df/combo_link_3
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/dlg_open_1
+    ResourcePath: BubblePicsDynamic/45adf7a743d804f53a23c4a6fb8c7f54/dlg_open_1
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/excellent_man_1
+    ResourcePath: BubblePicsDynamic/b4538be5d26724c0b95cb2fc6ffbca63/excellent_man_1
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/excellent_man_2
+    ResourcePath: BubblePicsDynamic/e275cc3ea497f47c3946358183668e47/excellent_man_2
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/excellent_man_3
+    ResourcePath: BubblePicsDynamic/f615d8f6a015e4281bf6069632e6ebef/excellent_man_3
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/game_completed
+    ResourcePath: BubblePicsDynamic/4b8312228a6104610a0da75fa541b9b0/game_completed
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/image_complete
+    ResourcePath: BubblePicsDynamic/3942f5a3da789458984eea449987dad7/image_complete
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/merge_reject
+    ResourcePath: BubblePicsDynamic/13f91003b8638451e835334190175a73/merge_reject
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/merge_reject_new
+    ResourcePath: BubblePicsDynamic/4d20968e7bd134b4b95c7c9d906be939/merge_reject_new
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/nice_man
+    ResourcePath: BubblePicsDynamic/067e483fc2c7c4bc6923ce53f332026d/nice_man
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/perfect_man
+    ResourcePath: BubblePicsDynamic/90e0dc27dcc854eafa82d109a0e084b2/perfect_man
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/sub_merge
+    ResourcePath: BubblePicsDynamic/120d9126d6ac0416ebdb7bde2390cd4d/sub_merge
+    Asset: {fileID: 0}
+  - Path: Audio/Sfx/wonderful
+    ResourcePath: BubblePicsDynamic/15f28737b294946be97871293fba90e9/wonderful
+    Asset: {fileID: 0}
+  - Path: Shaders/BubbleFusion
+    ResourcePath: BubblePicsDynamic/b6a2e6f568f374913b320e5b3f5c0cdf/BubbleFusion
+    Asset: {fileID: 0}
+  - Path: Shaders/BubbleGlass
+    ResourcePath: BubblePicsDynamic/04597e8487f5d4d5e9a002ef43843f1e/BubbleGlass
+    Asset: {fileID: 0}
+  - Path: Shaders/DisabledGray
+    ResourcePath: BubblePicsDynamic/57eeca63590548b4986dee26084ddc34/DisabledGray
+    Asset: {fileID: 0}
+  - Path: Shaders/FragmentImage
+    ResourcePath: BubblePicsDynamic/44a1acb85deb741c58b679daa633975c/FragmentImage
+    Asset: {fileID: 0}
+  - Path: Shaders/ParticleTintUv
+    ResourcePath: BubblePicsDynamic/24c39a20e891430080ef431cf6d0d4bb/ParticleTintUv
+    Asset: {fileID: 0}
+  - Path: Shaders/SpineLite
+    ResourcePath: BubblePicsDynamic/e54dc9786f45d4f9ca212aaae0ae200e/SpineLite
+    Asset: {fileID: 0}
+  - Path: Shaders/SplashStripes
+    ResourcePath: BubblePicsDynamic/78d6950631ddb44cfa09634256ab464c/SplashStripes
+    Asset: {fileID: 0}
+  - Path: Shaders/StickerImage
+    ResourcePath: BubblePicsDynamic/7f650a1b92f3486396062e35b4049bf2/StickerImage
+    Asset: {fileID: 0}
+  - Path: Shaders/TextVGradient
+    ResourcePath: BubblePicsDynamic/0c8d3b74ef23e461782a37ebdf0b9b3d/TextVGradient
+    Asset: {fileID: 0}
+  - Path: Shaders/WaterRipple
+    ResourcePath: BubblePicsDynamic/f74e7f0b87bac4c128aec36e9400bf49/WaterRipple
+    Asset: {fileID: 0}

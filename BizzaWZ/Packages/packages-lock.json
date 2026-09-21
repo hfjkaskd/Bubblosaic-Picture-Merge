@@ -121,6 +121,12 @@
       },
       "url": "https://unity.packages.applovin.com"
     },
+    "com.bubblepics.remote-image-delivery": {
+      "version": "file:com.bubblepics.remote-image-delivery",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.code-philosophy.obfuz": {
       "version": "file:obfuz-main",
       "depth": 0,

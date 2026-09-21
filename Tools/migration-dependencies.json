@@ -1,0 +1,20 @@
+{
+  "copied": 630,
+  "reused": [
+    "Packages\\com.esotericsoftware.spine.spine-unity\\Runtime\\spine-unity\\Asset Types\\SkeletonDataAsset.cs",
+    "Packages\\com.esotericsoftware.spine.spine-unity\\Runtime\\spine-unity\\Asset Types\\SpineAtlasAsset.cs",
+    "Packages\\com.esotericsoftware.spine.spine-unity\\Runtime\\spine-unity\\Components\\SkeletonAnimation.cs",
+    "Packages\\com.esotericsoftware.spine.spine-unity\\Runtime\\spine-unity\\Shaders\\Spine-Skeleton.shader"
+  ],
+  "unresolved": [
+    "0cd44c1031e13a943bb63640046fad76",
+    "1344c3c82d62a2a41a3576d8abb8e3ea",
+    "30649d3a9faa99c48a7b1166b86bf2a0",
+    "4f231c4fb786f3946a6b90b886c48677",
+    "71c1514a6bd24e1e882cebbe1904ce04",
+    "76c392e42b5098c458856cdf6ecaaaa1",
+    "dc42784cf147c0c48a680349fa168899",
+    "f4688fdb7df04437aeb418b961361dc5",
+    "fe87c0e1cc204ed48ad3b37840f39efc"
+  ]
+}

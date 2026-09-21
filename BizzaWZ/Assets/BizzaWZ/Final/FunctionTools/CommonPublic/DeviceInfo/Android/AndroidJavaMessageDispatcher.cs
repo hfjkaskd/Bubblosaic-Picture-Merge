@@ -47,12 +47,17 @@ namespace Bizza.Unity.Android
 
         public static void EnsureCreated()
         {
-            if (GameObject.Find(nameof(AndroidJavaMessageDispatcher)) != null)
+            GameObject dispatcherObject =
+                GameObject.Find(nameof(AndroidJavaMessageDispatcher));
+            if (dispatcherObject != null &&
+                dispatcherObject.GetComponent<AndroidJavaMessageDispatcher>() != null)
             {
                 return;
             }
 
-            GameObject dispatcherObject = new GameObject(nameof(AndroidJavaMessageDispatcher));
+            if (dispatcherObject == null)
+                dispatcherObject = new GameObject(nameof(AndroidJavaMessageDispatcher));
+
             dispatcherObject.AddComponent<AndroidJavaMessageDispatcher>();
         }
         

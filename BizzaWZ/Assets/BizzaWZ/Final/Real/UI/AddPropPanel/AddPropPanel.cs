@@ -22,13 +22,34 @@ public class AddPropPanel : UIPageBase<E_ItemType>
 
     private E_ItemType _itemType;
     private PropConfigSO propConfigSO;
+    private int openGeneration;
+    private bool adPending;
 
     void Awake()
     {
         propConfigSO = PropConfigSO.Instance;
         adBuyBtn.onClick.AddListener(() =>
         {
-            BizzaSdk.Ad.ShowRewardAd(_itemType.ToString(), WithdrawalUtil.GetDollarCountByReward(), OnAdBuyFinish);
+            if (adPending) return;
+            adPending = true;
+            adBuyBtn.interactable = false;
+            closeBtn.interactable = false;
+            int generation = openGeneration;
+            string placement = _itemType switch
+            {
+                E_ItemType.GameProp_1 => "GameProp_1",
+                E_ItemType.GameProp_2 => "GameProp_2",
+                E_ItemType.GameProp_3 => "GameProp_3",
+                _ => "GameProp"
+            };
+            BizzaSdk.Ad.ShowRewardAd(placement, WithdrawalUtil.GetDollarCountByReward(), result =>
+            {
+                if (this == null || generation != openGeneration || !adPending) return;
+                adPending = false;
+                adBuyBtn.interactable = true;
+                closeBtn.interactable = true;
+                OnAdBuyFinish(result);
+            });
             UIModule.Instance.m_curadvertistics--;
         });
 
@@ -53,21 +74,33 @@ public class AddPropPanel : UIPageBase<E_ItemType>
 
     protected override void OnOpen(E_ItemType itemType)
     {
+        openGeneration++;
+        adPending = false;
+        adBuyBtn.interactable = closeBtn.interactable = true;
         _itemType = itemType;
         var config = propConfigSO.GetPropConfigInfo(itemType);
         if (config != null)
         {
             propIcon.sprite = config.propIcon;
         }
-        propName.text = LanguageUtils.GetText("ItemName_" + itemType.ToString());
+        propName.text = BubblePics.Localization.Tr(itemType switch
+        {
+            E_ItemType.GameProp_1 => "BUBBLE_TOOL_HINT",
+            E_ItemType.GameProp_2 => "BUBBLE_TOOL_DROP",
+            E_ItemType.GameProp_3 => "BUBBLE_TOOL_MAGNET",
+            _ => throw new ArgumentOutOfRangeException(nameof(itemType))
+        });
         var _propUseTimes = NumbericalStatistics._propUseTimes;
         var maxTimes = config.preLimitNum;
-        var curTimes = _propUseTimes[itemType];
+        _propUseTimes.TryGetValue(itemType, out var curTimes);
+        limitTxt.gameObject.SetActive(maxTimes != int.MaxValue);
         limitTxt.text = LanguageUtils.GetFormatText("Limit_Tip", curTimes, maxTimes);
     }
 
     protected override void OnClose()
     {
+        openGeneration++;
+        adPending = false;
     }
 }
 #endif

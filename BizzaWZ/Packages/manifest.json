@@ -61,7 +61,8 @@
         "com.applovin.mediation.adapters.mintegral.ios": "801060000.0.0",
         "com.applovin.mediation.adapters.moloco.ios": "4090100.0.0",
         "com.applovin.mediation.adapters.bytedance.ios": "802010000.0.0",
-        "com.applovin.mediation.adapters.unityads.ios": "4200000.0.0"
+        "com.applovin.mediation.adapters.unityads.ios": "4200000.0.0",
+        "com.bubblepics.remote-image-delivery": "file:com.bubblepics.remote-image-delivery"
     },
     "scopedRegistries": [
         {

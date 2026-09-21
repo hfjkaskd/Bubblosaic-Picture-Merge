@@ -116,7 +116,7 @@ public static class FlowModule
     // 打开失败界面
     public static void OpenGameLosePanel(BizzaLevelResultType bizzaLevelResultType, LoseReason loseReason, LevelInfo levelInfo)
     {
-        CompleteAnalyticsLevel(success: false, loseReason.ToString());
+        CompleteAnalyticsLevel(success: false, GetAnalyticsFailureReason(loseReason));
         SaveDataUtils.GameData.levelFailCount++;
         BizzaEventSystem.Emit(EventDefine.Item.GameLose);
         BridgingUtil.OnOpenGameLosePanel();
@@ -152,8 +152,8 @@ public static class FlowModule
         BridgingUtil.LoadGameLevel();
     }
 
-    // 游戏每次合成都会触发这个方法 传入剩余的合成次数
-    public static void SynthesisLogic(int numRemaining)
+    // 游戏每次合成都会触发这个方法 传入剩余的合成次数和发生这次合成的位置
+    public static void SynthesisLogic(int numRemaining, Vector3 synthesisPos)
     {
 #if BIZZA_REAL_WITHDRAW
         // var adinfo = RemoteGroupDataSystem.current.GetActiveAdStatisticsOrDefault(SaveDataUtils.GameData.playerSelectedLv);
@@ -168,7 +168,7 @@ public static class FlowModule
             return;
         }
 
-        NumbericalStatistics.CheckShowGetReward();
+        NumbericalStatistics.CheckShowGetReward(synthesisPos);
 #endif
     }
 
@@ -259,6 +259,20 @@ public static class FlowModule
         analyticsLevelId = SaveDataUtils.GameData.playerSelectedLv.ToString();
         int attempt = Mathf.Max(1, SaveDataUtils.GameData.levelFailCount + 1);
         analyticsLevelAttemptId = BizzaGameAnalytics.TrackLevelStart(analyticsLevelId, attempt);
+    }
+
+    private static string GetAnalyticsFailureReason(LoseReason reason)
+    {
+        // Keep analytics values stable when Obfuz renames enum members.
+        switch (reason)
+        {
+            case LoseReason.Health:
+                return "Health";
+            case LoseReason.Timeout:
+                return "Timeout";
+            default:
+                return ((int)reason).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
     }
 
     private static void CompleteAnalyticsLevel(bool success, string failureReason = null)

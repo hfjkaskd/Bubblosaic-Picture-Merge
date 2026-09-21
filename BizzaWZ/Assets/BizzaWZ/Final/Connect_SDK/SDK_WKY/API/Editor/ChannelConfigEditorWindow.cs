@@ -22,6 +22,7 @@ namespace Bizza.Sdk.Editor
     {
         private ChannelConfig _config;
         private Vector2 _scrollPosition;
+        private string _currentUserId = string.Empty;
         private bool _showRuntimeConfig = true;
         private bool _showDebugConfig = true;
         private bool _showEditorOnlyConfig;
@@ -110,6 +111,8 @@ namespace Bizza.Sdk.Editor
             DrawToolbar();
 
             EditorGUILayout.Space(5);
+            DrawCurrentUserId();
+            EditorGUILayout.Space(5);
 
             if (_config == null)
             {
@@ -123,6 +126,25 @@ namespace Bizza.Sdk.Editor
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawConfigFields();
             EditorGUILayout.EndScrollView();
+        }
+
+
+        private void OnInspectorUpdate()
+        {
+            RefreshCurrentUserId();
+        }
+
+
+        private void RefreshCurrentUserId()
+        {
+            string userId = PlayerPrefs.GetString(AccountModule.m_userIdKey, string.Empty);
+            if (_currentUserId == userId)
+            {
+                return;
+            }
+
+            _currentUserId = userId;
+            Repaint();
         }
 
 
@@ -230,6 +252,44 @@ namespace Bizza.Sdk.Editor
 
             EditorGUILayout.EndHorizontal();
         }
+
+        private void DrawCurrentUserId()
+        {
+            // 读取账号模块实际使用的 UID；自定义账号配置需登录生效后才会写入此值。
+            RefreshCurrentUserId();
+            bool hasUserId = !string.IsNullOrEmpty(_currentUserId);
+
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            EditorGUILayout.LabelField(
+                new GUIContent("当前用户 UID", "当前编辑器本地保存的用户 UID（只读）"),
+                GUILayout.Width(100));
+            EditorGUILayout.SelectableLabel(
+                hasUserId ? _currentUserId : "暂无 UID，请先运行游戏完成登录",
+                EditorStyles.textField,
+                GUILayout.Height(EditorGUIUtility.singleLineHeight));
+
+            using (new EditorGUI.DisabledScope(!hasUserId))
+            {
+                if (GUILayout.Button("复制", GUILayout.Width(60)))
+                {
+                    EditorGUIUtility.systemCopyBuffer = _currentUserId;
+                    ShowNotification(new GUIContent("UID 已复制"));
+                }
+            }
+
+            if (GUILayout.Button(
+                    new GUIContent("刷新", "重新读取本地保存的 UID，无需运行游戏"),
+                    GUILayout.Width(60)))
+            {
+                RefreshCurrentUserId();
+                ShowNotification(new GUIContent(string.IsNullOrEmpty(_currentUserId)
+                    ? "本地暂无 UID，请先运行游戏完成一次登录"
+                    : "UID 已刷新"));
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
 
         private void DrawConfigFields()
         {
