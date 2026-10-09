@@ -3945,7 +3945,7 @@ GameObject:
   - component: {fileID: 44581622331260064}
   - component: {fileID: 7898155728804058661}
   m_Layer: 5
-  m_Name: CountryRewardArt
+  m_Name: RewardChest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3979,17 +3979,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 7839185846127636411}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04d9264953a8c8c4fb2d753483bda2ca, type: 3}
+  m_Script: {fileID: 11500000, guid: 5a5231d3687f2e24c8d6c89e5469ae4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iconType: 7
-  image: {fileID: 7898155728804058661}
-  isNativeSize: 0
-  skinAtlasResource: 
-  skinSpriteName: 
-  singleCurrencySkinSpriteName: 
-  skinMaterial: {fileID: 0}
-  singleCurrencySkinMaterial: {fileID: 0}
+  _resourcePath: RewardArt20260930/DailyMissionChest
+  _spriteName: 
+  _image: {fileID: 7898155728804058661}
+  _renderer: {fileID: 0}
 --- !u!222 &44581622331260064
 CanvasRenderer:
   m_ObjectHideFlags: 0

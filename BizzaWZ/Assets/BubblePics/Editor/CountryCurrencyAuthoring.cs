@@ -224,7 +224,12 @@ namespace BubblePics.EditorTools
         static void Mission(Transform root)
         {
             var t=Content(root);var a=Layout();Art(t.Find("Panel"),Controls,"Dialog",true);
-            PlacedIcon(t,a,"CountryRewardArt",E_WzIconType.AbundanceWealth,new Rect(268,592,313,272));
+            // This is a decorative chest, not a balance or country-specific currency icon.
+            var chest=t.Find("RewardChest")??t.Find("CountryRewardArt")??Node(t,"RewardChest");
+            chest.name="RewardChest";
+            foreach(var currency in chest.GetComponents<WzIconAmend>()) UnityEngine.Object.DestroyImmediate(currency);
+            a.Place(chest,new Rect(268,592,313,272));
+            Art(chest,"RewardArt20260930/DailyMissionChest");
         }
         static void Newbie(Transform root)
         {

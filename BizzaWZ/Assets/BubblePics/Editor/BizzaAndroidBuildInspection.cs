@@ -13,6 +13,21 @@ namespace BubblePics.EditorTools
 {
     public static class BizzaAndroidBuildInspection
     {
+        // Command-line entry point sharing the same content rebuild and validation as the editor command.
+        public static void BuildApkBatch()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (string.Equals(args[i], "-apkOutputFolder", StringComparison.Ordinal))
+                {
+                    BuildApk(Path.GetFullPath(args[i + 1]));
+                    return;
+                }
+            }
+            throw new ArgumentException("Specify -apkOutputFolder for the Android build output.");
+        }
+
         public static void Inspect(string folder)
         {
             Directory.CreateDirectory(folder);
