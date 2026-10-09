@@ -14,6 +14,7 @@ public class WithdrawAmountItem : MonoBehaviour
 
     public GameObject selectObj;
     public BizzaButton btn;
+    [SerializeField] private GameObject lockedObj;
     private int _index;
     private bool _isStarterItem;
     private FakeWithdrawPanel _panel;
@@ -40,16 +41,22 @@ public class WithdrawAmountItem : MonoBehaviour
         _isStarterItem = isStarterItem;
         getObj.SetActive(isStarterItem && canGet);
         getedObj.SetActive(isStarterItem && !canGet);
+        if(lockedObj!=null)lockedObj.SetActive(!_panel.IsAmountEligible(_index)&&!selectObj.activeSelf);
     }
 
     public void OnSelectState(bool isSelect)
     {
-        selectObj.SetActive(isSelect);
+        SetSelectState(isSelect);
     }
 
     public void SetSelectState(bool isSelect)
     {
-        selectObj.SetActive(isSelect);
+        PresentSelection(isSelect,_panel.IsAmountEligible(_index));
+    }
+    public void PresentSelection(bool selected,bool eligible)
+    {
+        selectObj.SetActive(selected);
+        if(lockedObj!=null)lockedObj.SetActive(!selected&&!eligible);
     }
 }
 #endif

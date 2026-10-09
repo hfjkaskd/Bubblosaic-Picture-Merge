@@ -39,6 +39,7 @@ public class LosePanel : UIPageBase<LoseReason, LevelInfo>
 
     public GameObject[] reviveObjs;
     public GameObject[] loseObjs;
+    [SerializeField] private BubblePics.CoralLocalizedLabel reasonLabel;
 
     private LoseReason loseReason;
     private LevelInfo levelInfo;
@@ -71,6 +72,7 @@ public class LosePanel : UIPageBase<LoseReason, LevelInfo>
         rewardPending = false;
         this.loseReason = loseReason;
         this.levelInfo = levelInfo;
+        if(reasonLabel!=null)reasonLabel.SetKey(loseReason==LoseReason.Health?"out_of_moves":"sequential_round_ended");
         if (reviveButton != null)
         {
             reviveButton.onClick.AddListener(OnClickReviveButton);
@@ -98,7 +100,7 @@ public class LosePanel : UIPageBase<LoseReason, LevelInfo>
         int generation = openGeneration;
         reviveButton.interactable = false;
         #if BIZZA_REAL_WITHDRAW
-        BizzaSdk.Ad.ShowRewardAd(E_AdPos.Revive.ToString(), WithdrawalUtil.GetDollarCountBtFree(), (a) =>
+        BizzaSdk.Ad.ShowRewardAd(nameof(E_AdPos.Revive), WithdrawalUtil.GetDollarCountBtFree(), (a) =>
         {
             if (this == null || generation != openGeneration || !rewardPending || !BridgingUtil.CanRevive) return;
             rewardPending = false;

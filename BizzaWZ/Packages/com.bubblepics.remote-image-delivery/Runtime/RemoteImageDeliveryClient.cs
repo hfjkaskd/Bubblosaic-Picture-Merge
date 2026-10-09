@@ -94,6 +94,26 @@ namespace RemoteImageDelivery
             return _cache.HasValidFile(asset);
         }
 
+        /// <summary>Decode a local hit without ever joining or starting a network request.</summary>
+        public IEnumerator LoadCachedTexture(RemoteImageAsset asset, Action<Texture2D> completed)
+        {
+            if (_disposed || asset == null) { completed?.Invoke(null); yield break; }
+            if (TryGetMemory(asset.StableKey, out Texture2D memory))
+            {
+                _sessionMemoryHits++;
+                completed?.Invoke(memory);
+                yield break;
+            }
+            yield return WaitForCacheDecodeSlot();
+            if (!_disposed && _cache.TryLoadTexture(asset, out Texture2D texture, out _, out _))
+            {
+                Remember(asset.StableKey, texture);
+                _sessionDiskHits++;
+                completed?.Invoke(texture);
+            }
+            else completed?.Invoke(null);
+        }
+
         /// <summary>
         /// Returns the current transport progress for a queued or active
         /// request. Completion callbacks remain the source of truth for the

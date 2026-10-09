@@ -18,7 +18,13 @@ public class WithdrawHistory : UIPageBase
     public Transform root;
     public GameObject emptyHint;
 
-    private List<WithdrawHistoryItem> items = new List<WithdrawHistoryItem>();
+    private readonly List<WithdrawHistoryItem> items = new List<WithdrawHistoryItem>();
+    public IReadOnlyList<WithdrawHistoryItem> Rows => items;
+    public bool IsRefreshing { get; private set; }
+    [SerializeField] private GameObject loadingHint;
+    [SerializeField] private GameObject errorHint;
+    [SerializeField] private ScrollRect scrollView;
+    private int requestVersion;
 
     public RectTransform rectTransform;
 
@@ -36,42 +42,45 @@ public class WithdrawHistory : UIPageBase
 
     private void OnRefresh()
     {
-        AccountModule.Instance.Request_WithdrawalRecordRequest(Refresh);
+        int version = ++requestVersion;
+        IsRefreshing = true;
+        SetRecords(null);
+        emptyHint.SetActive(false);
+        if (loadingHint != null) loadingHint.SetActive(true);
+        if (errorHint != null) errorHint.SetActive(false);
+        AccountModule.Instance.Request_WithdrawalRecordRequest(response =>
+        {
+            if (this && version == requestVersion) ApplyResponse(response);
+        });
     }
 
-    private void Refresh(FailHttpResponse<List<AccountModule.OceanShineWithdrawalRecord>> response)
+    public void ApplyResponse(FailHttpResponse<List<AccountModule.OceanShineWithdrawalRecord>> response)
     {
-        if (!this)
-        {
-            return;
-        }
-        if (response.success && response.data != null)
-        {
+        IsRefreshing = false;
+        if (loadingHint != null) loadingHint.SetActive(false);
+        if (errorHint != null) errorHint.SetActive(!response.success);
+        SetRecords(response.success ? response.data : null);
+        if (!response.success) emptyHint.SetActive(false);
+    }
 
-            int count = 0;
-            if (response.success && response.data != null)
-            {
-                count = response.data.Count;
-            }
-
-            items.SetCmptListCount(item, root, count);
-            for (int i = 0; i < count; i++)
-            {
-                items[i].Init(response.data[i]);
-            }
-        }
-        // else
-        // {
-        //     UIModule.Instance.ClosePage(UIPageIds.WithdrawHistory);
-        // }
-
-        emptyHint.SetActive(response.data == null || response.data.Count == 0);
-
+    public void SetRecords(IReadOnlyList<AccountModule.OceanShineWithdrawalRecord> records)
+    {
+        int count = records == null ? 0 : records.Count;
+        items.SetCmptListCount(item, root, count);
+        for (int i = 0; i < count; i++) items[i].Init(records[i]);
+        emptyHint.SetActive(count == 0);
         LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+        if (scrollView != null)
+        {
+            scrollView.StopMovement();
+            scrollView.verticalNormalizedPosition = 1f;
+        }
     }
 
     protected override void OnClose()
     {
+        requestVersion++;
+        IsRefreshing = false;
         emptyHint.SetActive(false);
     }
 

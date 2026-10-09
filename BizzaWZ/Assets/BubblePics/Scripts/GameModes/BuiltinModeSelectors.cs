@@ -18,6 +18,7 @@ namespace BubblePics.GameModes
 
         sealed class BonusSelector : ILevelModeSelector
         {
+            public GameplayKind Kind => GameplayKind.Bonus;
             public int Priority => 1000;
 
             public bool TrySelect(
@@ -53,6 +54,7 @@ namespace BubblePics.GameModes
 
         sealed class CategorySelector : ILevelModeSelector
         {
+            public GameplayKind Kind => GameplayKind.CategoryMatch;
             public int Priority => 800;
 
             public bool TrySelect(
@@ -86,6 +88,7 @@ namespace BubblePics.GameModes
 
         sealed class TangramSelector : ILevelModeSelector
         {
+            public GameplayKind Kind => GameplayKind.Tangram;
             // Sparse manifest rounds take precedence over the dense Number
             // Match schedule so enabling every release mechanic does not hide
             // half of the recovered 19+15n Tangram levels.
@@ -124,6 +127,7 @@ namespace BubblePics.GameModes
 
         sealed class WordSelector : ILevelModeSelector
         {
+            public GameplayKind Kind => GameplayKind.WordMatch;
             // Valid sparse Word rounds also take precedence over Number Match.
             // Invalid recovered entries safely fall through to the next mode.
             public int Priority => 740;

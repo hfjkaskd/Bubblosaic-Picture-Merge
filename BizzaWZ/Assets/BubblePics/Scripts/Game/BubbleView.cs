@@ -31,7 +31,6 @@ namespace BubblePics
         public const int DRAG_Z_INDEX = 15;
         public const int ENLARGE_HOVER_Z_INDEX = 3;
         public const float FALL_TRAIL_SPEED_THRESHOLD = 150f;
-        public const float COLLIDE_SFX_SPEED_MIN = 500f;
         public const int CLOSURE_PRE_HIDE_FRAMES = 0;
         public const float CLOSURE_SPARKLE_LIFETIME_SEC = 1.8f;
         public const int CLOSURE_RING_TOTAL_FRAMES = 40;
@@ -115,7 +114,6 @@ namespace BubblePics
         static Material _glassBaseMat;
         static PhysicsMaterial2D _bubblePhysicsMat;
         static Texture2D _dissolveNoise;
-        static float _collideMuteUntil;
         static bool _fallbackWarningShown;
 
         bool _boundsSet;
@@ -128,7 +126,6 @@ namespace BubblePics
         bool _pickupEnlarged, _pickupZRaised;
         Coroutine _pickupCo, _blockSizeCo, _glowCo, _glowTargetCo, _hintCo, _hintGlowCo, _rippleCo, _rejectCo, _shakeCo;
         float _blockSizeTargetRadius;
-        Vector2 _prevVelocity;
         Vector2 _jitWinStartPos;
         float _jitWinTime, _jitSpeedAccum;
         int _jitSamples, _calmFrames, _softPushCapFrames;
@@ -137,12 +134,6 @@ namespace BubblePics
         Material _runtimeGlassMaterial;
         Material _ownedFallTrailMaterial;
         BubbleSpecialVisual _specialVisual;
-
-        public static void MuteCollideFor(float sec)
-        {
-            float until = Time.time + sec;
-            if (until > _collideMuteUntil) _collideMuteUntil = until;
-        }
 
         public static Material FragmentImageMaterial()
         {
@@ -1962,7 +1953,6 @@ namespace BubblePics
         void FixedUpdate()
         {
             if (Body == null) return;
-            _prevVelocity = Body.velocity;
             if (State != BubbleState.Alive || Dragging || Body.isKinematic)
             {
                 JitResetWindow();
@@ -2144,30 +2134,6 @@ namespace BubblePics
         {
             if (State != BubbleState.Alive || Dragging || Body.isKinematic) return;
             HasLanded = true;
-            if (Time.time < _collideMuteUntil) return;
-            float relSpeed;
-            var ob = col.collider.GetComponent<BubbleView>();
-            if (ob != null)
-            {
-                if (ob.State != BubbleState.Alive) return;
-                if (GetInstanceID() > ob.GetInstanceID()) return;
-                Vector2 delta = ob.transform.position - transform.position;
-                float dist = delta.magnitude;
-                if (dist < 0.001f) return;
-                var normal = delta / dist;
-                relSpeed = Mathf.Max(Vector2.Dot(_prevVelocity - ob._prevVelocity, normal), 0);
-            }
-            else
-            {
-                var wall = col.collider.gameObject.name;
-                relSpeed = wall.StartsWith("WallL") || wall.StartsWith("WallR")
-                    ? Mathf.Abs(_prevVelocity.x) : Mathf.Abs(_prevVelocity.y);
-            }
-            if (relSpeed >= COLLIDE_SFX_SPEED_MIN)
-            {
-                if (AppConfig.MoveVibrationOn)
-                    Haptics.Play(HapticLevel.VeryWeak);
-            }
         }
 
         void PickNewFloatDirection()
@@ -2532,7 +2498,6 @@ namespace BubblePics
             State = BubbleState.Exploding;
             Collider.enabled = false;
             Body.isKinematic = true;
-            MuteCollideFor(0.9f);
             ImagesRoot.gameObject.SetActive(false);
             ZIndex = 110;
 
@@ -2574,7 +2539,6 @@ namespace BubblePics
             State = BubbleState.Exploding;
             Collider.enabled = false;
             Body.isKinematic = true;
-            MuteCollideFor(0.9f);
             SetAlpha(BubbleGlow, 0); SetAlpha(BubbleGlowTarget, 0);
             SetAlpha(HintGlow, 0); SetAlpha(RejectFlash, 0);
         }
@@ -2586,7 +2550,6 @@ namespace BubblePics
             State = BubbleState.Exploding;
             Collider.enabled = false;
             Body.isKinematic = true;
-            MuteCollideFor(0.9f);
 
             if (rainbowVariant)
             {

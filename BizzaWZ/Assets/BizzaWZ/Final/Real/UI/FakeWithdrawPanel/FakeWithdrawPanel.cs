@@ -11,6 +11,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 using static AccountModule;
+using Localization = BubblePics.Localization;
 
 public partial class UIPageIds
 {
@@ -72,6 +73,11 @@ public class FakeWithdrawPanel : UIPageBase
 
     public GameObject fingerObj;
 
+    [SerializeField] private NewPlayerPayoutOption payoutOption;
+    [SerializeField] private Transform payoutRoot;
+    private readonly List<NewPlayerPayoutOption> payoutOptions = new List<NewPlayerPayoutOption>();
+    private AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform selectedPlatform;
+
     private bool HasStarterWithdraw => AccountModule.CountryType == E_CountryType.BR
                                        || AccountModule.CountryType == E_CountryType.ID;
 
@@ -98,6 +104,7 @@ public class FakeWithdrawPanel : UIPageBase
     protected override void OnOpen()
     {
         plats?.Clear();
+        selectedPlatform = null;
         curSelectIndex = HasStarterWithdraw && isReward ? 1 : 0;
         if (!EnsureSelection())
         {
@@ -110,6 +117,7 @@ public class FakeWithdrawPanel : UIPageBase
         AccountModule.Instance.Request_WithdrawalPageRequest(Refresh);
         fingerObj.gameObject.SetActive(false);
         SetLinster(true);
+        Localization.LocaleChanged += OnLocaleChanged;
     }
 
     private List<AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform> plats;
@@ -123,6 +131,7 @@ public class FakeWithdrawPanel : UIPageBase
         }
 
         plats = response.data.Os_Wwf;
+        PresentPlatforms(plats);
 
         curSelectIndex = HasStarterWithdraw && isReward ? 1 : 0;
         if (!EnsureSelection())
@@ -143,7 +152,7 @@ public class FakeWithdrawPanel : UIPageBase
                 Type = E_ItemType.Dollar,
                 Count = missions[i].withdrawMoney,
             };
-            string count = ItemUtils.FormatCount(itemEntry);
+            string count = FormatAmount(ItemUtils.FormatCountFloat(itemEntry));
             items[i].Init(this, i, count, canGet, isStarterItem);
         }
 
@@ -156,13 +165,13 @@ public class FakeWithdrawPanel : UIPageBase
     {
         if (!EnsureSelection()) return;
         var count = ItemUtils.GetItemCount(E_ItemType.Dollar);
-        balanceTxt.text = $"{LanguageUtils.GetText("CurrencyToken")}{WithdrawalUtil.GetCustomizedValueByCountryType(count)}"; // ItemUtils.GetItemText(E_ItemType.Dollar);
+        PresentBalance(WithdrawalUtil.GetCustomizedFloatByCountryType(count));
         var so = withdrawMissionSOList[curSelectIndex];
         int state = GetCurState();
         WithdrawMissionData curMission = so.GetMissionByStateSafe(state);
 
-        hintTxt.text = LanguageUtils.GetText("WithdrawMission_AllMet");
-        if (curMission != null)
+        hintTxt.text = Localization.Tr("newplayer_requirements_met");
+        if (curMission != null && !curMission.IsCanWithdraw())
         {
             float value = curMission.GetValueOfCondition();
             hintTxt.text = curMission.GetWithdrawDesc(WithdrawalUtil.GetCustomizedFloatByCountryType(value));
@@ -189,7 +198,16 @@ public class FakeWithdrawPanel : UIPageBase
         {
             progressImg.fillAmount = progress;
         }
-        progressTxt.text = $"{(progress * 100).ToString("F2")}%";
+        var mission=withdrawMissionSOList[curSelectIndex].GetMissionByStateSafe(GetCurState());
+        if(mission==null)progressTxt.text="1 / 1";
+        else
+        {
+            float target=mission.conditionData.targetValue;
+            if(mission.conditionData.condition==E_WithdrawCondition.Money)
+                target=ItemUtils.FormatCountFloat(new ItemEntry{Type=E_ItemType.Dollar,Count=target});
+            float value=Mathf.Clamp(mission.GetValueOfCondition(),0,Mathf.Max(0,target));
+            progressTxt.text=value.ToString("0.##")+" / "+target.ToString("0.##");
+        }
     }
 
     private float GetCurProgress()
@@ -220,7 +238,7 @@ public class FakeWithdrawPanel : UIPageBase
         }
 
         float curVlaue = curMission.GetValueOfCondition();
-        float progress = curVlaue / targetValue;
+        float progress = targetValue > 0 ? curVlaue / targetValue : 0;
         return progress;
     }
 
@@ -252,12 +270,16 @@ public class FakeWithdrawPanel : UIPageBase
     {
         BizzaEventSystem.Off(EventDefine.Item.ItemChangedWithData, OnRefresh);
         BizzaEventSystem.Off(EventDefine.Item.ItemChangedWithData, OnRewardProgressChanged);
-        SetLinster(true);
+        SetLinster(false);
+        Localization.LocaleChanged -= OnLocaleChanged;
+        progressImg?.DOKill();
     }
     void OnDestroy()
     {
         BizzaEventSystem.Off(EventDefine.Item.ItemChangedWithData, OnRefresh);
         BizzaEventSystem.Off(EventDefine.Item.ItemChangedWithData, OnRewardProgressChanged);
+        Localization.LocaleChanged -= OnLocaleChanged;
+        SetLinster(false);
     }
 
     private void OnRewardProgressChanged()
@@ -302,24 +324,8 @@ public class FakeWithdrawPanel : UIPageBase
     {
         if (!HasStarterWithdraw || isReward || curSelectIndex != 0) return;
 
-        bool isSelectPlatform = false;
-        AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform plat = null;
-        foreach (var candidate in plats)
-        {
-            if (AccountModule.CountryType == E_CountryType.BR
-                && candidate.Os_Cn.Equals(UIWithdrawalPanel.pagBankInfo))
-            {
-                plat = candidate;
-                break;
-            }
-            else if (AccountModule.CountryType == E_CountryType.ID
-                     && candidate.Os_Cn.Equals(UIWithdrawalPanel.danaInfo))
-            {
-                isSelectPlatform = true;
-                plat = candidate;
-                break;
-            }
-        }
+        bool isSelectPlatform = AccountModule.CountryType == E_CountryType.ID;
+        var plat = selectedPlatform;
 
         if (plat == null)
         {
@@ -391,6 +397,43 @@ public class FakeWithdrawPanel : UIPageBase
     private int GetCurState()
     {
         return SaveDataUtils.FakeWithDrawPanelData.curStageList[CurrentStageIndex];
+    }
+
+    public static string FormatAmount(float value) => WithdrawDanPanel.FormatTierMoney(value);
+    public void PresentBalance(float value) { balanceTxt.text=FormatAmount(value); }
+    public void PresentPlatforms(List<AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform> platforms)
+    {
+        if(payoutOption==null||payoutRoot==null)return;
+        payoutOptions.SetCmptListCount(payoutOption,payoutRoot,platforms==null?0:platforms.Count);
+        if(platforms==null||platforms.Count==0){selectedPlatform=null;return;}
+        string preferred=AccountModule.CountryType==E_CountryType.BR?UIWithdrawalPanel.pagBankInfo:AccountModule.CountryType==E_CountryType.ID?UIWithdrawalPanel.danaInfo:UIWithdrawalPanel.paypalInfo;
+        int selected=0;
+        for(int i=0;i<platforms.Count;i++)
+        {
+            payoutOptions[i].Bind(platforms[i],SelectPlatform);
+            if(platforms[i].Os_Cn==preferred)selected=i;
+        }
+        SelectPlatform(payoutOptions[selected]);
+    }
+    private void SelectPlatform(NewPlayerPayoutOption option)
+    {
+        selectedPlatform=option.Data;
+        foreach(var item in payoutOptions)item.SetSelected(item==option);
+    }
+    public bool IsAmountEligible(int index)
+    {
+        if(index<0||index>=withdrawMissionSOList.Count)return false;
+        if(HasStarterWithdraw&&index==0)return !isReward;
+        int stageIndex=index+(AccountModule.CountryType==E_CountryType.US?1:0);
+        var mission=withdrawMissionSOList[index].GetMissionByStateSafe(SaveDataUtils.FakeWithDrawPanelData.curStageList[stageIndex]);
+        return mission==null||mission.IsCanWithdraw();
+    }
+    private void OnLocaleChanged()
+    {
+        if(!isActiveAndEnabled||!EnsureSelection())return;
+        for(int i=0;i<withdrawMissionSOList.Count&&i<items.Count;i++)
+            items[i].amountTxt.text=FormatAmount(ItemUtils.FormatCountFloat(new ItemEntry{Type=E_ItemType.Dollar,Count=withdrawMissionSOList[i].withdrawMoney}));
+        OnRefresh();UpdateProgress();
     }
 
 }

@@ -20,8 +20,7 @@ public class Action_Common_Vibrate : ActionNodeBase
 
     protected override E_ExecuteState OnExecute(in ExecuteArgs executeArgs)
     {
-        var _isLong = isLong.GetValueWithDefault(executeArgs, false);
-        VibrationUtils.Vibrate(E_VibrateType.Medium);
+        // Preserve old graph compatibility without restoring non-merge haptics.
         return E_ExecuteState.Success;
     }
 }

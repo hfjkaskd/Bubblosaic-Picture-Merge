@@ -23,7 +23,7 @@ namespace BubblePics
     /// the order declared by content_policy.json. If that chain is incomplete,
     /// it can rebuild a valid level using only known local images.
     /// </summary>
-    public static class LevelImageLoader
+    public static partial class LevelImageLoader
     {
         static readonly Dictionary<string, Texture2D> MemoryCache = new();
         static readonly LinkedList<string> MemoryOrder = new();
@@ -193,7 +193,8 @@ namespace BubblePics
             LevelData requested,
             Action<LevelImageLoadResult> completed,
             Action<string> failed,
-            Action<float> progress = null)
+            Action<float> progress = null,
+            bool allowOfflineFallback = true)
         {
             float reportedProgress = 0f;
             Action<float> reportProgress = null;
@@ -241,7 +242,7 @@ namespace BubblePics
                 yield break;
             }
 
-            if (!policy.offline_fallback_enabled)
+            if (!allowOfflineFallback || !policy.offline_fallback_enabled)
             {
                 failed?.Invoke(primaryError ?? "image sources exhausted");
                 yield break;
@@ -295,6 +296,20 @@ namespace BubblePics
                 UsedOfflineFallback = true,
                 Detail = fallbackReason,
             });
+        }
+
+        /// <summary>
+        /// Open complete local content immediately. Missing content reuses a
+        /// previous playable level; future images still download in background.
+        /// </summary>
+        public static IEnumerator LoadForGameplay(
+            LevelData level,
+            Action<Texture2D[]> completed,
+            Action<string> failed,
+            Action<float> progress,
+            Action reconnecting)
+        {
+            yield return LoadAvailableForGameplay(level, completed, failed, progress);
         }
 
         static IEnumerator LoadInternal(
@@ -427,6 +442,21 @@ namespace BubblePics
                                             "remote image delivery is not initialized";
                                     }
                                 }
+                            }
+                            break;
+                        }
+
+                        if (!allowNetwork)
+                        {
+                            // RequestTexture repairs corrupt cache via CDN. A local-only
+                            // load must return a miss instead, so reuse cannot hang offline.
+                            for (int i = 0; i < count; i++)
+                            {
+                                if (IsValid(textures[i])) continue;
+                                int index = i;
+                                yield return delivery.Client.LoadCachedTexture(
+                                    delivery.CreateAsset(level, i),
+                                    value => textures[index] = value);
                             }
                             break;
                         }

@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Cash
+  m_Shader: {fileID: 4800000, guid: d8041f24de236a1489ace72a7b51d133, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BlueMatte: 0
+    - _ChromaBlue: 0
+    - _ColorMask: 15
+    - _CoolMatte: 0
+    - _EraseFeather: 3
+    - _EraseRadius: 0
+    - _Feather: 1
+    - _InkOnly: 0
+    - _MirrorY: 0
+    - _Radius: 151
+    - _SampleX: -1
+    - _SampleY: -1
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _TailSampleX: -1
+    - _WarmChroma: 0
+    - _WarmMatte: 0
+    - _WhiteMatte: 0
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Erase0: {r: 467, g: 930, b: 231, a: 87}
+    - _Erase1: {r: 0, g: 0, b: 0, a: 0}
+    - _Erase2: {r: 0, g: 0, b: 0, a: 0}
+    - _Erase3: {r: 0, g: 0, b: 0, a: 0}
+    - _Erase4: {r: 0, g: 0, b: 0, a: 0}
+    - _Erase5: {r: 0, g: 0, b: 0, a: 0}
+    - _MirrorPatch: {r: 0, g: 0, b: 0, a: 0}
+    - _SamplePoint: {r: 0, g: 0, b: 0, a: 0}
+    - _SampleRows: {r: 930, g: 1020, b: 1, a: 0}
+    - _TextureSize: {r: 849, g: 1852, b: 0, a: 0}
+    - _TopCurve: {r: 0, g: 0, b: 0, a: 0}
+    - _VisibleRect: {r: 427, g: 751, b: 310, a: 317}
+  m_BuildTextureStacks: []

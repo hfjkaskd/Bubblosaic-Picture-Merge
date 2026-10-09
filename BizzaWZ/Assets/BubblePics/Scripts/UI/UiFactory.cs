@@ -171,8 +171,6 @@ namespace BubblePics
             if (!Interactable) return;
             if (PlaySound && SoundManager.I != null)
                 SoundManager.I.Play("button");
-            if (PlayHaptic)
-                Haptics.Play(HapticLevel.VeryWeak);
             if (PressAnim)
             {
                 if (_anim != null) StopCoroutine(_anim);
@@ -215,8 +213,6 @@ namespace BubblePics
         {
             if (PlaySound && SoundManager.I != null)
                 SoundManager.I.Play("button");
-            if (PlayHaptic)
-                Haptics.Play(HapticLevel.VeryWeak);
             if (PressAnim) yield return Tween.Scale(transform, Vector3.one * 0.9f, 4f / 60f, Ease.OutQuad);
             OnClick?.Invoke();
             if (PressAnim && this != null && transform != null)

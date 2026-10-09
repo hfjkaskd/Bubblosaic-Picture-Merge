@@ -25,6 +25,12 @@ public class ChatElement : MonoBehaviour
     [SerializeField] private float bubbleHorizontalPadding = 32f;
     [SerializeField] private float bubbleVerticalPadding = 20f;
     [SerializeField] private float bubbleTimeSpacing = 12f;
+    [SerializeField] private float minimumBubbleWidth;
+    [SerializeField] private float minimumBubbleHeight;
+    [SerializeField] private bool timeInsideBubble;
+    [SerializeField] private bool compactTime;
+    [SerializeField] private GameObject issueAvatar;
+    [SerializeField] private GameObject playerAvatar;
 
     [Header("Style")]
     [SerializeField] private Color issueBubbleColor = new Color32(232, 70, 255, 255);
@@ -48,6 +54,7 @@ public class ChatElement : MonoBehaviour
 
         chatTxt.text = chatInfo.chatcontent;
         timeTxt.text = chatInfo.time ?? string.Empty;
+        if (compactTime && System.DateTime.TryParse(timeTxt.text, out var timestamp)) timeTxt.text = timestamp.ToString("HH:mm");
 
         ApplyStyle();
         RefreshLayout();
@@ -89,6 +96,8 @@ public class ChatElement : MonoBehaviour
     private void ApplyStyle()
     {
         bool isIssue = chatInfo.spokesperson == Spokesperson.Issue;
+        if (issueAvatar != null) issueAvatar.SetActive(isIssue);
+        if (playerAvatar != null) playerAvatar.SetActive(!isIssue);
 
         if (rootLayoutGroup != null)
         {
@@ -164,17 +173,18 @@ public class ChatElement : MonoBehaviour
         float maxTextWidth = Mathf.Max(1f, effectiveMaxBubbleWidth - horizontalPadding);
 
         Vector2 preferredTextSize = chatTxt.GetPreferredValues(chatTxt.text, maxTextWidth, 0f);
-        float bubbleWidth = Mathf.Min(effectiveMaxBubbleWidth, preferredTextSize.x + horizontalPadding);
+        float bubbleWidth = Mathf.Min(effectiveMaxBubbleWidth, Mathf.Max(minimumBubbleWidth, preferredTextSize.x + horizontalPadding));
         float finalTextWidth = Mathf.Max(1f, bubbleWidth - horizontalPadding);
         float finalTextHeight = chatTxt.GetPreferredValues(chatTxt.text, finalTextWidth, 0f).y;
-        float bubbleHeight = finalTextHeight + verticalPadding;
+        float timeReserve = timeInsideBubble && !string.IsNullOrWhiteSpace(timeTxt.text) ? timeTxt.GetPreferredValues(timeTxt.text).y + bubbleTimeSpacing : 0f;
+        float bubbleHeight = Mathf.Max(minimumBubbleHeight, finalTextHeight + verticalPadding + timeReserve);
 
         chatInfoRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bubbleWidth);
         chatInfoRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bubbleHeight);
 
         chatTxtRect.anchorMin = Vector2.zero;
         chatTxtRect.anchorMax = Vector2.one;
-        chatTxtRect.offsetMin = new Vector2(bubbleHorizontalPadding, bubbleVerticalPadding);
+        chatTxtRect.offsetMin = new Vector2(bubbleHorizontalPadding, bubbleVerticalPadding + timeReserve);
         chatTxtRect.offsetMax = new Vector2(-bubbleHorizontalPadding, -bubbleVerticalPadding);
 
         bool hasTime = !string.IsNullOrWhiteSpace(timeTxt.text);
@@ -192,6 +202,13 @@ public class ChatElement : MonoBehaviour
             RectTransform timeRect = timeTxt.rectTransform;
             timeRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, timeWidth);
             timeRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, timeHeight);
+            if (timeInsideBubble)
+            {
+                timeRect.anchorMin = Vector2.zero; timeRect.anchorMax = new Vector2(1,0); timeRect.pivot = new Vector2(.5f,0);
+                timeRect.anchoredPosition = new Vector2(0,bubbleVerticalPadding);
+                timeRect.sizeDelta = new Vector2(-horizontalPadding,timeHeight);
+                timeHeight = spacing = 0f;
+            }
         }
 
         root.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, bubbleHeight + spacing + timeHeight);

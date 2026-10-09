@@ -36,6 +36,12 @@ public class SlotRewardPanel : MonoBehaviour
 
     public GameObject btnObj;
     public Image resultImage;
+    [SerializeField] private BizzaButton collectButton;
+
+    private void Awake()
+    {
+        if (collectButton != null) collectButton.onClick.AddListener(OnClickClose);
+    }
 
     public void Init(float coin, float dollar, string resultType, bool fromAd = false)
     {
@@ -78,13 +84,26 @@ public class SlotRewardPanel : MonoBehaviour
 
         foreach (var item in slotRewardIcons)
         {
-            if (item.e_WzIconType.ToString() == resultType)
+            if (IconName(item.e_WzIconType) == resultType)
             {
                 UIUtils.SetWzSprite(item.image, resultType);
                 return item.image;
             }
         }
         return null;
+    }
+    private static string IconName(E_WzIconType value)
+    {
+        switch(value)
+        {
+            case E_WzIconType.StackMoney:return nameof(E_WzIconType.StackMoney);
+            case E_WzIconType.PileMoney:return nameof(E_WzIconType.PileMoney);
+            case E_WzIconType.HundredMoney:return nameof(E_WzIconType.HundredMoney);
+            case E_WzIconType.GoldCoin:return nameof(E_WzIconType.GoldCoin);
+            case E_WzIconType.PileGold:return nameof(E_WzIconType.PileGold);
+            case E_WzIconType.PileWealth:return nameof(E_WzIconType.PileWealth);
+            default:return string.Empty;
+        }
     }
 
     [Obfuz.ObfuzIgnore]

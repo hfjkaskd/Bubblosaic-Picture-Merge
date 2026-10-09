@@ -270,7 +270,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -278,8 +278,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Reward increase 5%
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 7cc23ba99c7035347900a2e939f7ab60, type: 2}
-  m_sharedMaterial: {fileID: -2605648243623605537, guid: 7cc23ba99c7035347900a2e939f7ab60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
+  m_sharedMaterial: {fileID: 4326307008294569344, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -443,7 +443,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -451,8 +451,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Wath ti more vidcos
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 7cc23ba99c7035347900a2e939f7ab60, type: 2}
-  m_sharedMaterial: {fileID: -2605648243623605537, guid: 7cc23ba99c7035347900a2e939f7ab60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
+  m_sharedMaterial: {fileID: 4326307008294569344, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -720,6 +720,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scaleTarget: {fileID: 654885012515764741}
   canDrag: 1
+  standardButton: {fileID: 2095207216048383440}
+  pressScaleRatio: 0.92
   longClickPeriod: 0.5
   interactable: 1
   onLongClick:
@@ -741,6 +743,7 @@ GameObject:
   - component: {fileID: 8165868433880603062}
   - component: {fileID: 816293076842322971}
   - component: {fileID: 1948044158690981865}
+  - component: {fileID: 2095207216048383440}
   m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
@@ -805,6 +808,51 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2095207216048383440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4812023056077901238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a51894783ce15345b1d0a5b84bfaddd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1948044158690981865}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+  legacyOwner: {fileID: 5411860860419135974}
 --- !u!1 &4971578719092931994
 GameObject:
   m_ObjectHideFlags: 0
@@ -864,7 +912,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -872,8 +920,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 6/10
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 7cc23ba99c7035347900a2e939f7ab60, type: 2}
-  m_sharedMaterial: {fileID: -2605648243623605537, guid: 7cc23ba99c7035347900a2e939f7ab60, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
+  m_sharedMaterial: {fileID: 4326307008294569344, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -991,6 +1039,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scaleTarget: {fileID: 3958470220247002210}
   canDrag: 1
+  standardButton: {fileID: 4592679498986596706}
+  pressScaleRatio: 0.92
   longClickPeriod: 0.5
   interactable: 1
   onLongClick:
@@ -1049,6 +1099,7 @@ GameObject:
   - component: {fileID: 5930969413117993161}
   - component: {fileID: 2352750108616517408}
   - component: {fileID: 7689252400458435514}
+  - component: {fileID: 4592679498986596706}
   m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
@@ -1113,6 +1164,51 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4592679498986596706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6186893107835607929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a51894783ce15345b1d0a5b84bfaddd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 7689252400458435514}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+  legacyOwner: {fileID: 6912306248562104804}
 --- !u!1 &7925197228604156615
 GameObject:
   m_ObjectHideFlags: 0
@@ -1172,7 +1268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1180,8 +1276,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: GO
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
+  m_sharedMaterial: {fileID: 4326307008294569344, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1306,7 +1402,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1314,8 +1410,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: GO
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
+  m_sharedMaterial: {fileID: 4326307008294569344, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1389,6 +1485,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2190139575723452960}
     m_Modifications:
+    - target: {fileID: 3341867253804193504, guid: da414b611e2debc46a752ed32a660b40, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
+    - target: {fileID: 3341867253804193504, guid: da414b611e2debc46a752ed32a660b40, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4326307008294569344, guid: 35b34cbee0078894e9fc72a974f3652a, type: 2}
     - target: {fileID: 4857841999368576221, guid: da414b611e2debc46a752ed32a660b40, type: 3}
       propertyPath: m_Name
       value: BonusRate

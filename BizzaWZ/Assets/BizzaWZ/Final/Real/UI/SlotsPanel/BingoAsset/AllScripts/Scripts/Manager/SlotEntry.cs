@@ -27,6 +27,9 @@ public class SlotEntry : MonoBehaviour
         img2.gameObject.SetActive(true);
         GetComponent<Animation>().PlayWithCallback("SlotEntry", () =>
         {
+            // The outgoing symbol must not peek through the resized reel window after settling.
+            if (this == null || !gameObject.activeInHierarchy) return;
+            img2.gameObject.SetActive(false);
             GetComponentInParent<SlotMachineManager>().OnStop(idx);
         });
     }

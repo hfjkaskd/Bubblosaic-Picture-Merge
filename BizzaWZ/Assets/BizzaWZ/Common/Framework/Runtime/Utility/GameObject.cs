@@ -23,6 +23,12 @@ using UnityEngine;
 
         public static GameObject FindObj(string path, Transform parent = null)
         {
+            const string markerPrefix = "guide:";
+            if (path != null && path.StartsWith(markerPrefix, StringComparison.Ordinal))
+            {
+                return GuideObjectMarker.Global.TryGetValue(path.Substring(markerPrefix.Length), out var marker)
+                    && marker != null && marker.isActiveAndEnabled ? marker.gameObject : null;
+            }
             if (parent != null)
             {
                 var target = parent.Find(path);

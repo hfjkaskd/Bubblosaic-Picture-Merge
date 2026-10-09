@@ -4,6 +4,7 @@ namespace BubblePics
     /// World background 0..99; bubbles 100..619 ((1+z)*20+intra, z capped);
     /// HUD canvas 700 (world bubbles always below, like Godot's control layer);
     /// closure fly card / rings 990..1000 (Godot ClosureFxCanvasLayer=100);
+    /// reward currency 1100 (authored on [GameInstance]/GameCanvas/RewardUILayer);
     /// panels 1500; combo words 1600; waves 2500; dialogs 2600.</summary>
     public static class SortOrder
     {

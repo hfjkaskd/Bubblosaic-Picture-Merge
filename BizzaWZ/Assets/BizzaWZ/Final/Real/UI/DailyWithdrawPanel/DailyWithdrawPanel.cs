@@ -34,6 +34,7 @@ public class DailyWithdrawPanel : UIPageBase
     }
     protected override void OnOpen()
     {
+        BubblePics.Localization.LocaleChanged += OnRefresh;
         plats.Clear();
         AccountModule.Instance.Request_WithdrawalPageRequest(Refresh);
     }
@@ -56,13 +57,14 @@ public class DailyWithdrawPanel : UIPageBase
         double clash =  AccountModule.Instance.Os_Current_Uso.Os_Ewl;
         string clashContent = $"{LanguageUtils.GetText("CurrencyToken")}{WithdrawalUtil.GetCustomizedValueByCountryType((float)clash)}";
         clashTxt.text = clashContent;
-        balanceTxt.text = $"{WithdrawalUtil.GetCustomizedValueByCountryType((float)coin)}";
-        withdrawalTxt.text = clashContent;
+        balanceTxt.text = string.Format(BubblePics.Localization.Tr("sequential_coin_count"),WithdrawalUtil.GetCustomizedValueByCountryType((float)coin));
+        withdrawalTxt.text = "≈ " + clashContent;
         LayoutRebuilder.ForceRebuildLayoutImmediate(root);
     }
 
     protected override void OnClose()
     {
+        BubblePics.Localization.LocaleChanged -= OnRefresh;
     }
 
     public void OnClickWithdrawBtn()

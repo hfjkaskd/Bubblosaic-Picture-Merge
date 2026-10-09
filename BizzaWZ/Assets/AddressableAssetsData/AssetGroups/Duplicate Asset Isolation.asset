@@ -257,11 +257,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a7bf224ce0280de41b2f921769eaaa97
-    m_Address: Assets/BizzaWZ/Real/Fonts/yuedengyu.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a96d881c89d5f3445ae953416318abc2
     m_Address: Assets/BizzaWZ/Real/Config/WithdrawDanPanelConfig/IDWithdrawDanPanelConfig2.asset
     m_ReadOnly: 0
@@ -349,11 +344,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e1adf917c70f9bc49816d36f190e3438
     m_Address: Assets/BizzaWZ/Real/Config/WithdrawDanPanelConfig/IDWithdrawDanPanelConfig1.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ea1aa824c38d35240a589ec5f0c36365
-    m_Address: Assets/BizzaWZ/Framework/Res/Fonts/COOKIERUN BLACK.OTF
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

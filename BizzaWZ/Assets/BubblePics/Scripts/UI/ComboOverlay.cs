@@ -32,88 +32,48 @@ namespace BubblePics
         public const float OVERLAY_Y = 510f;
         const string ANIM = "Animation";
 
-        [SerializeField] Transform _viewRoot;
-        [SerializeField] SpineLite.SpineSprite _spine;
+        [SerializeField] RectTransform _viewRoot;
+        [SerializeField] Spine.Unity.SkeletonGraphic _spine;
+        [SerializeField] string _spineModule = "combo";
         public bool AutoFree;
 
-        public void Build(Transform worldRoot)
+        /// <summary>Mount the authored overlay with the other gameplay UI.</summary>
+        public void InitializePrefabRuntime(RectTransform hudRoot)
         {
-            if (_spine != null)
-            {
-                InitializePrefabRuntime(worldRoot);
-                gameObject.SetActive(false);
-                return;
-            }
-
-            // During prefab authoring the component is copied from a temporary
-            // controller to the wrapper root. Keep the authored visual under
-            // the World mount so destroying that controller does not remove it.
-            if (Application.isPlaying)
-            {
-                transform.SetParent(worldRoot, false);
-                _viewRoot = transform;
-            }
-            else
-            {
-                var view = new GameObject("ComboView");
-                view.transform.SetParent(worldRoot, false);
-                _viewRoot = view.transform;
-            }
-            var go = new GameObject("Spine");
-            go.transform.SetParent(_viewRoot, false);
-            _spine = go.AddComponent<SpineLite.SpineSprite>();
-            _spine.Load("combo");
-            _spine.SortingOrder = 1600; // godot z=160
-            BindPrefabRuntime();
-            SetWorldPosition(App.DesignToWorld(new Vector2(BubbleField.ViewW * 0.5f, OVERLAY_Y)));
+            if (hudRoot == null || _viewRoot == null || _spine == null)
+                throw new System.InvalidOperationException("ComboOverlay requires its authored UI prefab and gameplay HUD.");
+            transform.SetParent(hudRoot, false);
             SetViewActive(false);
         }
 
-        /// <summary>Injects the runtime parent for an instance loaded from ComboOverlay.prefab.</summary>
-        public void InitializePrefabRuntime(Transform worldRoot)
-        {
-            if (_viewRoot == null)
-                _viewRoot = transform;
-            if (worldRoot != null)
-            {
-                if (_viewRoot == transform)
-                    transform.SetParent(worldRoot, false);
-                else if (!_viewRoot.IsChildOf(worldRoot))
-                    _viewRoot.SetParent(worldRoot, false);
-            }
-            BindPrefabRuntime();
-            SetWorldPosition(App.DesignToWorld(new Vector2(BubbleField.ViewW * 0.5f, OVERLAY_Y)));
-        }
-
-        /// <summary>Restores non-serialized Spine callbacks after prefab instantiation.</summary>
+        /// <summary>Load the shared Spine resources on first use, identically on all platforms.</summary>
         public void BindPrefabRuntime()
         {
-            if (_viewRoot == null)
-                _viewRoot = _spine != null ? _spine.transform.parent : transform;
-            if (_spine == null)
-                _spine = _viewRoot.GetComponentInChildren<SpineLite.SpineSprite>(true);
-            if (_spine == null) return;
-            if (_spine.Data == null)
-                _spine.Load("combo");
-            _spine.SortingOrder = 1600;
-            _spine.AnimationCompleted -= OnAnimationCompleted;
-            _spine.AnimationCompleted += OnAnimationCompleted;
+            if (_spine.IsValid) return;
+            var module = SpineLite.OfficialSpineAssets.Load(_spineModule);
+            if (module == null)
+                throw new System.InvalidOperationException("Combo Spine resources failed to load.");
+            _spine.skeletonDataAsset = module.Asset;
+            _spine.Initialize(false);
+            _spine.AnimationState.Complete += OnAnimationCompleted;
         }
 
-        void OnAnimationCompleted(SpineLite.TrackEntry entry)
+        void OnAnimationCompleted(Spine.TrackEntry entry)
         {
-            HideNow();
+            if (!entry.Loop) HideNow();
         }
 
         public void ShowSkin(string skin)
         {
             if (string.IsNullOrEmpty(skin)) return;
-            if (_spine == null)
-                BindPrefabRuntime();
-            if (_spine == null) return;
-            _spine.SetSkin(skin);
+            BindPrefabRuntime();
+            _spine.AnimationState.ClearTracks();
+            _spine.Skeleton.SetSkin(skin);
+            _spine.Skeleton.SetToSetupPose();
             SetViewActive(true);
-            _spine.SetAnimation(ANIM, false, 0f);
+            _spine.AnimationState.SetAnimation(0, ANIM, false);
+            _spine.Update(0f);
+            _spine.UpdateMesh();
         }
 
         public void ShowCombo(string skin) => ShowSkin(skin);
@@ -125,7 +85,7 @@ namespace BubblePics
         {
             if (AutoFree) { Destroy(gameObject); return; }
             SetViewActive(false);
-            if (_spine != null) _spine.ClearTracks();
+            if (_spine != null && _spine.IsValid) _spine.AnimationState.ClearTracks();
         }
 
         void SetViewActive(bool active)
@@ -136,30 +96,15 @@ namespace BubblePics
 
         void SetWorldPosition(Vector3 worldPosition)
         {
-            if (_viewRoot != null)
-                _viewRoot.position = worldPosition;
-            else
-                transform.position = worldPosition;
+            _viewRoot.position = ImageFlyAnimator.WorldToHudPosition(worldPosition);
         }
 
         public static ComboOverlay SpawnLucky(Transform worldRoot, Vector3 worldPos)
         {
-            ComboOverlay overlay = null;
             var catalog = PrefabCatalog.Current;
-            if (catalog != null && catalog.ComboOverlay != null)
-                overlay = PrefabCatalog.InstantiateComponent<ComboOverlay>(catalog.ComboOverlay, worldRoot);
-
-            if (overlay != null)
-            {
-                overlay.gameObject.name = "LuckyOverlay";
-                overlay.InitializePrefabRuntime(worldRoot);
-            }
-            else
-            {
-                var go = new GameObject("LuckyOverlay");
-                overlay = go.AddComponent<ComboOverlay>();
-                overlay.Build(worldRoot);
-            }
+            var overlay = PrefabCatalog.InstantiateComponent<ComboOverlay>(catalog.ComboOverlay, App.I.HudRoot);
+            overlay.gameObject.name = "LuckyOverlay";
+            overlay.InitializePrefabRuntime(App.I.HudRoot);
             overlay.AutoFree = true;
             overlay.SetWorldPosition(worldPos);
             overlay.ShowLucky();
@@ -168,8 +113,8 @@ namespace BubblePics
 
         void OnDestroy()
         {
-            if (_spine != null)
-                _spine.AnimationCompleted -= OnAnimationCompleted;
+            if (_spine != null && _spine.IsValid)
+                _spine.AnimationState.Complete -= OnAnimationCompleted;
         }
     }
 }

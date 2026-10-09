@@ -1,4 +1,4 @@
-﻿#if BIZZA_REAL_WITHDRAW
+#if BIZZA_REAL_WITHDRAW
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -90,6 +90,7 @@ public class RealWithdrawPanel : UIPageBase
     private const float UsProgressInfoHeight = 470f;
     private const float DefaultProgressInfoHeight = 320;
     [SerializeField] private RectTransform progressInfoRect;
+    [SerializeField] private bool progressUsesPrefabLayout;
 
     private bool isSelectPlatform = false;
     private WithdrawWay CurrentWay
@@ -142,6 +143,7 @@ public class RealWithdrawPanel : UIPageBase
 
     private void RefreshProgressInfoHeight()
     {
+        if (progressUsesPrefabLayout) return;
         float targetHeight = AccountModule.CountryType == AccountModule.E_CountryType.US
             ? UsProgressInfoHeight
             : DefaultProgressInfoHeight;
@@ -452,7 +454,7 @@ public class RealWithdrawPanel : UIPageBase
     public TMP_Text completeHintTxt;
     public SpriteAsset BSprite;
     public SpriteAsset ISprite;
-    private string iconName = AccountModule.CountryType switch
+    private string iconName => AccountModule.CountryType switch
     { // 0 是金币
         AccountModule.E_CountryType.BR => ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode ? "3" : "2",
         AccountModule.E_CountryType.ID => ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode ? "1" : "0",

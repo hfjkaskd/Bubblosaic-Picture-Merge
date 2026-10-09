@@ -51,6 +51,7 @@ public class ServicePanel : UIPageBase
     [SerializeField] private BizzaButton clearBtn;
     
     [SerializeField] private BizzaButton defaultQABtn;
+    [SerializeField] private BizzaButton quickReplyBtn;
 
     protected override void OnAwake()
     {
@@ -62,6 +63,7 @@ public class ServicePanel : UIPageBase
         canNotSendBtn.onClick.AddListener(() => { OnClickSend(); });
         clearBtn.onClick.AddListener(() => { OnClickClearInput(); });
         defaultQABtn.onClick.AddListener(() => { OnClickOpenSelectPanel(); });
+        if (quickReplyBtn != null) quickReplyBtn.onClick.AddListener(OnClickOpenSelectPanel);
         inputText.OnValueChanged.AddListener(OnInputValueChanged);
     }
 

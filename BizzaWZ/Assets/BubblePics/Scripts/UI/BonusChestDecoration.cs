@@ -54,6 +54,21 @@ namespace BubblePics
                 _spine.SetAnimation("idle", true, 0f);
         }
 
+        public void ApplyHudLayout(Vector3 centerWorldPosition, float hudScale)
+        {
+            _basePosition = centerWorldPosition;
+            _baseScale = ChestScale * hudScale;
+            if (_openPlaying) return;
+            transform.position = _basePosition;
+            transform.localScale = Vector3.one * _baseScale;
+        }
+
+        public void SetHudBarOffset(float designYOffset)
+        {
+            if (!_openPlaying)
+                transform.position = _basePosition + Vector3.up * (designYOffset * App.WorldPerDesign);
+        }
+
         public SpineLite.TrackEntry PlayOpen()
         {
             if (_spine == null || !_spine.HasAnimation("Appear_open"))

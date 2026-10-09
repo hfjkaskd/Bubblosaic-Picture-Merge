@@ -15,6 +15,10 @@ public class WithdrawWay : MonoBehaviour
     public GameObject selectedObj;
     
     public PaymentConfig paymentConfig;
+    [SerializeField] private Sprite styledIcon;
+    [SerializeField] private Material styledIconMaterial;
+    [Serializable] public class ResourceIconStyle {public string channel,resourcePath,spriteName;public Material material;}
+    [SerializeField] private List<ResourceIconStyle> resourceIconStyles;
 
     public AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform data;
     
@@ -31,9 +35,27 @@ public class WithdrawWay : MonoBehaviour
         this.data = _data;
         this.clickAction = clickAction;
 
-        payIcon.sprite = paymentConfig.GetSpriteByIconKey(_data.Os_Cn);
+        ApplyPaymentIcon(payIcon, _data.Os_Cn);
         
         selectedObj.SetActive(false);
+    }
+
+    // The fixed-method form and selectable cards use the same authored icon style.
+    public void ApplyPaymentIcon(Image target, string channel)
+    {
+        if (resourceIconStyles != null)
+        {
+            foreach (var style in resourceIconStyles)
+            {
+                if (style.channel != channel) continue;
+                target.sprite = BubblePics.CoralResourceSprite.Load(style.resourcePath, style.spriteName);
+                target.material = style.material;
+                return;
+            }
+        }
+
+        target.sprite = paymentConfig.GetSpriteByIconKey(channel);
+        target.material = styledIcon != null && target.sprite == styledIcon ? styledIconMaterial : null;
     }
 
     public void OnClick()

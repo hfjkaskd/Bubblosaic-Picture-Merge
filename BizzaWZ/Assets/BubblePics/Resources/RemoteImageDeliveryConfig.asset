@@ -22,17 +22,19 @@ MonoBehaviour:
   acceptHeader: image/webp
   itemsPerGroup: 25
   highPriorityConcurrency: 10
-  lowPriorityConcurrency: 5
+  lowPriorityConcurrency: 2
   cacheDecodesPerFrame: 1
   foregroundMaxAttempts: 1
-  backgroundMaxAttempts: 1
-  cancelNetworkRequestOnTimeout: 0
+  backgroundMaxAttempts: 3
+  cancelNetworkRequestOnTimeout: 1
   requestTimeoutSeconds: 20
   foregroundBatchTimeoutSeconds: 20
   retryBaseDelaySeconds: 0.75
   retryJitter: 0.15
   prefetchNextItemHigh: 1
-  prefetchCurrentAndNextGroup: 1
+  upcomingItemCount: 3
+  levelLoadRetryDelaySeconds: 3
+  prefetchCurrentAndNextGroup: 0
   advancePrefetchWindow: 11
   nextGroupThreshold: 5
   pruneItemsBeforeCurrent: 1

@@ -163,6 +163,8 @@ namespace BubblePics
 
         static void ApplyMainFont(TMP_Text text, TMP_FontAsset font)
         {
+            if (text.TryGetComponent<PreserveAuthoredFont>(out _)) return;
+
             bool fontChanged = text.font != font;
             if (fontChanged)
                 text.font = font;

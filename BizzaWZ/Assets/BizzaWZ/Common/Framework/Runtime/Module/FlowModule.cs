@@ -152,15 +152,15 @@ public static class FlowModule
         BridgingUtil.LoadGameLevel();
     }
 
-    // 游戏每次合成都会触发这个方法 传入剩余的合成次数和发生这次合成的位置
-    public static void SynthesisLogic(int numRemaining, Vector3 synthesisPos)
+    // 完整拼图收集时发放货币并尝试打开奖励界面；起点必须是投影到 UI 后的世界坐标。
+    public static void OnPuzzleCompleted(Vector3 rewardUiWorldPosition, bool roundCompleted = false)
     {
 #if BIZZA_REAL_WITHDRAW
-        // var adinfo = RemoteGroupDataSystem.current.GetActiveAdStatisticsOrDefault(SaveDataUtils.GameData.playerSelectedLv);
-        // if (numRemaining <= 0 || numRemaining <= adinfo.ShowGetRewardCount / 2)
-        // {
-        //     return;
-        // }
+        NumbericalStatistics.CheckGetDollar(rewardUiWorldPosition);
+        if (roundCompleted)
+        {
+            return;
+        }
 
         var uiModule = UIModule.Instance;
         if (uiModule == null || uiModule.GetPage(UIPageIds.GetRewardPanel) != null)
@@ -168,8 +168,16 @@ public static class FlowModule
             return;
         }
 
-        NumbericalStatistics.CheckShowGetReward(synthesisPos);
+        NumbericalStatistics.CheckShowGetReward(rewardUiWorldPosition);
 #endif
+    }
+
+    // 保留旧入口以兼容既有调用方；奖励弹窗只允许由完整拼图收集回调触发。
+    public static void SynthesisLogic(int numRemaining, Vector3 synthesisPos)
+    {
+        // Partial merges must not participate in reward popup triggering.
+        _ = numRemaining;
+        _ = synthesisPos;
     }
 
     #region 道具使用

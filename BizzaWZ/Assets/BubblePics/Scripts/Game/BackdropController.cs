@@ -429,7 +429,11 @@ namespace BubblePics
         void ApplyCover(SpriteRenderer sr, float zoom)
         {
             if (sr == null || sr.sprite == null) return;
-            float texW = sr.sprite.rect.width, texH = sr.sprite.rect.height;
+            // Importer downscaling also adjusts a sprite's pixels-per-unit. Cover
+            // must use its design-space size rather than compressed texel counts.
+            float pixelsPerUnit = sr.sprite.pixelsPerUnit;
+            float texW = sr.sprite.rect.width / pixelsPerUnit;
+            float texH = sr.sprite.rect.height / pixelsPerUnit;
             float baseS = Mathf.Max(BubbleField.ViewW / texW, BubbleField.ViewH / texH);
             // design-space top-left of unzoomed cover
             var basePos = new Vector2((BubbleField.ViewW - texW * baseS) / 2f,
@@ -441,8 +445,8 @@ namespace BubblePics
             // sprites use Unity's default centre pivot. Position the actual sprite
             // pivot so either representation covers the same centred screen area.
             var spritePivotOffset = new Vector2(
-                sr.sprite.pivot.x * s,
-                (texH - sr.sprite.pivot.y) * s);
+                sr.sprite.pivot.x / pixelsPerUnit * s,
+                (texH - sr.sprite.pivot.y / pixelsPerUnit) * s);
             var pos = topLeft + spritePivotOffset;
             sr.transform.localScale = new Vector3(s, s, 1);
             sr.transform.position = App.DesignToWorld(pos);
@@ -690,14 +694,21 @@ namespace BubblePics
         {
             EnsureBarsRestCached();
             ApplyTopBarPosition(Page.TopBar.Root, _topBarRest);
-            Page.Toolbar.Root.anchoredPosition = _toolbarRest;
+            ApplyToolbarY(Page.Toolbar.Root, _toolbarRest.y);
         }
 
         void ApplyTopBarPosition(RectTransform top, Vector2 position)
         {
             top.anchoredPosition = position;
-            Page?.TopBar?.Dolphin?.SetHudBarOffset(
+            Page?.TopBar?.SetHudBarOffset(
                 position.y - _topBarRest.y);
+        }
+
+        static void ApplyToolbarY(RectTransform toolbar, float y)
+        {
+            var position = toolbar.anchoredPosition;
+            position.y = y;
+            toolbar.anchoredPosition = position;
         }
 
         public Coroutine TopbarSlideCoroutine { get; private set; }
@@ -707,7 +718,7 @@ namespace BubblePics
             EnsureBarsRestCached();
             var top = Page.TopBar.Root;
             var tool = Page.Toolbar.Root;
-            Vector2 topOff = _topBarRest + new Vector2(0, TopGameBar.TOPBAR_HEIGHT + 20);
+            Vector2 topOff = _topBarRest + new Vector2(0, Page.TopBar.GetExitSlideDistance(_topBarRest.y));
             float toolbarExitDistance =
                 ToolbarView.GetExitSlideDistance(tool);
             Vector2 toolOff = _toolbarRest -
@@ -717,14 +728,14 @@ namespace BubblePics
             if (slideIn)
             {
                 ApplyTopBarPosition(top, topOff);
-                tool.anchoredPosition = toolOff;
+                ApplyToolbarY(tool, toolOff.y);
                 _topbarCo = StartCoroutine(Tween.Run(
                     TRANSITION_SEC,
                     k => ApplyTopBarPosition(
                         top,
                         Vector2.Lerp(topOff, _topBarRest, k)),
                     Ease.OutCubic));
-                _toolbarCo = StartCoroutine(Tween.Run(TRANSITION_SEC, k => tool.anchoredPosition = Vector2.Lerp(toolOff, _toolbarRest, k), Ease.OutCubic));
+                _toolbarCo = StartCoroutine(Tween.Run(TRANSITION_SEC, k => ApplyToolbarY(tool, Mathf.Lerp(toolOff.y, _toolbarRest.y, k)), Ease.OutCubic));
             }
             else
             {
@@ -736,7 +747,7 @@ namespace BubblePics
                         top,
                         Vector2.Lerp(fromT, topOff, k)),
                     Ease.InCubic));
-                _toolbarCo = StartCoroutine(Tween.Run(TRANSITION_SEC, k => tool.anchoredPosition = Vector2.Lerp(fromB, toolOff, k), Ease.InCubic));
+                _toolbarCo = StartCoroutine(Tween.Run(TRANSITION_SEC, k => ApplyToolbarY(tool, Mathf.Lerp(fromB.y, toolOff.y, k)), Ease.InCubic));
             }
             TopbarSlideCoroutine = _topbarCo;
         }

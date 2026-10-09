@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Networking;
+using RemoteImageDelivery;
 
 namespace BubblePics.GameModes
 {
@@ -20,14 +20,44 @@ namespace BubblePics.GameModes
 
     public static class ModeLevelPreparer
     {
-        const int CategoryDownloadConcurrency = 6;
-        const int CategoryDownloadTimeoutSeconds = 20;
         const int CategoryMemoryLimit = 48;
 
         static readonly Dictionary<string, Texture2D> IconMemory =
             new Dictionary<string, Texture2D>(StringComparer.Ordinal);
         static readonly LinkedList<string> IconMemoryOrder =
             new LinkedList<string>();
+
+        public static IReadOnlyList<RemoteImageAsset> GetUpcomingCategoryAssets(int level)
+        {
+            var assets = new List<RemoteImageAsset>();
+            if (!AppConfig.CategoryLevel) return assets;
+            BuiltinModeSelectors.EnsureRegistered();
+            if (!LevelModeRouter.TryResolveExplicit(GameplayKind.CategoryMatch, level, out var selection))
+                return assets;
+            var compiled = selection.Payload as CompiledModeLevel;
+            if (compiled == null || !compiled.IsValid) return assets;
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var group in compiled.Groups)
+                foreach (string code in group.CodesBySlot.Values)
+                    if (seen.Add(code))
+                        assets.Add(CategoryAsset(ModeCatalogRepository.CategoryCatalog.Icons[code], level));
+            return assets;
+        }
+
+        static RemoteImageAsset CategoryAsset(CategoryIconEntry icon, int level = 0)
+        {
+            Uri.TryCreate(icon.Url, UriKind.Absolute, out Uri uri);
+            return new RemoteImageAsset
+            {
+                key = icon.Url,
+                absoluteUrl = icon.Url,
+                relativePath = uri?.AbsolutePath.TrimStart('/') ?? "",
+                variant = "category",
+                sha256 = icon.Sha256,
+                byteSize = icon.ByteSize,
+                itemIndex = level,
+            };
+        }
 
         public static IEnumerator Prepare(
             LevelModeSelection selection,
@@ -431,108 +461,28 @@ namespace BubblePics.GameModes
             Action<string> failed,
             Action<float> progress)
         {
-            CategoryMatchCatalogData catalog =
-                ModeCatalogRepository.CategoryCatalog;
-            var pending = new List<(string Code, CategoryIconEntry Icon)>(
-                codes.Count);
-            for (int i = 0; i < codes.Count; i++)
+            var delivery = BubblePicsRemoteImageDelivery.Current;
+            var catalog = ModeCatalogRepository.CategoryCatalog;
+            foreach (string code in codes)
             {
-                string code = codes[i];
                 CategoryIconEntry icon = catalog.Icons[code];
-                if (TryLoadIcon(icon, out Texture2D texture))
-                    output[code] = texture;
-                else
-                    pending.Add((code, icon));
-            }
-            progress?.Invoke((codes.Count - pending.Count) /
-                             (float)Mathf.Max(1, codes.Count));
-
-            for (int start = 0;
-                 start < pending.Count;
-                 start += CategoryDownloadConcurrency)
-            {
-                int end = Mathf.Min(
-                    pending.Count,
-                    start + CategoryDownloadConcurrency);
-                var requests = new List<UnityWebRequest>(end - start);
-                for (int i = start; i < end; i++)
+                Texture2D texture = null;
+                if (!TryLoadIcon(icon, out texture) && delivery != null)
+                    yield return delivery.Client.LoadCachedTexture(
+                        CategoryAsset(icon), value => texture = value);
+                if (texture == null)
                 {
-                    UnityWebRequest request =
-                        UnityWebRequestTexture.GetTexture(
-                            pending[i].Icon.Url,
-                            nonReadable: false);
-                    request.timeout = CategoryDownloadTimeoutSeconds;
-                    request.SetRequestHeader(
-                        "Accept",
-                        "image/png,image/jpeg,image/webp");
-                    request.SendWebRequest();
-                    requests.Add(request);
+                    // ModeLevelEntry routes missing automatic-mode content to
+                    // the same complete-local-level reuse path as picture mode.
+                    failed?.Invoke("category icon is not available locally: " + code);
+                    yield break;
                 }
-                while (requests.Any(request => !request.isDone))
-                {
-                    float batch = requests.Sum(request =>
-                        Mathf.Clamp01(request.downloadProgress));
-                    progress?.Invoke(
-                        (codes.Count - pending.Count + start + batch) /
-                        Mathf.Max(1, codes.Count));
-                    yield return null;
-                }
-
-                for (int local = 0; local < requests.Count; local++)
-                {
-                    int pendingIndex = start + local;
-                    UnityWebRequest request = requests[local];
-                    try
-                    {
-                        if (request.result != UnityWebRequest.Result.Success)
-                        {
-                            failed?.Invoke(
-                                $"category icon {pending[pendingIndex].Code} " +
-                                $"download failed: {request.error}");
-                            yield break;
-                        }
-                        Texture2D texture =
-                            null;
-                        byte[] bytes = request.downloadHandler.data;
-                        if (!ValidateIconBytes(
-                                pending[pendingIndex].Icon,
-                                bytes,
-                                out string validationError))
-                        {
-                            failed?.Invoke(
-                                $"category icon {pending[pendingIndex].Code} " +
-                                validationError);
-                            yield break;
-                        }
-                        texture = DownloadHandlerTexture.GetContent(request);
-                        if (texture == null || texture.width < 4 ||
-                            texture.height < 4)
-                        {
-                            failed?.Invoke(
-                                $"category icon {pending[pendingIndex].Code} " +
-                                "decoded invalid image data");
-                            yield break;
-                        }
-                        texture.wrapMode = TextureWrapMode.Clamp;
-                        output[pending[pendingIndex].Code] = texture;
-                        RememberIcon(
-                            pending[pendingIndex].Icon.Url,
-                            texture);
-                        TryWriteIconCache(
-                            pending[pendingIndex].Icon.Url,
-                            bytes);
-                    }
-                    finally
-                    {
-                        request.Dispose();
-                    }
-                }
-                progress?.Invoke(
-                    (codes.Count - pending.Count + end) /
-                    (float)Mathf.Max(1, codes.Count));
+                output[code] = texture;
+                RememberIcon(icon.Url, texture);
+                progress?.Invoke(output.Count / (float)Mathf.Max(1, codes.Count));
+                yield return null;
             }
         }
-
         static bool TryLoadIcon(
             CategoryIconEntry icon,
             out Texture2D texture)
@@ -636,22 +586,6 @@ namespace BubblePics.GameModes
         {
             IconMemoryOrder.Remove(url);
             IconMemoryOrder.AddLast(url);
-        }
-
-        static void TryWriteIconCache(string url, byte[] bytes)
-        {
-            if (bytes == null || bytes.Length < 64) return;
-            try
-            {
-                string path = IconCachePath(url);
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllBytes(path, bytes);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning(
-                    "Category icon cache write failed: " + ex.Message);
-            }
         }
 
         static string IconCachePath(string url)

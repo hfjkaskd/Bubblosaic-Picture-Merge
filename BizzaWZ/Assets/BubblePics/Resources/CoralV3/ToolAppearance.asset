@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8202ad476718be048a9e07fcc55cadef, type: 3}
+  m_Name: ToolAppearance
+  m_EditorClassIdentifier: 
+  AtlasResource: CoralV3/CoralUIAtlas
+  BackgroundAtlasResource: ReleaseUI/CoralV3/ApprovedHudSource
+  NormalSprite: ToolNormal__bd51c2a940
+  LockedSprite: ToolLocked__93b496be67
+  HintSprite: Hint
+  DropSprite: Drop
+  MagnetResource: BubblePicsDynamic/588febfffe00a554cabdb727c28e81b8/drop_small
+  NormalBackgroundMaterial: {fileID: 0}
+  LockedBackgroundMaterial: {fileID: 0}
+  DisabledTint: {r: 0.68, g: 0.77, b: 0.84, a: 1}

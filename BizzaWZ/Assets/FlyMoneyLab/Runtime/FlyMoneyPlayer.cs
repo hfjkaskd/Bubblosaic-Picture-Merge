@@ -188,7 +188,8 @@ namespace Bizza.FlyMoney
         // Only accepted requests own a callback. A rejected request returns false without calling it.
         public bool TryPlay(Sprite rainSprite, Sprite flySprite, Vector2 origin, Vector2 destination,
             FlyMoneySettings settings, uint seed = 1, Action<FlyMoneyEndReason> onFinished = null,
-            Transform targetToWatch = null, Action onFirstArrival = null, int playbackId = 0)
+            Transform targetToWatch = null, Action onFirstArrival = null, int playbackId = 0,
+            Material rainMaterial = null, Material flyMaterial = null)
         {
             Initialize();
             if (!isActiveAndEnabled || stopping || applicationPaused || !FlyMoneySettings.Finite(origin) ||
@@ -212,8 +213,11 @@ namespace Bizza.FlyMoney
                 slot.target = targetToWatch;
                 slot.watchTarget = targetToWatch != null;
                 slot.graphics[0].geometry = rain;
+                slot.graphics[0].material = rainMaterial;
                 slot.graphics[1].geometry = null;
+                slot.graphics[1].material = null;
                 slot.graphics[2].geometry = fly;
+                slot.graphics[2].material = flyMaterial;
                 slot.active = true;
                 ActiveCount++;
                 AcceptedCount++;
@@ -375,6 +379,7 @@ namespace Bizza.FlyMoney
                     FlyMoneyGraphic graphic = slot.graphics[j];
                     if (graphic == null) continue;
                     graphic.geometry = null;
+                    graphic.material = null;
                     graphic.gameObject.SetActive(false);
                 }
                 catch (Exception exception) { Debug.LogException(exception, this); }

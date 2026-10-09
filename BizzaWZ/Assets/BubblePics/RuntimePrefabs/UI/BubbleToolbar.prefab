@@ -191,6 +191,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _root: {fileID: 900973092382760108}
   _propRoot: {fileID: 6801850431945178162}
+  _referenceWidth: 1080
+  _maximumScale: 1.5
   Hint: {fileID: 0}
   Drop: {fileID: 0}
   Magnet: {fileID: 0}
@@ -374,10 +376,10 @@ RectTransform:
   - {fileID: 6801850431945178162}
   m_Father: {fileID: 5818745015366849633}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 303}
+  m_SizeDelta: {x: 1080, y: 303}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &7865554106605916410
 GameObject:
@@ -391,6 +393,7 @@ GameObject:
   - component: {fileID: 3897565111131976553}
   - component: {fileID: 8637349718888216939}
   - component: {fileID: 4363895786915606793}
+  - component: {fileID: 8782372147540186930}
   m_Layer: 0
   m_Name: BarBg
   m_TagString: Untagged
@@ -413,10 +416,10 @@ RectTransform:
   - {fileID: 1133448089703967014}
   m_Father: {fileID: 900973092382760108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 203}
-  m_SizeDelta: {x: 953, y: 258}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -130}
+  m_SizeDelta: {x: 604.8459, y: 222.65675}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3897565111131976553
 CanvasRenderer:
@@ -439,14 +442,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.72}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4cc392927fdcec149a62762c9a9d9efa, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -474,7 +477,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 4
-  m_Spacing: 209
+  m_Spacing: 6
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
@@ -482,3 +485,19 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &8782372147540186930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7865554106605916410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a5231d3687f2e24c8d6c89e5469ae4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _resourcePath: ReleaseUI/CoralV3/ApprovedHudSource
+  _spriteName: Tray__02714678bd
+  _image: {fileID: 8637349718888216939}
+  _renderer: {fileID: 0}

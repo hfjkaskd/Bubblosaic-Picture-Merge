@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace BubblePics
 {
+    public enum DropAvailability { Ready, Spawning, NoPending, RoundUnavailable }
+
     /// <summary>Port of bubble_tool_effects.gd — hint / drop / magnet.</summary>
     public class ToolEffects : MonoBehaviour
     {
@@ -124,12 +126,11 @@ namespace BubblePics
         }
 
         // ------------------------------------------------------------ drop
-        public bool CanApplyDrop() => Page.HasPendingTokens() && Page.Scheduler.NextPendingWaveSize() > 0;
+        public bool CanApplyDrop() => Page.CanDropPendingBubbles();
 
         public IEnumerator ApplyDrop()
         {
-            int n = Page.Scheduler.NextPendingWaveSize();
-            yield return Page.DropPendingBubbles(n);
+            yield return Page.DropPendingBubbles();
         }
 
         // ------------------------------------------------------------ magnet

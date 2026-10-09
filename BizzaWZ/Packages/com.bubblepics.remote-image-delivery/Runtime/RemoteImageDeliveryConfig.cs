@@ -57,6 +57,9 @@ namespace RemoteImageDelivery
         [Min(0f)] public float retryBaseDelaySeconds = 0.75f;
         [Range(0f, 0.5f)] public float retryJitter = 0.15f;
         public bool prefetchNextItemHigh = true;
+        [Tooltip("提前缓存的后续关卡数；0 使用旧的分组预下载策略。只缓存文件，不常驻解码后的纹理。")]
+        [Min(0)] public int upcomingItemCount;
+        [Min(0.5f)] public float levelLoadRetryDelaySeconds = 3f;
         public bool prefetchCurrentAndNextGroup = true;
         [Min(1)] public int advancePrefetchWindow = 11;
         [Min(1)] public int nextGroupThreshold = 5;
@@ -115,6 +118,8 @@ namespace RemoteImageDelivery
             itemsPerGroup = Mathf.Clamp(itemsPerGroup, 1, 1000);
             advancePrefetchWindow = Mathf.Clamp(
                 advancePrefetchWindow, 1, 1000);
+            upcomingItemCount = Mathf.Clamp(upcomingItemCount, 0, 20);
+            levelLoadRetryDelaySeconds = Mathf.Clamp(levelLoadRetryDelaySeconds, 0.5f, 30f);
             nextGroupThreshold = Mathf.Clamp(
                 nextGroupThreshold, 1, itemsPerGroup);
             bundledSeedItemCount = Mathf.Max(0, bundledSeedItemCount);

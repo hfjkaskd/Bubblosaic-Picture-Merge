@@ -18,7 +18,7 @@ public partial class NumbericalStatistics
     }
     public static int CloseGetRewardNum = 0; // 当前关闭恭喜获得界面次数进度
 
-    public static int ShowGetRewardCount  // 多少次出现恭喜获得界面
+    public static int ShowGetRewardCount  // 旧版次数配置，当前弹窗使用时间间隔
     {
         get
         {
@@ -36,17 +36,15 @@ public partial class NumbericalStatistics
     }
 
     /// <summary>
-    /// 合成指定次数打开   恭喜获得界面
+    /// 完整拼图收集后，达到时间间隔才打开恭喜获得界面。
     /// </summary>
-    /// <returns></returns>
     public static bool CheckShowGetReward(Vector3 pos)
     {
-        ShowGetRewardNum++;
-        bool show = ShowGetRewardNum >= ShowGetRewardCount;
-        LogLogger.LogVerbose(LogTag.ADNumericalStatistics, $"打开恭喜获得界面 - 进度:{ShowGetRewardNum},最大次数:{ShowGetRewardCount},是否显示:{show}");
+        bool show = RewardPopupTiming.TryReserve();
+        LogLogger.LogVerbose(LogTag.ADNumericalStatistics,
+            $"打开恭喜获得界面 - 间隔:{RewardPopupTiming.IntervalSeconds}秒,是否显示:{show}");
         if (!show)
         {
-            CheckGetDollar(pos);
             return false;
         }
         ShowGetRewardNum = 0;
@@ -70,7 +68,10 @@ public partial class NumbericalStatistics
         }
         bool show = AdvanceRewardCloseCounter(CloseGetRewardCount);
         LogLogger.LogVerbose(LogTag.ADNumericalStatistics, $"关闭界面弹插屏 - 进度:{CloseGetRewardNum},最大次数:{CloseGetRewardCount},是否显示:{show}");
-        if (!show) return false;
+        if (!show)
+        {
+            return false;
+        }
         UIModule.Instance.RecoverAdvertistics();
         BizzaSdk.Ad.ShowInterAd(pos.ToString(), money, action, true);
         UIModule.Instance.m_curadvertistics--;
@@ -86,17 +87,14 @@ public partial class NumbericalStatistics
     }
 
     /// <summary>
-    /// 合成多少次出现Dollar界面
+    /// 完整拼图收集时发放Dollar
     /// </summary>
     /// <returns></returns>
     public static bool CheckGetDollar(Vector3 pos)
     {
         var showDollarCount = ShowDollarCount;
-        bool show = !ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode &&
-                    showDollarCount > 0 &&
-                    ShowGetRewardNum != 0 &&
-                    ShowGetRewardNum % showDollarCount == 0;
-        LogLogger.LogVerbose(LogTag.ADNumericalStatistics, $"出现Dollar界面 - 进度:{ShowGetRewardNum},最大次数:{ShowDollarCount},是否显示:{show}");
+        bool show = !ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode;
+        LogLogger.LogVerbose(LogTag.ADNumericalStatistics, $"出现Dollar界面 - 进度:{ShowGetRewardNum},最大次数:{showDollarCount},是否显示:{show}");
         if (!show) return false;
 
         float moneyValue = WithdrawalUtil.GetDollarCountBtFree();

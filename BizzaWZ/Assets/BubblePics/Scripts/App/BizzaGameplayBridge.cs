@@ -13,6 +13,7 @@ namespace BubblePics
         private static bool entered;
         private static bool loading;
         private static bool guideReady;
+        private static bool guideRequested;
         private static bool guideEntered;
         private static bool guideCompleted;
         private static bool lossShown;
@@ -22,6 +23,7 @@ namespace BubblePics
         private static Coroutine toolRoutine;
 
         public static BubblePage Page => app != null ? app.Page : null;
+        public static bool IsLoadingLevel => loading;
         public static bool CanRevive => entered && lossShown && canRevive && Page != null && Page.IsDead() && lossRound == Page.RoundSeq;
         public static bool IsInputBlocked => !entered || loading || TransparentBlock.IsBlock || LoadingBlock.IsBlock ||
             (TransitionBlock.Instance != null && TransitionBlock.Instance._playingAnim);
@@ -30,7 +32,7 @@ namespace BubblePics
         {
             if (app != null) return;
             entered = false;
-            guideReady = guideEntered = guideCompleted = false;
+            guideReady = guideRequested = guideEntered = guideCompleted = false;
             startedRound = -1;
             Localization.SetLocale(LanguageUtils.SelectedLanguage);
             var request = Resources.LoadAsync<GameObject>("Prefabs/AppRoot");
@@ -61,6 +63,9 @@ namespace BubblePics
             {
                 Page.Input.InputEnabled = false;
                 Page.OpenLevel(level, source, 0f);
+                // Current-level requests are queued first; upcoming levels
+                // use the client's bounded background download lane.
+                app.RemoteImages.NotifyForegroundItemReady(level);
                 await UniTask.WaitUntil(() => completed || app == null);
                 if (!succeeded || app == null) throw new InvalidOperationException("Could not load gameplay level " + level);
                 await UniTask.WaitUntil(() => Page.Field.AreAllBubblesLanded());
@@ -70,6 +75,7 @@ namespace BubblePics
             {
                 if (Page != null) Page.LevelOpenCompleted -= Finished;
                 loading = false;
+                if (app != null) app.HideLoading();
             }
         }
 
@@ -89,11 +95,24 @@ namespace BubblePics
             Page.Toolbar.CheckUnlockPopupsDeferred();
         }
 
-        public static void OnFrameworkGuideReady() { guideReady = true; }
+        public static void OnFrameworkGuideReady()
+        {
+            guideReady = true;
+            TryBeginBaseTutorial();
+        }
 
         public static void BeginBaseTutorial()
         {
-            if (!entered || !guideReady || guideEntered || Page == null) return;
+            // The framework can request the guide while asynchronous level
+            // entry is still running. Keep that request until the page is ready;
+            // dropping it leaves the framework's GameCanvas input lock held.
+            guideRequested = true;
+            TryBeginBaseTutorial();
+        }
+
+        private static void TryBeginBaseTutorial()
+        {
+            if (!guideRequested || !entered || !guideReady || guideEntered || Page == null) return;
             guideEntered = true;
             guideCompleted = false;
             if (Page.IsTutorialRound()) Page.Tutorial.Begin();
@@ -200,7 +219,22 @@ namespace BubblePics
         public static bool UseTool(int index)
         {
             if (IsInputBlocked || Page == null || Page.IsRoundFinalized() || Page.IsToolBusy()) return false;
-            bool possible = index == 0 ? Page.Tools.CanApplyHint() : index == 1 ? Page.Tools.CanApplyDrop() : Page.Tools.CanApplyMagnet();
+            if (index == 1)
+            {
+                DropAvailability availability = Page.GetDropAvailability();
+                if (availability != DropAvailability.Ready)
+                {
+                    string key = availability switch
+                    {
+                        DropAvailability.NoPending => "BUBBLE_TOOL_NO_DROP",
+                        DropAvailability.Spawning => "BUBBLE_TOOL_DROP_WAIT",
+                        _ => null,
+                    };
+                    if (key != null) Toast.Show(Localization.Tr(key));
+                    return false;
+                }
+            }
+            bool possible = index == 0 ? Page.Tools.CanApplyHint() : index == 1 || Page.Tools.CanApplyMagnet();
             if (!possible)
             {
                 Toast.Show(Localization.Tr(index == 0 ? "BUBBLE_TOOL_NO_PAIR" : index == 1 ? "BUBBLE_TOOL_NO_DROP" : "BUBBLE_TOOL_NO_GROUP"));
@@ -241,6 +275,15 @@ namespace BubblePics
                     SaveState.SetFlag(key, true);
                 }
             }
+        }
+
+        public static void OnImageCollected(Vector3 mergeWorldPosition)
+        {
+            // Gameplay and currency FX use different cameras. Preserve the
+            // completed puzzle's screen position when handing it to the UI.
+            FlowModule.OnPuzzleCompleted(
+                ImageFlyAnimator.WorldToHudPosition(mergeWorldPosition),
+                Page != null && Page.IsWon());
         }
 
         public static void OnLevelAssetsReady() { if (Page != null) Page.Input.InputEnabled = entered && !loading; }

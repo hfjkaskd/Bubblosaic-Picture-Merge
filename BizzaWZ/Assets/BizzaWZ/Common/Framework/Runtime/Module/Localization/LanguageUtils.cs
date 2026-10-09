@@ -49,13 +49,26 @@ public class LanguageUtils
     public static string SelectedLanguage
     {
         //先默认英语
-        get => PlayerPrefs.GetString(nameof(SelectedLanguage), DefaultLanguage);
+        get => NormalizeReleaseLanguage(PlayerPrefs.GetString(nameof(SelectedLanguage), DefaultLanguage));
         set
         {
-            PlayerPrefs.SetString(nameof(SelectedLanguage), value);
+            PlayerPrefs.SetString(nameof(SelectedLanguage), NormalizeReleaseLanguage(value));
             PlayerPrefs.Save();
             BizzaEventSystem.Emit(EventDefine.Frame.LanguageChange);
         }
+    }
+
+    private static string NormalizeReleaseLanguage(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return DefaultLanguage;
+        string normalized = value.Trim().Replace('_', '-');
+        if (normalized.Equals("zh", System.StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("zh-", System.StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Chinese", System.StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("ChineseSimplified", System.StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("ChineseTraditional", System.StringComparison.OrdinalIgnoreCase))
+            return DefaultLanguage;
+        return value;
     }
 
     public static bool HasReadLanguage => PlayerPrefs.HasKey(nameof(SelectedLanguage));
@@ -72,9 +85,9 @@ public class LanguageUtils
         // 3. 映射为标准BCP 47格式（语言代码-地区代码）
         return unityLang switch
         {
-            SystemLanguage.Chinese => "zh-CN", // 简体中文（默认中国地区）
-            SystemLanguage.ChineseSimplified => "zh-CN",
-            SystemLanguage.ChineseTraditional => "zh-CN", // 繁体中文（默认台湾地区）
+            SystemLanguage.Chinese => "en-US",
+            SystemLanguage.ChineseSimplified => "en-US",
+            SystemLanguage.ChineseTraditional => "en-US",
             SystemLanguage.English => $"en-{regionCode}",
             SystemLanguage.Portuguese => $"pt-{regionCode}", // 葡萄牙语（如pt-PT、pt-BR）
             SystemLanguage.Indonesian => "id-ID",

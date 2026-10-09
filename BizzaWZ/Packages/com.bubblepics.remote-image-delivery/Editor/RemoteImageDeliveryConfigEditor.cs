@@ -124,6 +124,14 @@ namespace RemoteImageDelivery.Editor
                         "在重试延迟中加入随机量，避免大量请求同时重试。")
                 },
                 {
+                    "upcomingItemCount",
+                    new GUIContent("提前缓存后续关数", "从下一关起缓存指定关数；0 使用旧分组策略。")
+                },
+                {
+                    "levelLoadRetryDelaySeconds",
+                    new GUIContent("关卡重连间隔（秒）", "关卡资源下载失败后，自动重试前的等待时间。")
+                },
+                {
                     "prefetchNextItemHigh",
                     new GUIContent(
                         "高优先级预取下一关",

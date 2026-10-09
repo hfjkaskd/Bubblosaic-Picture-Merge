@@ -47,6 +47,7 @@ public class UIWithdrawalConfirmPanel : UIPageBase<WithDrawInfo>
     [Header("按钮")]
     [SerializeField] private BizzaButton withdrawalBtn;
     [SerializeField] private BizzaButton closeBtn;
+    [SerializeField] private BubblePics.CoralLocalizedLabel accountCaption;
 
     protected override void OnAwake()
     {
@@ -112,6 +113,8 @@ public class UIWithdrawalConfirmPanel : UIPageBase<WithDrawInfo>
         CPFObj.gameObject.SetActive(!string.IsNullOrEmpty(CPF_CNPJ));
         NameObj.gameObject.SetActive(!string.IsNullOrEmpty(Name));
         EmailObj.gameObject.SetActive(!string.IsNullOrEmpty(Re) || !string.IsNullOrEmpty(Ra));
+        if (accountCaption != null)
+            accountCaption.SetKey(payType == E_PayeeAccountType.Paypal ? "withdraw_form_email" : "withdraw_confirm_account");
     }
 
 
@@ -229,7 +232,7 @@ public class UIWithdrawalConfirmPanel : UIPageBase<WithDrawInfo>
             payType,
             PaymentValueText.text,
             paymentIconKey: data?.Os_Cn,
-            successHintText: LanguageUtils.GetText("InfoConfirm_WithdrawSuccessful"),
+            successHintText: BubblePics.Localization.Tr("withdraw_pending_submitted"),
             failHintText: LanguageUtils.GetText("InfoConfirm_WithdrawFailed"),
             onResultClose: OpenStarRatingAfterPending);
         UIModule.Instance.OpenPage(UIPageIds.UIWithdrawalPendingPanel, info).Forget();

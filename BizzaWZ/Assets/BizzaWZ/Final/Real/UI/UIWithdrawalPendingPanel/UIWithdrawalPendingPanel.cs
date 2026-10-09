@@ -17,8 +17,6 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
 
     
     private const string DefaultAmount = "";
-    private const string DefaultHint = "";
-    private const string DefaultFailHint = "";
     
 
     [Header("Data")]
@@ -42,6 +40,13 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
     public GameObject progressRoot;
     public GameObject resultRoot;
 
+    [Header("Review presentation")]
+    [SerializeField] private GameObject waitingIcon;
+    [SerializeField] private GameObject submittedReview;
+    [SerializeField] private TMP_Text reviewStatusText;
+    [SerializeField] private TMP_Text historyHintText;
+    [SerializeField] private CanvasGroup confirmVisual;
+
     [Header("Button")]
     [SerializeField] private BizzaButton confirmButton;
     [SerializeField] private BizzaButton closeButton;
@@ -57,6 +62,7 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
     private bool _networkReturned;
     private bool _completed;
     private UIWithdrawalPendingResult _result;
+    private int _displayedProgress = -1;
 
     public static void NotifyNetworkCallback()
     {
@@ -94,6 +100,7 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
         _progress = 0f;
         _networkReturned = false;
         _completed = false;
+        _displayedProgress = -1;
         _result = new UIWithdrawalPendingResult(true, null);
         NativeClose = false;
 
@@ -101,6 +108,8 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
         SetProgress(0f);
         SetActive(progressRoot, true);
         SetActive(resultRoot, false);
+        SetActive(waitingIcon, true);
+        SetActive(submittedReview, false);
         SetButtonsEnabled(false);
     }
 
@@ -153,7 +162,11 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
     {
         
         SetText(amountText, _info.AmountText, DefaultAmount);
-        SetText(hintText, _info.HintText, DefaultHint);
+        SetText(hintText, _info.HintText, BubblePics.Localization.Tr("withdraw_pending_sending"));
+        SetText(titleText, _info.TitleText, BubblePics.Localization.Tr("ui_review_processing"));
+        SetText(confirmText, _info.ConfirmText, BubblePics.Localization.Tr("withdraw_pending_confirm"));
+        SetText(reviewStatusText, null, BubblePics.Localization.Tr("ui_review_processing"));
+        SetText(historyHintText, null, BubblePics.Localization.Tr("withdraw_pending_history"));
     
 
         if (paymentImage != null && paymentList != null)
@@ -204,19 +217,16 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
 
     private void RefreshProgressText()
     {
-        if (progressText == null)
+        if (progressText == null || !progressText.gameObject.activeInHierarchy)
         {
             return;
         }
 
-        if (progressTotalStep <= 0)
-        {
-            progressText.text = $"{Mathf.RoundToInt(_progress * 100f)}%";
-            return;
-        }
-
-        int step = Mathf.Clamp(Mathf.RoundToInt(_progress * progressTotalStep), 0, progressTotalStep);
-        progressText.text = $"{step}/{progressTotalStep}";
+        int step = progressTotalStep <= 0 ? Mathf.RoundToInt(_progress * 100f)
+            : Mathf.Clamp(Mathf.RoundToInt(_progress * progressTotalStep), 0, progressTotalStep);
+        if (step == _displayedProgress) return;
+        _displayedProgress = step;
+        progressText.text = progressTotalStep <= 0 ? $"{step}%" : $"{step}/{progressTotalStep}";
     }
 
     private void CompleteProgress()
@@ -231,22 +241,30 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
 
     private void RefreshResultState()
     {
+        if(titleText!=null)titleText.text=BubblePics.Localization.Tr(_result.Success?"ui_review_sent":"ui_review_failed");
         SetActive(progressRoot, false);
         SetActive(resultRoot, true);
+        SetActive(waitingIcon, _result.Success);
+        SetActive(submittedReview, _result.Success);
+        SetText(reviewStatusText, null, BubblePics.Localization.Tr(_result.Success
+            ? "withdraw_pending_review" : "ui_review_failed"));
+        SetText(historyHintText, null, BubblePics.Localization.Tr(_result.Success
+            ? "withdraw_pending_history" : "withdraw_pending_retry"));
 
         if (resultIcon != null)
         {
             resultIcon.sprite = _result.Success ? successResultSprite : failResultSprite;
+            resultIcon.gameObject.SetActive(!_result.Success);
         }
 
         if (_result.Success)
         {
-            string successHint = LanguageUtils.GetText("UIWithdrawalConfirm_Success");
-            SetText(hintText, successHint, DefaultHint);
+            SetText(hintText, _info.SuccessHintText, BubblePics.Localization.Tr("withdraw_pending_submitted"));
             return;
         }
 
-        string failHint = string.IsNullOrEmpty(_info.FailHintText) ? DefaultFailHint : _info.FailHintText;
+        string failHint = string.IsNullOrEmpty(_info.FailHintText)
+            ? BubblePics.Localization.Tr("withdraw_pending_failed") : _info.FailHintText;
         SetText(hintText, _result.Message, failHint);
     }
 
@@ -254,6 +272,16 @@ public class UIWithdrawalPendingPanel : UIPageBase<UIWithdrawalPendingInfo>
     {
         SetButtonEnabled(confirmButton, enabled);
         SetButtonEnabled(closeButton, enabled);
+        if (confirmVisual != null)
+        {
+            confirmVisual.alpha = enabled ? 1f : 0.6f;
+            if (confirmButton != null && confirmButton.TryGetComponent<Image>(out var image))
+            {
+                Color color = image.color;
+                color.a = 1f;
+                image.color = color;
+            }
+        }
     }
 
     private static void SetButtonEnabled(BizzaButton button, bool enabled)

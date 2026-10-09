@@ -20,13 +20,12 @@ public class SlotPanel : UIPageBase
 
     public SlotRewardPanel slotRewardPanel;
 
-    private float coinValue;
-
     private bool isSloting = false; public bool IsSloting => isSloting;
 
     public BizzaButton closeBtn;
     public BizzaButton faqBtn;
     public BizzaButton slotBtn;
+    [SerializeField] private TMP_Text spinCountText;
 
     protected override void OnAwake()
     {
@@ -59,8 +58,8 @@ public class SlotPanel : UIPageBase
     private void Refresh()
     {
 #if BIZZA_REAL_WITHDRAW
-        coinValue = 0;
         bool isCanclick = SlotProgressUtil.CanFreeSpin;
+        if (spinCountText != null) spinCountText.text = isCanclick ? "1" : "0";
         canClickObj.SetActive(isCanclick);
         notCanClickObj.SetActive(!isCanclick);
         slotRewardPanel.gameObject.SetActive(false);
@@ -94,12 +93,12 @@ public class SlotPanel : UIPageBase
         if (SlotProgressUtil.CanFreeSpin)
         {
             SlotProgressUtil.SetProgress(0);
-            OnPlaySlot(false);
+            OnPlaySlot(false, 0);
         }
         else
         {
             BizzaSdk.Ad.ShowRewardAd(
-                E_AdPos.USSlot.ToString(),
+                nameof(E_AdPos.USSlot),
                 WithdrawalUtil.GetDollarCountByReward(),
                 OnAdResult
             );
@@ -116,7 +115,7 @@ public class SlotPanel : UIPageBase
     {
 #if BIZZA_REAL_WITHDRAW
         BizzaSdk.Ad.ShowRewardAd(
-                E_AdPos.USSlot.ToString(),
+                nameof(E_AdPos.USSlot),
                 WithdrawalUtil.GetDollarCountByReward(),
                 OnAdResult
             );
@@ -133,14 +132,13 @@ public class SlotPanel : UIPageBase
             isSloting = false;
             return;
         }
-        coinValue = (float)response.GetBalance();
-        //         LogUtil.Error("OnAdResult coinValue: " + coinValue);
-        OnPlaySlot(true);
+        OnPlaySlot(true, (float)response.GetBalance());
         #endif
     }
 
-    private void OnPlaySlot(bool isAd)
+    private void OnPlaySlot(bool isAd, float coinValue)
     {
+        // Keep this spin's reward in its callback, independent of later page refreshes.
         float _dollar = isAd ? WithdrawalUtil.GetDollarCountByReward() : WithdrawalUtil.GetDollarCountBtFree();
         SoundManager.Instance.PlaySFX("SevenSpin");
         slotMachineManager.PlayAnim(

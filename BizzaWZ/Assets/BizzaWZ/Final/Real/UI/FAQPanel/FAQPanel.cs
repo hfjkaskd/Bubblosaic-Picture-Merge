@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public partial class UIPageIds
 {
@@ -16,6 +17,7 @@ public class FAQPanel : UIPageBase
 {
     [Header("按钮")]
     [SerializeField] private BizzaButton clickBtn;
+    [SerializeField] private ScrollRect scrollView;
 
 #if UNITY_EDITOR
     public Color color;
@@ -45,7 +47,13 @@ public class FAQPanel : UIPageBase
 
     protected override void OnOpen()
     {
-
+        Refresh();
+        if (scrollView != null)
+        {
+            scrollView.StopMovement();
+            Canvas.ForceUpdateCanvases();
+            scrollView.verticalNormalizedPosition = 1f;
+        }
     }
 
     protected override void OnClose()

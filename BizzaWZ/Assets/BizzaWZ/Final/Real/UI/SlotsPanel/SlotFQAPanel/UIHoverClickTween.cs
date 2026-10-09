@@ -52,7 +52,6 @@ public class UIHoverClickTween : MonoBehaviour, IPointerEnterHandler, IPointerEx
     public void OnPointerEnter(PointerEventData eventData)
     {
         isPointerInside = true;
-        VibrationUtils.Vibrate(E_VibrateType.Light);
         PlayHover();
     }
 

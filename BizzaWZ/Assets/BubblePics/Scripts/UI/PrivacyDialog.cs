@@ -424,6 +424,10 @@ namespace BubblePics
         [SerializeField] RectTransform _root;
         [SerializeField] RectTransform _spinner;
         [SerializeField] TMP_Text _progressLabel;
+        [SerializeField] TMP_Text _statusLabel;
+        bool _reconnecting;
+        int _shownPercent = -1;
+        public bool IsVisible => _root != null && _root.gameObject.activeSelf;
 
         public void InitializePrefabRuntime()
         {
@@ -437,10 +441,9 @@ namespace BubblePics
                     _progressLabel = progressRect.GetComponent<TMP_Text>();
             }
             if (_progressLabel != null)
-                _progressLabel.gameObject.SetActive(false);
+                _progressLabel.gameObject.SetActive(true);
             if (_spinner != null)
             {
-                _spinner.anchoredPosition = Vector2.zero;
                 _spinner.localRotation = Quaternion.identity;
             }
         }
@@ -448,8 +451,20 @@ namespace BubblePics
         public void Show()
         {
             InitializePrefabRuntime();
+            _reconnecting = false;
+            _shownPercent = -1;
+            if (_statusLabel != null)
+                _statusLabel.text = Localization.Tr("LEVEL_LOADING");
             SetProgress(0f);
             if (_root != null) _root.gameObject.SetActive(true);
+        }
+
+        public void SetReconnecting()
+        {
+            if (_reconnecting) return;
+            _reconnecting = true;
+            if (_statusLabel != null)
+                _statusLabel.text = Localization.Tr("LEVEL_RECONNECTING");
         }
 
         public void SetProgress(float progress)
@@ -459,6 +474,8 @@ namespace BubblePics
                 Mathf.RoundToInt(Mathf.Clamp01(progress) * 100f),
                 0,
                 100);
+            if (percent <= _shownPercent) return;
+            _shownPercent = percent;
             _progressLabel.text = percent + "%";
         }
 
@@ -507,8 +524,8 @@ namespace BubblePics
 
         void Update()
         {
-            if (_spinner != null)
-                _spinner.Rotate(0, 0, -SPIN_SPEED * Mathf.Rad2Deg * Time.deltaTime);
+            if (_spinner != null && _root != null && _root.gameObject.activeInHierarchy)
+                _spinner.Rotate(0, 0, -SPIN_SPEED * Mathf.Rad2Deg * Time.unscaledDeltaTime);
         }
     }
 }

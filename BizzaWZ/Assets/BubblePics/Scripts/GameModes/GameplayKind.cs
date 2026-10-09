@@ -85,6 +85,7 @@ namespace BubblePics.GameModes
     /// </summary>
     public interface ILevelModeSelector
     {
+        GameplayKind Kind { get; }
         int Priority { get; }
 
         bool TrySelect(
@@ -142,6 +143,9 @@ namespace BubblePics.GameModes
             for (int i = 0; i < Selectors.Count; i++)
             {
                 ILevelModeSelector selector = Selectors[i];
+                // Explicit queries must not load catalogs for unrelated modes.
+                if (requestedKind.HasValue && selector.Kind != requestedKind.Value)
+                    continue;
                 if (!selector.TrySelect(
                         globalLevel,
                         automatic,

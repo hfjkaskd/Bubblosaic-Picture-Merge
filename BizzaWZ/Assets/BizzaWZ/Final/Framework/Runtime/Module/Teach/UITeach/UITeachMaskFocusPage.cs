@@ -49,26 +49,7 @@ public class UITeachMaskFocusPage : UIPageBase<UITeachMaskFocusPage.FocusArgs>
 
     private (Vector2 pos, Vector2 size) GetCanvasPosByTransform(Transform target, bool isUI)
     { 
-        Vector2 canvasPos;
-        Vector2 size;
-        if (isUI)
-        {
-            var rtf = target as RectTransform;
-            Rect canvasRect = rtf.GetWorldRect().ScreenToCanvasRect(UIModule.Instance.UICanvas);
-            canvasPos = canvasRect.center;
-            size = new Vector2(canvasRect.width, canvasRect.height);
-        }
-        else
-        {
-            float rate = 1 / UIModule.Instance.UICanvas.scaleFactor;
-            var worldPos = target.position;
-            canvasPos = cam.WorldToScreenPoint(worldPos);
-            canvasPos.x *= rate;
-            canvasPos.y *= rate;
-            size = Vector2.zero;
-        }
-
-        return (canvasPos, size);
+        return UITeachMaskPage.GetCanvasPosByTransform(target, isUI);
     }
 
     void Update()
@@ -98,5 +79,5 @@ public class UITeachMaskFocusPage : UIPageBase<UITeachMaskFocusPage.FocusArgs>
 
 public static partial class UIPageIds
 {
-    public static readonly PageId UI_TeachMaskFocus = "UI_TeachMaskFocus";
+    public static readonly PageId UI_TeachMaskFocus = "UITeachMaskFocusPage";
 }

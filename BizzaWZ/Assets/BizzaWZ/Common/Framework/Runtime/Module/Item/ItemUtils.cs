@@ -96,6 +96,10 @@ public partial class ItemUtils
 
     public static Sprite GetItemIcon(E_ItemType itemType)
     {
+#if BIZZA_REAL_WITHDRAW
+        if (itemType == E_ItemType.Gold || itemType == E_ItemType.Dollar)
+            return CountryCurrencyIcons.LoadItem(itemType);
+#endif
         PropConfigSO propConfig = PropConfigSO.Instance;
         if (propConfig == null)
         {

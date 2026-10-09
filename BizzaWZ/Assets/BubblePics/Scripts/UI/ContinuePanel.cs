@@ -322,19 +322,16 @@ namespace BubblePics
             if (_adButtonUsesRewardedAd &&
                 !true)
                 return;
-            Haptics.Play(HapticLevel.Weak);
             if (Page != null) Page.OnContinueAd();
         }
 
         void OnCoinPressed()
         {
-            Haptics.Play(HapticLevel.Weak);
             if (Page != null) Page.OnContinueCoin();
         }
 
         void OnClosePressed()
         {
-            Haptics.Play(HapticLevel.Weak);
             if (Page != null) Page.OnContinueClose();
         }
 

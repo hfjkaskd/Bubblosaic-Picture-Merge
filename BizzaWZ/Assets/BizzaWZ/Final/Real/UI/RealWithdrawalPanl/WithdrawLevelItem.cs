@@ -36,6 +36,10 @@ public class WithdrawLevelItem : MonoBehaviour
     [Header("按钮")]
     [SerializeField] private BizzaButton clickBtn;
 
+    [Header("倍率外观（由预制体配置）")]
+    [SerializeField] private Image boostedRateBadge;
+    [SerializeField] private GameObject baseRateBadge;
+
     private void Awake()
     {
         clickBtn.onClick.AddListener(() => { OnClick(); });
@@ -48,6 +52,8 @@ public class WithdrawLevelItem : MonoBehaviour
     {
         this.page = page;
         this.index = index;
+        if (baseRateBadge != null) baseRateBadge.SetActive(index == 0);
+        if (boostedRateBadge != null) boostedRateBadge.enabled = index != 0;
         selectedObj.gameObject.SetActive(false);
         shadowObj.gameObject.SetActive(false);
         int currentLevel = SaveDataUtils.GameData.playerSelectedLv;

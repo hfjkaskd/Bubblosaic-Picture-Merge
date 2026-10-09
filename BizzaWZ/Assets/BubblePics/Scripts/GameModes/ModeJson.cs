@@ -9,7 +9,10 @@ namespace BubblePics.GameModes
     {
         public static Dictionary<string, object> ParseObject(string json)
         {
-            return SpineLite.MiniJson.Parse(json ?? string.Empty) as
+            // Optional, disabled catalogs are not shipped in every build.
+            // Repository callers already handle a missing root as no content.
+            if (string.IsNullOrWhiteSpace(json)) return null;
+            return SpineLite.MiniJson.Parse(json) as
                 Dictionary<string, object>;
         }
 

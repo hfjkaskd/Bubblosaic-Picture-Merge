@@ -333,8 +333,6 @@ namespace BubblePics
                 _hover.SetPickupEnlarged(true);
                 ApplyRipple(_hover);
                 if (AppConfig.TouchSoundOn) SoundManager.I.Play("collide");
-                if (AppConfig.MoveVibrationOn)
-                    Haptics.Play(HapticLevel.VeryWeak);
             }
         }
 
@@ -472,7 +470,7 @@ namespace BubblePics
                 }
                 Page.EmitMergeAttempted(false);
                 Page.CommitDeath();
-                Fx.Vibrate(2); // MEDIUM
+                VibrationUtils.VibrateStableClick(E_VibrateType.Light);
                 Page.EmitMergeRejected(src, target);
                 SoundManager.I.Play("reject");
                 src.FlashReject();

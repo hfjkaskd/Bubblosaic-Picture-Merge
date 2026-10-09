@@ -39,10 +39,8 @@ public class BroadcastBarController : BaseSingleton<BroadcastBarController>
     protected override void Awake()
     {
         base.Awake();
-    }
-
-    void Start()
-    {
+        // A first ShowMessage call can run before Start. Initialize here so it
+        // cannot be hidden again by a later Start on its first visible frame.
         InitPositions();
         barTransform.anchoredPosition = visiblePos;
         gameObject.SetActive(false);
@@ -149,6 +147,7 @@ public class BroadcastBarController : BaseSingleton<BroadcastBarController>
         if (ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode)
         {
             entryAImage.sprite = entryBImage.sprite;
+            entryAImage.material = entryBImage.material;
             entryBObj.SetActive(false);
         }
         else

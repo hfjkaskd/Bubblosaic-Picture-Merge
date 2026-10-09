@@ -90,24 +90,18 @@ namespace BubblePics.EditorTools
                 var button = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/BizzaWZ/Common/BizzaGame/Z_ReplaceAssets/UI_Frame/Common/Btn_Normael.png");
                 foreach (var label in go.GetComponentsInChildren<TMP_Text>(true))
                 {
-                    label.font = font;
-                    label.fontSharedMaterial = font.material;
-                    label.color = label.name == "Des" ? new Color32(42, 50, 70, 255) : Color.white;
+                    // Preserve the artist-authored skin; this migration only repairs missing references.
+                    if (label.font == null) label.font = font;
+                    if (label.fontSharedMaterial == null && label.font != null)
+                        label.fontSharedMaterial = label.font.material;
                 }
                 foreach (var graphic in go.GetComponentsInChildren<Image>(true))
                 {
                     if (graphic.name == "PageMask") continue;
-                    if (graphic.name == "BG (1)")
-                    {
-                        graphic.sprite = background;
-                        graphic.enabled = true;
-                        graphic.type = Image.Type.Sliced;
-                        continue;
-                    }
                     if (graphic.sprite != null) continue;
                     if (graphic.name == "ConfirmBtn") graphic.sprite = button;
-                    else if (graphic.name == "BG") graphic.sprite = background;
-                    else { graphic.enabled = false; continue; }
+                    else if (graphic.name == "BG" || graphic.name == "BG (1)") graphic.sprite = background;
+                    else continue;
                     graphic.type = Image.Type.Sliced;
                 }
                 PrefabUtility.SaveAsPrefabAsset(go, path);

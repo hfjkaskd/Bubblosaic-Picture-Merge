@@ -100,6 +100,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
 
     [FoldoutGroup("美国提现")] public TMP_Text paypalMailError;
     [FoldoutGroup("美国提现")] public RectTransform paypalMailErrorTra;
+    [SerializeField] private GameObject paypalEmailHelp;
 
     [FoldoutGroup("印尼提现")]
     [LabelText("OVO + Dana 账号")]
@@ -125,6 +126,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
 
         EnsureProfiles();
         accountNameInput.OnValueChanged.AddListener(FilterInput);
+        CPFNumberInput.OnValueChanged.AddListener(RefreshCpfErrorAfterEdit);
         InitBaXiChannel();
 
         var inputs = GetComponentsInChildren<AdvancedInputField>(false);
@@ -152,6 +154,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     private Action callback = null;
     public Action Callback => callback;
     private bool isSelectPlatform;
+    [SerializeField] private BubblePics.WithdrawalFormPresentation presentation;
     private int _pixChannelIndex = 0;
 
     private int pixChannelIndex
@@ -307,6 +310,13 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
         this.plats = plats;
         this.callback = callback;
         this.withdrawType = withdrawType;
+        if (balanceText != null)
+        {
+            string amount = AccountModule.Instance.Get_S_Ewl();
+            if (withdrawType == E_WithdrawType.Fake) amount = WithdrawalUtil.GetCustomizedValueByCountryType(AccountModule.CountryType == AccountModule.E_CountryType.ID ? 20f : .01f);
+            else if (withdrawType == E_WithdrawType.DailyMission) amount = WithdrawalUtil.GetCustomizedValueByCountryType(.2f);
+            balanceText.text = LanguageUtils.GetText("CurrencyToken") + amount;
+        }
 
         PlatformRoot.gameObject.SetActive(isSelectPlatform);
         PlatformIconRoot.gameObject.SetActive(!isSelectPlatform);
@@ -346,6 +356,11 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     public void OnRefresh(AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform data)
     {
         this.data = data;
+        if(presentation!=null&&presentation.Select(data.Os_Cn)&&presentation.MethodPrefab!=null&&withdrawWayItem!=presentation.MethodPrefab)
+        {
+            foreach(var item in _withdrawWayItems)if(item!=null)Destroy(item.gameObject);
+            _withdrawWayItems.Clear();withdrawWayItem=presentation.MethodPrefab;
+        }
         OnClickBaXiChannel(SaveDataUtils.GameData.pixChannelIndex);
         FillingRoot?.SetActive(true);
         if (ResultRoot != null) ResultRoot.SetActive(false);
@@ -363,9 +378,11 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
         SetupPlatformListIfNeeded();
         SetupPaymentIconIfNeeded(profile.PayType);
 
-        profile.OnRefreshExtra?.Invoke(this);
         SetActiveList(profile.UiList, true); /// InputRoot 下的物体在这里设置显示
+        profile.OnRefreshExtra?.Invoke(this);
         SetActiveList(ErrorList, false);
+
+        if (paypalEmailHelp != null) paypalEmailHelp.SetActive(data.Os_Cn == paypalInfo);
 
         OnRefreshPos();
         LoadReadData(true);
@@ -386,7 +403,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(InputRoot);
 
-        BG.sizeDelta = new Vector2(BG.sizeDelta.x, defaultHeight + InputRoot.rect.height);
+        if(presentation==null||!presentation.FixedLayout)BG.sizeDelta = new Vector2(BG.sizeDelta.x, defaultHeight + InputRoot.rect.height);
     }
 
 
@@ -429,8 +446,14 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     private void SetupPaymentIconIfNeeded(E_PayeeAccountType payType)
     {
         if (isSelectPlatform) return;
-        if (paymentImage != null && paymentList != null)
+        if (paymentImage == null) return;
+        if (withdrawWayItem != null)
+            withdrawWayItem.ApplyPaymentIcon(paymentImage, data.Os_Cn);
+        else if (paymentList != null)
+        {
             paymentImage.sprite = paymentList.GetSpriteByType(payType);
+            paymentImage.material = null;
+        }
     }
 
     private void ShowFillError()
@@ -465,6 +488,14 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
         }
 
         return false;
+    }
+
+    private void RefreshCpfErrorAfterEdit(string input)
+    {
+        // Recheck a previously rejected value while it is being corrected.
+        // Untouched fields continue to show validation errors only on submission.
+        if (CPFNumberErrorTra.gameObject.activeSelf && CPFNumberInput.gameObject.activeInHierarchy)
+            IsValidCpfOrCnpj(input);
     }
 
     private static string OnlyDigits(string s) => new string(s.Where(char.IsDigit).ToArray());
@@ -577,10 +608,10 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     {
         string hint = type switch
         {
-            PayeeAccountType.Email => "example@gmail.com",
-            PayeeAccountType.Phone => "11912345678",
-            PayeeAccountType.CpfCnpj => "99999999999 ou 99999999999999",
-            PayeeAccountType.Evp => "123e4567-e89b-12d3-a456-426655440000",
+            PayeeAccountType.Email => BubblePics.Localization.Tr("sequential_email_prompt"),
+            PayeeAccountType.Phone => BubblePics.Localization.Tr("sequential_phone_prompt"),
+            PayeeAccountType.CpfCnpj => BubblePics.Localization.Tr("sequential_cpf_prompt"),
+            PayeeAccountType.Evp => BubblePics.Localization.Tr("sequential_random_prompt"),
             _ => ""
         };
 
@@ -726,6 +757,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
         email = (paypalMailInput.Text ?? "").Trim();
 
         bool valid = IsEmail(email);
+        if (paypalEmailHelp != null) paypalEmailHelp.SetActive(valid && data.Os_Cn == paypalInfo);
         if (!valid)
         {
             return false;
@@ -785,6 +817,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     protected override void OnClose()
     {
     }
+    public void RefreshLocalizedInputHints(){ApplyPlaceholder(GetWithdrawChannel());}
 
     public void OnSelectWithdrawWay(WithdrawWay way)
     {

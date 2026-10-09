@@ -11,10 +11,12 @@ public partial class UIPageIds
 public class SlotFAQPanel : UIPageBase
 {
     public BizzaButton bizzaButton;
+    [SerializeField] private BizzaButton backButton;
 
     protected override void OnAwake()
     {
         bizzaButton.onClick.AddListener(CloseSelf);
+        if(backButton!=null)backButton.onClick.AddListener(CloseSelf);
     }
     protected override void OnClose()
     {

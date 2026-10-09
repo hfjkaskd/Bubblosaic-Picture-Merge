@@ -176,7 +176,7 @@ public static class VFXUtils
             }
 
             RectTransform fxParent = GetItemCollectFxParent();
-            Sprite sprite = ResolveItemCollectSprite(itemType, target);
+            Sprite sprite = ResolveItemCollectSprite(itemType, target, out Material material);
             if (fxParent == null || sprite == null)
             {
                 TrackItemCollectFx(itemType, prefabName, true, 0);
@@ -210,7 +210,7 @@ public static class VFXUtils
             }
 
             Vector2 targetLocalPosition = targetAnchoredPosition - rootRect.anchoredPosition;
-            burstImage = CreateItemCollectIcon(rootRect, sprite, "ItemCollectBurst");
+            burstImage = CreateItemCollectIcon(rootRect, sprite, material, "ItemCollectBurst");
             burstRect = burstImage != null ? burstImage.transform as RectTransform : null;
             if (burstImage != null)
             {
@@ -244,7 +244,7 @@ public static class VFXUtils
                 trailRects[i] = new RectTransform[ItemCollectFxTrailCount];
                 for (int j = 0; j < ItemCollectFxTrailCount; j++)
                 {
-                    trailImages[i][j] = CreateItemCollectIcon(rootRect, sprite, "ItemCollectTrail");
+                    trailImages[i][j] = CreateItemCollectIcon(rootRect, sprite, material, "ItemCollectTrail");
                     trailRects[i][j] = trailImages[i][j] != null ? trailImages[i][j].transform as RectTransform : null;
                     if (trailImages[i][j] != null)
                     {
@@ -253,7 +253,7 @@ public static class VFXUtils
                     }
                 }
 
-                icons[i] = CreateItemCollectIcon(rootRect, sprite);
+                icons[i] = CreateItemCollectIcon(rootRect, sprite, material);
                 iconRects[i] = icons[i] != null ? icons[i].transform as RectTransform : null;
                 bool isHero = i < ItemCollectFxHeroCount;
                 scatterPositions[i] = GetScatterPosition(i, isHero, targetLocalPosition);
@@ -422,7 +422,6 @@ public static class VFXUtils
 
     internal static void PlayItemCollectArriveFeedback()
     {
-        VibrationUtils.VibrateStableClick(E_VibrateType.Light);
         SoundManager.Instance.PlaySFX("SFX_GetDollar");
     }
 
@@ -445,20 +444,28 @@ public static class VFXUtils
 
     internal static Sprite ResolveItemCollectSprite(E_ItemType itemType, Transform target)
     {
-        Sprite sprite = ItemUtils.GetItemIcon(itemType);
-        if (sprite != null)
-        {
-            return sprite;
-        }
+        return ResolveItemCollectSprite(itemType, target, out _);
+    }
 
+    internal static Sprite ResolveItemCollectSprite(E_ItemType itemType, Transform target, out Material material)
+    {
+        material = null;
+        // A page can use a different authored currency skin from the global item config.
+        // Keep its sprite, contour and material together for the flight into that icon.
         Image targetImage = target != null ? target.GetComponent<Image>() : null;
         if (targetImage != null && targetImage.sprite != null)
         {
+            material = targetImage.material;
             return targetImage.sprite;
         }
 
         targetImage = target != null ? target.GetComponentInChildren<Image>() : null;
-        return targetImage != null ? targetImage.sprite : null;
+        if (targetImage != null && targetImage.sprite != null)
+        {
+            material = targetImage.material;
+            return targetImage.sprite;
+        }
+        return ItemUtils.GetItemIcon(itemType);
     }
 
     private static GameObject CreateItemCollectFxRoot(
@@ -507,7 +514,7 @@ public static class VFXUtils
         return root;
     }
 
-    private static Image CreateItemCollectIcon(RectTransform parent, Sprite sprite, string objectName = "ItemCollectIcon")
+    private static Image CreateItemCollectIcon(RectTransform parent, Sprite sprite, Material material, string objectName = "ItemCollectIcon")
     {
         GameObject iconObject = PoolUtil.GetGameObject(GetItemCollectFxIconTemplate());
         if (iconObject == null)
@@ -530,6 +537,9 @@ public static class VFXUtils
 
         var icon = iconObject.GetComponent<Image>();
         icon.sprite = sprite;
+        // The source may be a reference-art slice whose alpha is supplied by its authored material.
+        icon.material = material;
+        icon.useSpriteMesh = true;
         icon.preserveAspect = true;
         icon.raycastTarget = false;
         icon.enabled = true;
@@ -925,6 +935,7 @@ public static class VFXUtils
 
         icon.enabled = true;
         icon.sprite = null;
+        icon.material = null;
         icon.color = Color.white;
 
         if (icon.transform is RectTransform iconRect)

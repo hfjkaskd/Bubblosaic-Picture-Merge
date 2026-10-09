@@ -69,19 +69,25 @@ public class TransitionBlock : BaseSingleton<TransitionBlock>
 
     public async void ShowTransition(Action action)
     {
+        _playingAnim = true;
+        _isCloseAnim = false;
         _loadFinish = false;
         gameObject.SetActive(true);
         await animation.PlayWithCallback(openAnim, null);
         action?.Invoke();
         // await UniTask.WaitUntil(() => _loadFinish);
         // await UniTask.DelayFrame(3);
+        _isCloseAnim = true;
         await animation.PlayWithCallback(closeAnim, null);
+        _playingAnim = false;
         gameObject.SetActive(false);
     }
 
 
     public async void Open(Action action)
     {
+        _playingAnim = true;
+        _isCloseAnim = false;
         _handleFinish = false;
         gameObject.SetActive(true);
         await animation.PlayWithCallback(openAnim, null);
@@ -93,7 +99,9 @@ public class TransitionBlock : BaseSingleton<TransitionBlock>
     {
         await UniTask.WaitUntil(() => _handleFinish);
         await UniTask.DelayFrame(3);
+        _isCloseAnim = true;
         await animation.PlayWithCallback(closeAnim, null);
+        _playingAnim = false;
         gameObject.SetActive(false);
     }
 

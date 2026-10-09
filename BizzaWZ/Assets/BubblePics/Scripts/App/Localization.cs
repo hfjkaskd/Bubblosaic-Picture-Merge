@@ -13,14 +13,12 @@ namespace BubblePics
     public static class Localization
     {
         const string EnglishLocale = "en";
-        const string SimplifiedChineseLocale = "zh_CN";
 
         static readonly Dictionary<string, string> EmptyMap =
             new Dictionary<string, string>(StringComparer.Ordinal);
 
         static Dictionary<string, string> _map;
         static Dictionary<string, string> _englishFallback;
-        static Dictionary<string, string> _simplifiedChineseFallback;
         static string _currentLocale;
         static bool _loaded;
 
@@ -53,9 +51,6 @@ namespace BubblePics
             _englishFallback = _currentLocale == EnglishLocale
                 ? _map
                 : LoadMap(EnglishLocale);
-            _simplifiedChineseFallback = _currentLocale == SimplifiedChineseLocale
-                ? _map
-                : LoadMap(SimplifiedChineseLocale);
             _loaded = true;
         }
 
@@ -105,19 +100,9 @@ namespace BubblePics
 
             string normalized = locale.Trim().Replace('-', '_');
             string lower = normalized.ToLowerInvariant();
-            if (lower == "chinesetraditional")
-                return "zh_TW";
-            if (lower == "chinesesimplified" || lower == "chinese")
-                return SimplifiedChineseLocale;
-            if (lower == "zh" || lower.StartsWith("zh_", StringComparison.Ordinal))
-            {
-                bool traditional =
-                    lower.Contains("hant") ||
-                    lower.Contains("_tw") ||
-                    lower.Contains("_hk") ||
-                    lower.Contains("_mo");
-                return traditional ? "zh_TW" : SimplifiedChineseLocale;
-            }
+            if (lower == "chinesetraditional" || lower == "chinesesimplified" || lower == "chinese" ||
+                lower == "zh" || lower.StartsWith("zh_", StringComparison.Ordinal))
+                return EnglishLocale;
 
             int separator = lower.IndexOf('_');
             string language = separator >= 0 ? lower.Substring(0, separator) : lower;
@@ -174,9 +159,9 @@ namespace BubblePics
 
             switch (Application.systemLanguage)
             {
-                case SystemLanguage.ChineseTraditional: return "zh_TW";
+                case SystemLanguage.ChineseTraditional:
                 case SystemLanguage.Chinese:
-                case SystemLanguage.ChineseSimplified: return SimplifiedChineseLocale;
+                case SystemLanguage.ChineseSimplified: return EnglishLocale;
                 case SystemLanguage.Portuguese: return "pt_BR";
                 case SystemLanguage.Indonesian: return "id";
                 case SystemLanguage.Spanish: return "es";
@@ -261,8 +246,6 @@ namespace BubblePics
             if (TryGetNonEmpty(_map, key, out string value))
                 return value;
             if (TryGetNonEmpty(_englishFallback, key, out value))
-                return value;
-            if (TryGetNonEmpty(_simplifiedChineseFallback, key, out value))
                 return value;
             return key;
         }

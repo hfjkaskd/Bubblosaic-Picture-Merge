@@ -97,6 +97,9 @@ namespace BubblePics
         [SerializeField] Image _backgroundImage;
         [SerializeField] string _backgroundResourcePath;
         [SerializeField] bool _animatedDecorations = true;
+        [SerializeField] float _progressWidth = 521f;
+        [SerializeField] float _progressHeight = 42f;
+        [SerializeField] TMP_Text _progressLabel;
 
         sealed class DecoState
         {
@@ -859,14 +862,15 @@ namespace BubblePics
             _progress = Mathf.Clamp01(value);
             if (_progressFill == null) return;
             _progressFill.sizeDelta = new Vector2(
-                PROGRESS_WIDTH * _progress,
-                PROGRESS_HEIGHT);
+                _progressWidth * _progress,
+                _progressHeight);
+            if (_progressLabel != null) _progressLabel.SetText("{0:0}%", Mathf.Round(_progress * 100f));
             if (_runtimeStripesMat != null)
             {
                 _runtimeStripesMat.SetVector(
                     "_BarPx", new Vector4(
-                        PROGRESS_WIDTH * _progress,
-                        PROGRESS_HEIGHT,
+                        _progressWidth * _progress,
+                        _progressHeight,
                         0,
                         0));
             }

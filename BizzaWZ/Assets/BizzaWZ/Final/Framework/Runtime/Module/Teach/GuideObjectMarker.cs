@@ -16,6 +16,12 @@ public class GuideObjectMarker : MonoBehaviour
         RefreshData();
     }
 
+    private void OnDisable()
+    {
+        if (!string.IsNullOrEmpty(GUID) && Global.TryGetValue(GUID, out var marker) && marker == this)
+            Global.Remove(GUID);
+    }
+
     public void RefreshData()
     {
         if (string.IsNullOrEmpty(GUID))

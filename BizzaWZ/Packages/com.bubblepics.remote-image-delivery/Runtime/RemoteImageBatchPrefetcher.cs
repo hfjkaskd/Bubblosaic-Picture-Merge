@@ -27,9 +27,8 @@ namespace RemoteImageDelivery
     }
 
     /// <summary>
-    /// Implements the recovered BubblePics download cadence in generic terms:
-    /// 25 items/group, next item HIGH, first-entry current+next groups LOW,
-    /// then an 11-item LOW sliding window after every advance.
+    /// Caches the configured upcoming items on the bounded background lane.
+    /// A zero upcoming-item count retains the legacy grouped download cadence.
     /// </summary>
     public sealed class RemoteImageBatchPrefetcher
     {
@@ -58,6 +57,12 @@ namespace RemoteImageDelivery
             if (current <= 0) return;
             _knownItems.Add(current);
 
+            if (_config.upcomingItemCount > 0)
+            {
+                QueueUpcomingItems(current);
+                return;
+            }
+
             if (_config.prefetchNextItemHigh)
                 QueueItem(current + 1, RemoteImagePriority.High);
 
@@ -75,6 +80,14 @@ namespace RemoteImageDelivery
         {
             int current = ClampItem(currentItemIndex);
             if (current <= 0) return;
+
+            if (_config.upcomingItemCount > 0)
+            {
+                QueueUpcomingItems(current);
+                if (_config.pruneItemsBeforeCurrent)
+                    PruneItemsBefore(current);
+                return;
+            }
 
             _pendingLowItems.RemoveWhere(item => item < current);
             int last = Math.Min(
@@ -100,6 +113,15 @@ namespace RemoteImageDelivery
         public void QueueForegroundItem(int itemIndex)
         {
             QueueItem(itemIndex, RemoteImagePriority.High);
+        }
+
+        void QueueUpcomingItems(int current)
+        {
+            int last = Math.Min(_source.ItemCount, current + _config.upcomingItemCount);
+            _pendingLowItems.RemoveWhere(item => item <= current || item > last);
+            // Do not clamp current + 1 back onto the last level at catalog end.
+            if (current < last)
+                QueueRange(current + 1, last, RemoteImagePriority.Low);
         }
 
         public void QueueRange(

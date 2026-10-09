@@ -29,6 +29,8 @@ namespace BubblePics
         public const float DOLPHIN_SCALE = 0.72f;
 
         [SerializeField] SpineLite.SpineSprite _spine;
+        [SerializeField] SpriteRenderer _portrait;
+        [SerializeField] Renderer _legacyPortraitRenderer;
         public SpineLite.SpineSprite Spine => _spine;
 
         public System.Action ExitFinished;
@@ -105,6 +107,8 @@ namespace BubblePics
                 _spine.Load(GAMEPLAY_SPINE_MODULE);
             _spine.AnimationCompleted -= OnAnimCompleted;
             _spine.AnimationCompleted += OnAnimCompleted;
+            if (_portrait != null && _legacyPortraitRenderer != null)
+                _legacyPortraitRenderer.enabled = false;
         }
 
         void Awake()
@@ -116,7 +120,11 @@ namespace BubblePics
                 BindPrefabRuntime();
         }
 
-        public void SetSortingOrder(int order) { if (_spine != null) _spine.SortingOrder = order; }
+        public void SetSortingOrder(int order)
+        {
+            if (_spine != null) _spine.SortingOrder = order;
+            if (_portrait != null) _portrait.sortingOrder = order;
+        }
 
         public void SetHardFrame(bool hard)
         {
@@ -182,6 +190,7 @@ namespace BubblePics
         public void SetTintAlpha(float a)
         {
             if (_spine != null) _spine.Tint = new Color(1, 1, 1, a);
+            if (_portrait != null) _portrait.color = new Color(1, 1, 1, a);
         }
 
         public void PlayAdmission()

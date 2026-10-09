@@ -47,6 +47,7 @@ namespace BubblePics
 
         [SerializeField] RectTransform _root;
         [SerializeField] Image _bg;
+        [SerializeField] ToolAppearance _appearance;
         [SerializeField] Image _icon;
         [SerializeField] Image _countBadgeBg;
         [SerializeField] Image _adBadgeBg;
@@ -128,7 +129,7 @@ namespace BubblePics
             if (_root != null && Def != null)
                 _root.gameObject.name = "Tool_" + Def.Id;
             if (_icon != null && Def != null)
-                ApplyToolIcon(_icon, AssetLib.Sprite(Def.Icon));
+                ApplyToolIcon(_icon, _appearance != null ? _appearance.Icon(Def.Id) : AssetLib.Sprite(Def.Icon));
         }
 
         /// <summary>Restores button actions, which Unity does not serialize.</summary>
@@ -148,9 +149,9 @@ namespace BubblePics
             ConfigureBadgeText(_lvLabel);
         }
 
-        static void ConfigureBadgeText(TMP_Text text)
+        void ConfigureBadgeText(TMP_Text text)
         {
-            if (text == null) return;
+            if (text == null || _appearance != null) return;
             TmpTextStyle.ClearEffects(text);
             TmpTextStyle.ApplyOutline(
                 text,
@@ -175,7 +176,6 @@ namespace BubblePics
 
         void HandlePressed()
         {
-            Fx.Vibrate(1);
             PressedTool?.Invoke(this);
         }
 
@@ -190,15 +190,23 @@ namespace BubblePics
                 || (State == ToolState.Ad &&
                     (false || adOk))) && effectOk;
 
-            _bg.sprite = AssetLib.Sprite(enabledLook
-                ? "Art/Sprites/PsdSkin20260807/Gameplay/tool_button_enabled"
-                : "Art/Sprites/PsdSkin20260807/Gameplay/tool_button_disabled");
-            if (_bg.sprite != null)
+            _bg.sprite = _appearance != null
+                ? _appearance.Background(State == ToolState.Locked)
+                : AssetLib.Sprite(enabledLook
+                    ? "Art/Sprites/PsdSkin20260807/Gameplay/tool_button_enabled"
+                    : "Art/Sprites/PsdSkin20260807/Gameplay/tool_button_disabled");
+            if (_appearance != null)
+            {
+                _bg.material = _appearance.BackgroundMaterial(State == ToolState.Locked);
+                _bg.color = enabledLook || State == ToolState.Locked ? Color.white : _appearance.DisabledTint;
+                _lockIcon.enabled = false; // Lock artwork is part of the authored locked face.
+            }
+            if (_bg.sprite != null && _appearance == null)
                 _bg.rectTransform.sizeDelta = _bg.sprite.rect.size;
             _icon.gameObject.SetActive(State != ToolState.Locked);
             ApplyToolIcon(
                 _icon,
-                AssetLib.Sprite(enabledLook ? Def.Icon : Def.IconDisable));
+                _appearance != null ? _appearance.Icon(Def.Id) : AssetLib.Sprite(enabledLook ? Def.Icon : Def.IconDisable));
             _countBadgeBg.gameObject.SetActive(State == ToolState.Count);
             _countBadge.text = count.ToString();
             _adBadgeBg.gameObject.SetActive(
@@ -211,12 +219,12 @@ namespace BubblePics
             _lvLabel.text = "Lv." + Def.UnlockLevel;
         }
 
-        static void ApplyToolIcon(Image image, Sprite sprite)
+        void ApplyToolIcon(Image image, Sprite sprite)
         {
             if (image == null) return;
             image.sprite = sprite;
             image.preserveAspect = true;
-            if (sprite != null)
+            if (sprite != null && _appearance == null)
                 image.rectTransform.sizeDelta = sprite.rect.size;
         }
 
@@ -261,18 +269,19 @@ namespace BubblePics
     public class ToolbarView : MonoBehaviour
     {
         public const float BAR_HEIGHT = 303f;
-        public const float BAR_BACKGROUND_CENTER_Y = 203f;
+        public const float BAR_BACKGROUND_CENTER_Y = 145f;
         public const float BAR_BACKGROUND_HEIGHT = 258f;
         public const float BAR_VISUAL_TOP =
             BAR_BACKGROUND_CENTER_Y + BAR_BACKGROUND_HEIGHT * 0.5f;
         public static float TOTAL_HEIGHT => BAR_HEIGHT + App.SafeBottomDesign;
         const float ROW_SEPARATION = 5f;
         const float BTN_SIZE = 204f;
-        const float ROW_CENTER_PITCH = BTN_SIZE + ROW_SEPARATION;
 
         [System.NonSerialized] public BubblePage Page;
         [SerializeField] RectTransform _root;
         [SerializeField] RectTransform _propRoot;
+        [SerializeField, Min(1f)] float _referenceWidth = 1080f;
+        [SerializeField, Min(1f)] float _maximumScale = 1f;
         public RectTransform PropRoot => _propRoot;
         [SerializeField] public ToolButton Hint;
         [SerializeField] public ToolButton Drop;
@@ -306,9 +315,9 @@ namespace BubblePics
 
             var bg = UiFactory.Img(_root, "BarBg", "Art/Sprites/PsdSkin20260807/Gameplay/toolbar", 953, 258);
             var bgRt = bg.rectTransform;
-            bgRt.anchorMin = bgRt.anchorMax = new Vector2(0.5f, 0f);
+            bgRt.anchorMin = bgRt.anchorMax = new Vector2(0.5f, 1f);
             bgRt.anchoredPosition =
-                new Vector2(0f, BAR_BACKGROUND_CENTER_Y);
+                new Vector2(0f, BAR_BACKGROUND_CENTER_Y - BAR_HEIGHT);
             bg.raycastTarget = true; // toolbar blocks input (mouse_filter STOP)
 
             // row: 4 buttons centered
@@ -362,40 +371,30 @@ namespace BubblePics
             BindPrefabRuntime();
         }
 
-        public void ApplyDeviceLayout()
+        public void ApplyDeviceLayout() => ApplyDeviceLayout(DeviceLayout.Current);
+
+        public void ApplyDeviceLayout(DeviceLayoutMetrics layout)
         {
             if (_root == null) return;
-            var offsetMax = _root.offsetMax;
-            offsetMax.y = TOTAL_HEIGHT;
-            _root.offsetMax = offsetMax;
+            // Tools and both side entries share the same width/safe-area scale.
+            float availableWidth = Mathf.Max(1f, layout.ViewWidth - layout.SafeLeft - layout.SafeRight);
+            float scale = Mathf.Min(_maximumScale, availableWidth / _referenceWidth);
+            float localSafeBottom = layout.SafeBottom / scale;
+            _root.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _referenceWidth);
+            _root.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BAR_HEIGHT + localSafeBottom);
+            _root.localScale = Vector3.one * scale;
+            var position = _root.anchoredPosition;
+            position.x = (layout.SafeLeft - layout.SafeRight) * 0.5f;
+            _root.anchoredPosition = position;
 
-            var bar = FindNamedRect(_root, "BarBg");
-            if (bar != null)
-            {
-                bar.anchorMin = bar.anchorMax = new Vector2(0.5f, 0f);
-                bar.sizeDelta = new Vector2(953f, BAR_BACKGROUND_HEIGHT);
-                bar.anchoredPosition =
-                    new Vector2(0f, BAR_BACKGROUND_CENTER_Y);
-            }
-
-            // Match Godot's two safe-area groups: the background grows upward,
-            // while the original 303 px button row moves by the full inset.
-            float safeBottom = App.SafeBottomDesign;
-            var rowLayout = _root.GetComponentInChildren<HorizontalLayoutGroup>(true);
-            if (rowLayout != null)
-            {
-                // Prefab Row children are zero-sized holders around a 204 px
-                // hit target, so HLG spacing represents center-to-center pitch.
-                rowLayout.spacing = ROW_CENTER_PITCH;
-                var padding = rowLayout.padding;
-                padding.bottom = Mathf.RoundToInt(safeBottom);
-                rowLayout.padding = padding;
-                LayoutRebuilder.MarkLayoutForRebuild(rowLayout.transform as RectTransform);
-                return;
-            }
+            // The prefab anchors the background to the toolbar's top, so its
+            // complete button row follows the safe-bottom growth unchanged.
+            // Keep the root position untouched while slide animations run.
+            if (_propRoot != null) return;
 
             // Keep the non-prefab fallback equivalent to the prefab row.
-            float rowOffsetY = safeBottom * 0.5f;
+            float rowOffsetY = BAR_BACKGROUND_CENTER_Y - BAR_HEIGHT * 0.5f
+                + localSafeBottom * 0.5f;
             SetRowItemY(Hint != null ? Hint.Root : null, rowOffsetY);
             SetRowItemY(Drop != null ? Drop.Root : null, rowOffsetY);
             SetRowItemY(Magnet != null ? Magnet.Root : null, rowOffsetY);
@@ -411,9 +410,8 @@ namespace BubblePics
         }
 
         /// <summary>
-        /// The authored background extends 29 design pixels above the
-        /// nominal 303-pixel toolbar rect. Include that overhang and the
-        /// device safe-bottom growth when sliding the bar offscreen.
+        /// Include the toolbar's full safe-bottom height when sliding it
+        /// offscreen. The authored background now fits inside this rect.
         /// </summary>
         public static float GetExitSlideDistance(
             RectTransform root,
@@ -422,16 +420,8 @@ namespace BubblePics
             float rectHeight = root != null
                 ? root.rect.height
                 : TOTAL_HEIGHT;
-            return Mathf.Max(rectHeight, BAR_VISUAL_TOP) + margin;
-        }
-
-        static RectTransform FindNamedRect(Transform parent, string objectName)
-        {
-            if (parent == null) return null;
-            foreach (var rect in parent.GetComponentsInChildren<RectTransform>(true))
-                if (rect.name == objectName)
-                    return rect;
-            return null;
+            float scale = root != null ? root.localScale.y : 1f;
+            return Mathf.Max(rectHeight, BAR_VISUAL_TOP) * scale + margin;
         }
 
         /// <summary>Restores tool and settings actions after prefab instantiation.</summary>

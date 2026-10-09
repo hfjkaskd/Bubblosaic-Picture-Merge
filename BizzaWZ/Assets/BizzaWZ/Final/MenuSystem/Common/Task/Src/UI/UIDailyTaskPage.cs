@@ -94,7 +94,7 @@ public class UIDailyTaskPage : UIPageBase
             var dailyTaskCfgs = TableUtils.Tables.TblDailyTaskConfig.DataList;
             for (int i = 0; i < dailyTaskCfgs.Count; i++)
             {
-                // if (dailyTaskCfgs[i].CompleteConditions != E_AllTaskType.OnlineTime) continue;
+                if (dailyTaskCfgs[i].CompleteConditions != E_AllTaskType.OnlineTime) continue;
 
                 var dailyTaskInfo = MenuSys_Task.Instance.dailyTaskInfos[dailyTaskCfgs[i].Id];
                 dailyTaskInfos.Add(dailyTaskInfo);
@@ -134,7 +134,7 @@ public class UIDailyTaskPage : UIPageBase
                 var activityCfg = activityCfgs[i];
                 if (activityCfg.RefreshDays != refreshDays) continue;
 
-                var activityTaskInfo = MenuSys_Task.Instance.dailyActivityTaskInfos[activityCfg.Id];
+                if (!MenuSys_Task.Instance.dailyActivityTaskInfos.TryGetValue(activityCfg.Id, out var activityTaskInfo)) continue;
                 var ele = PoolUtil.GetComponent(activityElement);
                 ele.gameObject.SetActive(true);
                 ele.transform.SetParent(activityTaskRoot);
@@ -211,9 +211,20 @@ public class UIDailyTaskPage : UIPageBase
     }
 
     public bool enableTab;
+    [SerializeField] private GameObject dailySelection;
+    [SerializeField] private GameObject weeklySelection;
+    [SerializeField] private GameObject playtimeSelection;
+    [SerializeField] private TMP_Text emptyText;
     private void OnTabClick(int tabIdx)
     {
-
+        IsPlayTimeTask = tabIdx == 2;
+        refreshDays = tabIdx == 1 ? 7 : 1;
+        activityResType = tabIdx == 1 ? E_ItemType.WeekActivity : E_ItemType.Activity;
+        if (dailySelection != null) dailySelection.SetActive(tabIdx == 0);
+        if (weeklySelection != null) weeklySelection.SetActive(tabIdx == 1);
+        if (playtimeSelection != null) playtimeSelection.SetActive(tabIdx == 2);
+        RefreshDailyTask();
+        if (emptyText != null) emptyText.gameObject.SetActive(dailyEles.Count == 0);
     }
 
     private void OnTaskRefresh()
@@ -230,8 +241,9 @@ public class UIDailyTaskPage : UIPageBase
     private void OnActivityRefresh()
     {
         int n = ItemUtils.GetItemCountInt(activityResType);
-        activityBar.fillAmount = Mathf.Clamp01(n * 1.0f / maxActivity);
-        txtActiveCount.text = n.ToString();
+        activityBar.fillAmount = maxActivity > 0 ? Mathf.Clamp01(n * 1.0f / maxActivity) : 0f;
+        txtActiveCount.text = maxActivity > 0 ? n + " / " + maxActivity : n.ToString();
+        if (RefreshTimeText != null) RefreshTimeText.gameObject.SetActive(activityEles.Count == 0);
     }
 
     private void OnDailyTaskStateChange(string taskId)

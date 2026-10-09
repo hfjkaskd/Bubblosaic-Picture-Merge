@@ -1,5 +1,7 @@
 #if BIZZA_REAL_WITHDRAW
 using System.Collections.Generic;
+using System.Globalization;
+using Localization = BubblePics.Localization;
 using Bizza;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -28,6 +30,9 @@ public class WithdrawDanPanel : UIPageBase
     public TMP_Text progressTxt;
 
     public TMP_Text hintTxt;
+    [SerializeField] private TMP_Text targetAmountText;
+    [SerializeField] private ScrollRect tierScroll;
+    [SerializeField] private List<string> tierNameKeys = new();
 
     public WithdrawDanItem item;
     public Transform root;
@@ -92,6 +97,7 @@ public class WithdrawDanPanel : UIPageBase
 
     protected override void OnClose()
     {
+        Localization.LocaleChanged -= RefreshLocalizedContent;
         BizzaEventSystem.Off(EventDefine.Item.ItemChangedWithData, OnRewardChanged);
         if (progressImg) progressImg.DOKill();
         if (progressTxt) DOTween.Kill(progressTxt);
@@ -100,24 +106,29 @@ public class WithdrawDanPanel : UIPageBase
     protected override void OnOpen()
     {
         items.SetCmptListCount(item, root, 7);
+        RefreshLocalizedContent();
+        if (tierScroll != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            tierScroll.StopMovement();
+            tierScroll.verticalNormalizedPosition = 1f;
+        }
+        Localization.LocaleChanged += RefreshLocalizedContent;
+        BizzaEventSystem.On(EventDefine.Item.ItemChangedWithData, OnRewardChanged);
+    }
+
+    private void RefreshLocalizedContent()
+    {
         float curLevel = SaveDataUtils.GameData.playerSelectedLv - 1;
+        var danLevels = AccountModule.CountryType == E_CountryType.ID ? danLevelsID : danLevelsUS;
         for (int i = 0; i < 7; i++)
         {
             bool isClaimed = SaveDataUtils.WithDrawDanPanelData.IsClaimed(i);
-            List<WithDrawMissionSO> danLevels = new();
-            if (AccountModule.CountryType == E_CountryType.ID)
-            {
-                danLevels = danLevelsID;
-            }
-            else if (AccountModule.CountryType == E_CountryType.US || AccountModule.CountryType == E_CountryType.BR)
-            {
-                danLevels = danLevelsUS;
-            }
             items[i].Init(i,
                 danLevels[i].withdrawMoney,
                 danSprites[i],
-                LanguageUtils.GetText(danDescs[i]),
-                LanguageUtils.GetFormatText("WithdrawDanPanel_TaskHint", danLevels[i].missions[0].conditionData.targetValue),
+                i < tierNameKeys.Count ? Localization.Tr(tierNameKeys[i]) : LanguageUtils.GetText(danDescs[i]),
+                string.Format(Localization.Tr("tier_level"), danLevels[i].missions[0].conditionData.targetValue),
                 curLevel.ToString(),
                 SaveDataUtils.GameData.playerSelectedLv - 1,
                 (int)danLevels[i].missions[0].conditionData.targetValue,
@@ -130,7 +141,6 @@ public class WithdrawDanPanel : UIPageBase
         Refresh();
         UpdateProgress(false);
         UpdateMoneyText(false);
-        BizzaEventSystem.On(EventDefine.Item.ItemChangedWithData, OnRewardChanged);
     }
 
     private void OnRewardChanged()
@@ -147,16 +157,41 @@ public class WithdrawDanPanel : UIPageBase
     }
 
     public void Refresh()
-    {        // var list = AccountModule.Instance.
+    {
         var curMission = GetCurMission();
-        if (curMission == null)
+        PresentTarget(curMission, curMission == null ? 0 : curMission.GetValueOfCondition());
+    }
+
+    // Presentation accepts resolved values; eligibility and rewards stay in the original handlers.
+    public void PresentTarget(WithdrawMissionData mission, float currentValue)
+    {
+        if (targetAmountText != null)
+            targetAmountText.text = FormatTierMoney(ItemUtils.FormatCountFloat(new ItemEntry { Type=E_ItemType.WithDrawDanDollar, Count=withdrawMissionSO.withdrawMoney }));
+        if (mission == null)
         {
-            progressImg.fillAmount = 1;
-           LogLogger.LogInfo(BaseConst.LOG_Game, "已经完成所有任务");
+            hintTxt.text = LanguageUtils.GetText("WithdrawMission_AllMet");
             return;
         }
-        hintTxt.text = curMission.GetWithdrawDesc(curMission.GetValueOfCondition());
+        if (mission.conditionData.condition == E_WithdrawCondition.WithDrawDanDollar)
+        {
+            float target = ItemUtils.FormatCountFloat(new ItemEntry { Type=E_ItemType.WithDrawDanDollar, Count=mission.conditionData.targetValue });
+            if (targetAmountText != null) targetAmountText.text = FormatTierMoney(target);
+            hintTxt.text = string.Format(Localization.Tr("tier_to_go"), FormatTierMoney(Mathf.Max(0, target-currentValue)));
+        }
+        else hintTxt.text = mission.GetWithdrawDesc(currentValue);
     }
+
+    public static string FormatTierMoney(float value)
+    {
+        var culture = Localization.CurrentLocale == "pt_BR" ? CultureInfo.GetCultureInfo("pt-BR") :
+            Localization.CurrentLocale == "id" ? CultureInfo.GetCultureInfo("id-ID") : CultureInfo.InvariantCulture;
+        // Use the standard yen/yuan glyph; it has the same currency meaning and
+        // is covered by the authored numeric font, unlike the full-width variant.
+        string token = LanguageUtils.GetText("CurrencyToken").Replace('\uFFE5', '\u00A5');
+        return token + value.ToString("0.00", culture);
+    }
+
+    public void PresentBalance(float value) { balanceTxt.text = FormatTierMoney(value); }
 
     private float _currentMoney = 0;
     public void UpdateMoneyText(bool isAnim = true)
@@ -171,7 +206,7 @@ public class WithdrawDanPanel : UIPageBase
         if (!isAnim)
         {
             _currentMoney = targetMoney;
-            balanceTxt.text = LanguageUtils.GetText("CurrencyToken") + targetMoney;
+            PresentBalance(targetMoney);
             return;
         }
 
@@ -182,7 +217,7 @@ public class WithdrawDanPanel : UIPageBase
         {
             startValue = x;
             _currentMoney = x;
-            balanceTxt.text = LanguageUtils.GetText("CurrencyToken") + x;
+            PresentBalance(x);
         }, endValue, 0.8f)
         .SetTarget(balanceTxt)
         .SetEase(Ease.OutSine);

@@ -5,6 +5,7 @@ using Obfuz;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using BubblePics;
 
  
 public class WithdrawDanItem : MonoBehaviour
@@ -34,6 +35,13 @@ public class WithdrawDanItem : MonoBehaviour
     public BizzaButton prepareStateBtn;
     public BizzaButton claimStateBtn;
     public BizzaButton claimedStateBtn;
+    [SerializeField] private GameObject[] authoredTierArt;
+    [SerializeField] private CanvasGroup nativeTitleGroup;
+    [SerializeField] private string artResource;
+    [SerializeField] private string completeFill;
+    [SerializeField] private string incompleteFill;
+    [SerializeField] private Material completeFillMaterial;
+    [SerializeField] private Material incompleteFillMaterial;
 
     private void Awake()
     {
@@ -69,16 +77,34 @@ public class WithdrawDanItem : MonoBehaviour
             Type = E_ItemType.WithDrawDanDollar,
             Count = dollar,
         });
-        string moneyStr = LanguageUtils.GetText("CurrencyToken")+ItemUtils.GetFormatDollar(money);
+        string moneyStr = WithdrawDanPanel.FormatTierMoney(money);
         moneyText1.text = moneyStr;
         moneyText2.text = moneyStr;
         moneyText3.text = moneyStr;
-        progressText.text = curCount + "/" + maxCount;
-        progressImage.fillAmount = (float)curCount / maxCount;
+        int shownCount = Mathf.Clamp(curCount, 0, Mathf.Max(0, maxCount));
+        progressText.text = shownCount + " / " + maxCount;
+        progressImage.fillAmount = maxCount > 0 ? Mathf.Clamp01((float)curCount / maxCount) : 0f;
 
-        prepareStateObj.SetActive(curCount < maxCount);
+        prepareStateObj.SetActive(curCount < maxCount && !isClaimed);
         claimStateObj.SetActive(curCount >= maxCount && !isClaimed);
         claimedStateObj.SetActive(isClaimed);
+        if (authoredTierArt != null)
+        {
+            bool authored = index >= 0 && index < authoredTierArt.Length;
+            this.icon.enabled = !authored;
+            if (nativeTitleGroup != null) nativeTitleGroup.alpha = 1f;
+            for (int i=0;i<authoredTierArt.Length;i++)
+            {
+                authoredTierArt[i].SetActive(i==index);
+                if (i==index) authoredTierArt[i].GetComponentInChildren<ApprovedHudCaption>().RefreshCaption();
+            }
+        }
+        if (!string.IsNullOrEmpty(artResource))
+        {
+            bool full = isClaimed || curCount >= maxCount;
+            progressImage.sprite = CoralResourceSprite.Load(artResource, full ? completeFill : incompleteFill);
+            progressImage.material = full ? completeFillMaterial : incompleteFillMaterial;
+        }
     }
 
     [ObfuzIgnore(ObfuzScope.MethodName)]

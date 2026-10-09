@@ -326,7 +326,7 @@ MonoBehaviour:
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 2830, y: 4664}
-        directValue: '[GameInstance]/GameCanvas/Content/PopupLayer/FakeWithdrawPanel(Clone)/Content/WithdrawBtn'
+        directValue: guide:withdraw-starter
     - rid: 3211365056070025613
       type: {class: Variable_Bool_Direct, ns: , asm: Assembly-CSharp}
       data:
@@ -341,7 +341,7 @@ MonoBehaviour:
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 3246, y: 2792}
-        directValue: '[GameInstance]/GameCanvas/Content/BaseLayer/RealGamePanel(Clone)/Content/GameUiWidget(Clone)/CurrencyBar/CurrentGroup/GoldGroup/RealBtn'
+        directValue: guide:withdraw-cash
     - rid: 3211365056070025616
       type: {class: Variable_Bool_Direct, ns: , asm: Assembly-CSharp}
       data:
@@ -832,7 +832,7 @@ MonoBehaviour:
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 2923, y: 5789}
-        directValue: '[GameInstance]/GameCanvas/Content/BaseLayer/RealGamePanel(Clone)/Content/GameUiWidget(Clone)/CurrencyBar/CurrentGroup/GoldGroup/RealBtn'
+        directValue: guide:withdraw-coins
     - rid: 3211365056070025701
       type: {class: Variable_Float_Direct, ns: , asm: Assembly-CSharp}
       data:
@@ -2727,7 +2727,7 @@ MonoBehaviour:
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 0, y: 0}
-        directValue: '[GameInstance]/GameCanvas/Content/BaseLayer/RealGamePanel(Clone)/Content/GameUiWidget(Clone)/CurrencyBar/CurrentGroup/GoldGroup/RealBtn'
+        directValue: guide:withdraw-cash
     - rid: 3211365056070025882
       type: {class: Variable_Bool_Direct, ns: , asm: Assembly-CSharp}
       data:
@@ -3408,7 +3408,7 @@ MonoBehaviour:
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 0, y: 0}
-        directValue: '[GameInstance]/GameCanvas/Content/PopupLayer/FakeWithdrawPanel(Clone)/Content/WithdrawBtn'
+        directValue: guide:withdraw-starter
     - rid: 3211365056070025939
       type: {class: Variable_Bool_Direct, ns: , asm: Assembly-CSharp}
       data:
@@ -3538,7 +3538,7 @@ MonoBehaviour:
       type: {class: Variable_String_Direct, ns: , asm: Assembly-CSharp}
       data:
         editorPos: {x: 0, y: 0}
-        directValue: '[GameInstance]/GameCanvas/Content/BaseLayer/RealGamePanel(Clone)/Content/GameUiWidget(Clone)/CurrencyBar/CurrentGroup/GoldGroup/RealBtn'
+        directValue: guide:withdraw-coins
     - rid: 3211365056070025962
       type: {class: Variable_Bool_Direct, ns: , asm: Assembly-CSharp}
       data:

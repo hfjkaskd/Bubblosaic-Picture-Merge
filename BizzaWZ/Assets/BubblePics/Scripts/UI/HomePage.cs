@@ -917,7 +917,6 @@ namespace BubblePics
             FunSmithTelemetry.TrackHomePlayClick(
                 LevelRepo.Get(SaveState.CurrentLevel),
                 SaveState.CurrentLevel);
-            Haptics.Play(HapticLevel.Weak);
             _playTransition = StartCoroutine(PlayEntryTransitionCo());
         }
 

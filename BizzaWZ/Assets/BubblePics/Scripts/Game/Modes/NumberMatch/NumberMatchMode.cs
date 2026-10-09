@@ -111,6 +111,7 @@ namespace BubblePics
         static readonly NumberMatchSelector Instance = new NumberMatchSelector();
         static bool _registered;
 
+        public GameplayKind Kind => GameplayKind.NumberMatch;
         public int Priority => 700;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

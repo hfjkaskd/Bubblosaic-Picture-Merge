@@ -10,7 +10,7 @@ namespace BubblePics
     /// <summary>
     /// BubblePics-facing adapter for the reusable remote-image package.
     /// It keeps puzzle-specific level/depth rules out of the package while
-    /// exposing the original 25-level batching cadence to its prefetcher.
+    /// prefetching the configured upcoming levels without retaining textures.
     /// </summary>
     public sealed class BubblePicsRemoteImageDelivery :
         IRemoteImageBatchSource,
@@ -81,8 +81,11 @@ namespace BubblePics
                 _config.itemsPerGroup = LevelsPerGroup;
                 _config.acceptHeader = "image/webp";
                 _config.foregroundMaxAttempts = 1;
-                _config.backgroundMaxAttempts = 1;
-                _config.cancelNetworkRequestOnTimeout = false;
+                _config.backgroundMaxAttempts = 3;
+                _config.cancelNetworkRequestOnTimeout = true;
+                _config.upcomingItemCount = 3;
+                _config.lowPriorityConcurrency = 2;
+                _config.prefetchCurrentAndNextGroup = false;
                 _config.foregroundBatchTimeoutSeconds = 20;
                 _config.advancePrefetchWindow = 11;
                 _config.nextGroupThreshold = 5;
@@ -118,21 +121,16 @@ namespace BubblePics
         {
             if (_disposed || itemIndex < 1 || itemIndex > ItemCount)
                 return Array.Empty<RemoteImageAsset>();
-            // This interface is consumed only by the background/high-next
-            // prefetch planner. Do not mirror-download files that the current
-            // build is intentionally serving from StreamingAssets, and do not
-            // download the authored seed range in remote mode.
-            if (!_config.preferRemoteAfterSeedItems ||
-                itemIndex <= Mathf.Max(0, _config.bundledSeedItemCount))
-            {
-                return Array.Empty<RemoteImageAsset>();
-            }
+            // Seed pictures are already bundled; remote category icons and
+            // later picture levels share the same persistent download cache.
             if (_itemAssets.TryGetValue(itemIndex, out var cached))
                 return cached;
-            if (!LevelRepo.TryGet(itemIndex, out LevelData level) || level == null)
-                return Array.Empty<RemoteImageAsset>();
-
-            IReadOnlyList<RemoteImageAsset> assets = CreateAssets(level);
+            var assets = new List<RemoteImageAsset>(
+                GameModes.ModeLevelPreparer.GetUpcomingCategoryAssets(itemIndex));
+            if (_config.preferRemoteAfterSeedItems &&
+                itemIndex > Mathf.Max(0, _config.bundledSeedItemCount) &&
+                LevelRepo.TryGet(itemIndex, out LevelData level) && level != null)
+                assets.AddRange(CreateAssets(level));
             _itemAssets[itemIndex] = assets;
             return assets;
         }
@@ -157,17 +155,15 @@ namespace BubblePics
         public IReadOnlyList<RemoteImageAsset> GetAssetsToKeepForItem(
             int itemIndex)
         {
-            if (_disposed || itemIndex < 1 || itemIndex > ItemCount ||
-                !_config.preferRemoteAfterSeedItems ||
-                itemIndex <= Mathf.Max(0, _config.bundledSeedItemCount) ||
-                !LevelRepo.TryGet(itemIndex, out LevelData level) ||
-                level == null)
-            {
+            if (_disposed || itemIndex < 1 || itemIndex > ItemCount)
                 return Array.Empty<RemoteImageAsset>();
-            }
+            var keep = new List<RemoteImageAsset>(GetAssetsForItem(itemIndex));
+            if (!_config.preferRemoteAfterSeedItems ||
+                itemIndex <= Mathf.Max(0, _config.bundledSeedItemCount) ||
+                !LevelRepo.TryGet(itemIndex, out LevelData level) || level == null)
+                return keep;
 
             int count = LevelRepo.ImageCount(level);
-            var keep = new List<RemoteImageAsset>(count * 2);
             var seen = new HashSet<string>(StringComparer.Ordinal);
             for (int imageIndex = 0; imageIndex < count; imageIndex++)
             {

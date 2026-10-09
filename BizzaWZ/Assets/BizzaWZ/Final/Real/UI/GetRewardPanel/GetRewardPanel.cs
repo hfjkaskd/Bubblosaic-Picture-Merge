@@ -22,6 +22,9 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
     public ItemEntry itemB;
     // private DoubleGetRewardPanel.E_UseScene doubleGetRewardPanel;
     public GameObject LevelObj;
+    [SerializeField] private TMP_Text titleText;
+    [SerializeField] private bool alwaysShowLevel;
+    [SerializeField, Min(0)] private float normalCollectRevealDelay = 3f;
     public TMP_Text itemATxt;
     public TMP_Text itemBTxt; // 另一个货币的
     public TMP_Text levelTxt;
@@ -31,7 +34,7 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
     public TMP_Text noThanksText;
     public TMP_Text rewardText;
 
-    private string iconName = AccountModule.CountryType switch
+    private string iconName => AccountModule.CountryType switch
     {
         AccountModule.E_CountryType.BR => "3",
         AccountModule.E_CountryType.ID => "1",
@@ -47,7 +50,8 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
     private DoubleGetRewardPanel.E_UseScene _useScene;
 
     private bool isLookAd = false;
-    private bool isNoCD;
+    private bool normalCollectRevealPending;
+    private float normalCollectElapsed;
 
     // 每次打开独立保存领取状态，旧广告回调不能关闭复用后的新界面。
     private sealed class WinClaim
@@ -137,6 +141,7 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
 
     protected override void OnClose()
     {
+        normalCollectRevealPending = false;
         callback = null;
         if (winClaim != null)
         {
@@ -151,6 +156,7 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
         if (claim.Started || claim.Finished || claim.PageClosed) return false;
 
         claim.Started = true;
+        normalCollectRevealPending = false;
         isRecover = true;
         claimBtn.interactable = false;
         closeBtn.interactable = false;
@@ -219,9 +225,12 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
             isRecover = false;
             claimBtn.interactable = false;
             closeBtn.interactable = true;
+            normalCollectElapsed = 0;
+            normalCollectRevealPending = normalCollectRevealDelay > 0;
+            closeBtn.gameObject.SetActive(!normalCollectRevealPending);
         }
-        isNoCD = useScene == DoubleGetRewardPanel.E_UseScene.DailyTask;
-        LevelObj.SetActive(false);
+        LevelObj.SetActive(alwaysShowLevel);
+        if (alwaysShowLevel) levelTxt.text = LanguageUtils.GetFormatText("Menu_LevelBtn", SaveDataUtils.GameData.playerSelectedLv);
         OnRefresh();
         if (useScene == DoubleGetRewardPanel.E_UseScene.WinPanel)
         {
@@ -246,6 +255,17 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
 
     private void Update() // 这里是为了防止恭喜获得界面弹出， 玩家点击游戏物体不小心点击到按钮做的防误触
     {
+        // The normal action has its own timer; the ad button's short click guard
+        // must not reveal it early. OnClose and claim startup cancel this opening.
+        if (normalCollectRevealPending)
+        {
+            normalCollectElapsed += Time.unscaledDeltaTime;
+            if (normalCollectElapsed >= normalCollectRevealDelay)
+            {
+                normalCollectRevealPending = false;
+                closeBtn.gameObject.SetActive(true);
+            }
+        }
         if (isRecover) return;
 
         curTime += Time.deltaTime;
@@ -263,12 +283,15 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
     private void OnRefresh()
     {
         MaxDollarTip.gameObject.SetActive(true);
+        itemATxt.text = ItemUtils.GetItemText(itemA);
         dollarCount = HasDollar ? itemB.Count : 0;
         itemB.Count = dollarCount;
-        itemBTxt.text = ItemUtils.GetItemText(itemB); // 真网赚下会进行小数点修复
+        itemBTxt.text = LanguageUtils.GetText("CurrencyToken") + WithdrawalUtil.GetCustomizedValueByCountryType(itemB.Count);
         noThanksText.text = LanguageUtils.GetText("Btn_NoThanks");
 
         bool win = _useScene == DoubleGetRewardPanel.E_UseScene.WinPanel;
+        if (titleText != null) titleText.text = LanguageUtils.GetText(win ? "Win_Title" : "Reward_Title");
+        rewardText.text = BubblePics.Localization.Tr("seq_claim");
         if (win)
         {
 #if BIZZA_REAL_WITHDRAW
@@ -278,7 +301,7 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
                 rewardText.text = $"{rewardText.text}×2";
             }
             // SaveDataUtils.GameData.playerUnlockedLv++;
-            itemBTxt.text = ItemUtils.GetItemText(itemB);
+            itemBTxt.text = LanguageUtils.GetText("CurrencyToken") + WithdrawalUtil.GetCustomizedValueByCountryType(itemB.Count);
 #endif
 
 #if BIZZA_REAL_WITHDRAW

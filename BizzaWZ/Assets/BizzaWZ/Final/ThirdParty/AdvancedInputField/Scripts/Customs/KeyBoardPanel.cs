@@ -1,314 +1,191 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using AdvancedInputFieldPlugin;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class KeyBoardPanel : MonoBehaviour
-#if (UNITY_ANDROID || UNITY_IOS || UNITY_EDITOR)
-    , IBeginDragHandler, IDragHandler, IEndDragHandler
-#endif
+// The prefab supplies movable form content; the background and modal barrier
+// remain outside it and never move with the keyboard.
+public class KeyBoardPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("References")]
     [SerializeField] private RectTransform panel;
+    public RectTransform panelSizeRect;
 
     [Header("Keyboard Move")]
     [SerializeField] private float transitionTime = 0.25f;
     [SerializeField] private float desiredGapToKeyboard = 350;
+    [LabelText("是否可以拖拽")] public bool dragable = true;
+
+    public float autoOffsetY;
+    public float dragOffsetY;
 
     private Canvas canvas;
     private Vector2 originalPanelPos;
-
-    public float autoOffsetY;
     private Vector2 startPos;
     private Vector2 endPos;
     private float currentTime;
-
     private int lastKeyboardHeight;
     private GameObject lastSelectedObject;
+    private bool initialized;
+    private bool animating;
+    private bool dragging;
+    private readonly Vector3[] corners = new Vector3[4];
 
-    private Canvas Canvas
+    private Camera CanvasCamera => canvas.renderMode == RenderMode.ScreenSpaceOverlay
+        ? null : canvas.rootCanvas.worldCamera;
+
+    private void Start() => EnsureInitialized();
+
+    private bool EnsureInitialized()
     {
-        get
-        {
-            if (canvas == null)
-            {
-                canvas = GetComponentInParent<Canvas>();
-            }
-            return canvas;
-        }
-    }
-
-    private void Start()
-    {
-        if (panel == null)
-        {
-            Debug.LogError("[KeyBoardPanel] Panel is null.");
-            enabled = false;
-            return;
-        }
-
-        if (Canvas == null)
-        {
-            Debug.LogError("[KeyBoardPanel] Canvas not found in parent.");
-            enabled = false;
-            return;
-        }
-
+        if (initialized) return true;
+        if (panel == null) return false;
+        canvas = GetComponentInParent<Canvas>();
+        if (canvas == null) return false;
         originalPanelPos = panel.anchoredPosition;
-        currentTime = transitionTime;
+        initialized = true;
+        return true;
     }
 
     private void OnEnable()
     {
         NativeKeyboardManager.AddKeyboardHeightChangedListener(OnKeyboardHeightChanged);
-
-        StartCoroutine(DelayDo());
     }
-
-    private IEnumerator DelayDo()
-    {
-        yield return new WaitForEndOfFrame();
-        _originMap = new();
-        var AdvancedInputFields = GetComponentsInChildren<AdvancedInputField>();
-        Vector3[] corners = new Vector3[4];
-        foreach (var v in AdvancedInputFields)
-        {
-            v.gameObject.GetComponent<RectTransform>().GetWorldCorners(corners);
-            float inputBottomScreenY;
-            inputBottomScreenY = corners[0].y;
-            _originMap.Add(v, inputBottomScreenY);
-        }
-
-        panelSizeRect.GetWorldCorners(corners);
-        _normalPosDelta = - corners[0].y;
-    }
-
-    public RectTransform panelSizeRect;
-    private float _normalPosDelta = 0;
-    private Dictionary<AdvancedInputField, float> _originMap = new();
 
     private void OnDisable()
     {
         NativeKeyboardManager.RemoveKeyboardHeightChangedListener(OnKeyboardHeightChanged);
+        if (initialized && panel != null) panel.anchoredPosition = originalPanelPos;
+        initialized = animating = dragging = false;
+        lastKeyboardHeight = 0;
+        lastSelectedObject = null;
+        autoOffsetY = dragOffsetY = 0f;
     }
 
     private void Update()
     {
-        if (_needAutoMove)
+        if (!EnsureInitialized()) return;
+        if (animating)
         {
-            if (currentTime < transitionTime)
-            {
-                currentTime += Time.deltaTime;
-                if (currentTime > transitionTime)
-                {
-                    currentTime = transitionTime;
-                }
-
-                float t = transitionTime <= 0.0001f ? 1f : currentTime / transitionTime;
-                panel.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
-                
-            }
+            currentTime += Time.unscaledDeltaTime;
+            float t = transitionTime <= 0f ? 1f : Mathf.Clamp01(currentTime / transitionTime);
+            panel.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
+            if (t >= 1f) animating = false;
         }
 
-
-        if (lastKeyboardHeight > 0 && dragable == true)
-        {
-            GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-            if (selected != null && selected != lastSelectedObject)
-            {
-                lastSelectedObject = selected;
-
-                if (selected.GetComponent<AdvancedInputField>() != null)
-                {
-                    RecalcAutoOffset(lastKeyboardHeight);
-                    AnimateToTarget();
-                }
-            }
-        }
+        if (lastKeyboardHeight <= 0 || dragging) return;
+        GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selected == lastSelectedObject) return;
+        lastSelectedObject = selected;
+        if (TryGetSelectedField(out var field)) RevealField(field);
     }
 
-    private void OnKeyboardHeightChanged(int keyboardHeight)
+    public void OnKeyboardHeightChanged(int keyboardHeight)
     {
-        lastKeyboardHeight = keyboardHeight;
-
-        if (keyboardHeight > 0)
+        if (!EnsureInitialized()) return;
+        lastKeyboardHeight = Mathf.Max(0, keyboardHeight);
+        dragging = false;
+        lastSelectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (lastKeyboardHeight == 0)
         {
-            RecalcAutoOffset(keyboardHeight);
+            AnimateToOffset(0f);
+        }
+        else if (TryGetSelectedField(out var field))
+        {
+            RevealField(field);
         }
         else
         {
-            autoOffsetY = 0f;
-            lastSelectedObject = null;
+            AnimateToOffset(ClampOffset(panel.anchoredPosition.y - originalPanelPos.y));
         }
-
-        AnimateToTarget();
     }
 
-    private bool _needAutoMove;
-    private void RecalcAutoOffset(int keyboardHeight)
+    private bool TryGetSelectedField(out RectTransform field)
     {
-        if (EventSystem.current == null)
-        {
-           // autoOffsetY = 0f;
-            return;
-        }
-
-        GameObject targetObject = EventSystem.current.currentSelectedGameObject;
-        if (targetObject == null)
-        {
-            //autoOffsetY = 0f;
-            return;
-        }
-
-        AdvancedInputField inputField = targetObject.GetComponent<AdvancedInputField>();
-        if (inputField == null)
-        {
-        // autoOffsetY = 0f;
-            return;
-        }
-
-        RectTransform target = targetObject.GetComponent<RectTransform>();
-        if (target == null)
-        {
-            //autoOffsetY = 0f;
-            return;
-        }
-
-        Vector3[] corners = new Vector3[4];
-        target.GetWorldCorners(corners);
-
-        float inputBottomScreenY;
-
-        float nowButtonScreenY = 0;
-        if (Canvas.renderMode == RenderMode.ScreenSpaceOverlay)
-        {
-            inputBottomScreenY = corners[0].y;
-        }
-        else
-        {
-            Camera cam = Canvas.worldCamera;
-            if (cam == null)
-            {
-                autoOffsetY = 0f;
-                return;
-            }
-
-            Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, corners[0]);
-            inputBottomScreenY = screenPoint.y;
-        }
-
-        nowButtonScreenY = inputBottomScreenY;
-        if (_originMap.ContainsKey(inputField))
-        {
-            inputBottomScreenY = _originMap[inputField];
-        }
-
-        _needAutoMove = nowButtonScreenY < inputBottomScreenY + _normalPosDelta + lastKeyboardHeight;
-
-        float keyboardTopScreenY = keyboardHeight;
-        float currentGapPx = inputBottomScreenY - keyboardTopScreenY;
-        float desiredGapPx = desiredGapToKeyboard * Canvas.scaleFactor;
-
-        float needMovePx = desiredGapPx - currentGapPx;
-
-        if (needMovePx <= 0f)
-        {
-            autoOffsetY = 0f;
-            return;
-        }
-
-        autoOffsetY = needMovePx / Canvas.scaleFactor;
+        field = null;
+        var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selected == null || !selected.transform.IsChildOf(panel) ||
+            selected.GetComponent<AdvancedInputField>() == null) return false;
+        field = selected.transform as RectTransform;
+        return field != null;
     }
 
-    private void AnimateToTarget()
+    private void RevealField(RectTransform field)
     {
-        dragOffsetY = 0;
+        float pixelsPerUnit = PixelsPerPanelUnit();
+        float currentOffset = panel.anchoredPosition.y - originalPanelPos.y;
+        float restingBottom = BottomScreenY(field) - currentOffset * pixelsPerUnit;
+        float offset = (lastKeyboardHeight - restingBottom) / pixelsPerUnit + desiredGapToKeyboard;
+        AnimateToOffset(ClampOffset(offset));
+    }
+
+    private float PixelsPerPanelUnit()
+    {
+        // Sample a longer segment to avoid subtracting nearly equal screen
+        // coordinates on tall/scaled canvases and accumulating rounding drift.
+        const float sampleDistance = 100f;
+        Transform parent = panel.parent;
+        Vector3 origin = parent != null ? parent.TransformPoint(Vector3.zero) : Vector3.zero;
+        Vector3 sample = Vector3.up * sampleDistance;
+        Vector3 up = parent != null ? parent.TransformPoint(sample) : sample;
+        return Mathf.Max(0.0001f, Mathf.Abs(
+            RectTransformUtility.WorldToScreenPoint(CanvasCamera, up).y -
+            RectTransformUtility.WorldToScreenPoint(CanvasCamera, origin).y) / sampleDistance);
+    }
+
+    private float BottomScreenY(RectTransform rect)
+    {
+        rect.GetWorldCorners(corners);
+        float bottom = float.PositiveInfinity;
+        for (int i = 0; i < corners.Length; i++)
+            bottom = Mathf.Min(bottom, RectTransformUtility.WorldToScreenPoint(CanvasCamera, corners[i]).y);
+        return bottom;
+    }
+
+    private float ClampOffset(float offset)
+    {
+        if (lastKeyboardHeight <= 0) return 0f;
+        float pixelsPerUnit = PixelsPerPanelUnit();
+        float currentOffset = panel.anchoredPosition.y - originalPanelPos.y;
+        float restingBottom = BottomScreenY(panelSizeRect != null ? panelSizeRect : panel)
+            - currentOffset * pixelsPerUnit;
+        float maxOffset = Mathf.Max(0f,
+            (lastKeyboardHeight - restingBottom) / pixelsPerUnit + desiredGapToKeyboard);
+        return Mathf.Clamp(offset, 0f, maxOffset);
+    }
+
+    private void AnimateToOffset(float offset)
+    {
+        autoOffsetY = offset;
+        dragOffsetY = 0f;
         startPos = panel.anchoredPosition;
-        endPos = new Vector2(originalPanelPos.x, originalPanelPos.y + autoOffsetY + dragOffsetY);
+        endPos = originalPanelPos + Vector2.up * offset;
         currentTime = 0f;
-        float height = GetInputToKeyboardHeight();
-        if (height <= 0 && height != -1)
-        {
-            // endPos = new Vector2(originalPanelPos.x, originalPanelPos.y + desiredGapToKeyboard);
-            dragOffsetY = 0;
-        }
+        animating = transitionTime > 0f;
+        if (!animating) panel.anchoredPosition = endPos;
     }
 
-#if (UNITY_ANDROID || UNITY_IOS || UNITY_EDITOR)
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // 不做也行，留给你扩展
+        dragging = dragable && lastKeyboardHeight > 0 && EnsureInitialized();
+        if (dragging) animating = false;
     }
 
-    public float dragOffsetY = 0f;
-    [LabelText("是否可以拖拽")] public bool dragable = true;
     public void OnDrag(PointerEventData eventData)
     {
-        if (!dragable) return;
-        // if (!enableDragWhenKeyboardVisible) return;
-        if (lastKeyboardHeight <= 0) return; // 只在键盘出现时允许拖动（可按需要改成一直可拖）
-
-        // 注意：PointerEventData.delta 是屏幕像素，需要除以 canvas.scaleFactor 才是 UI 坐标增量
-        float deltaY = eventData.delta.y / Canvas.scaleFactor;
-        dragOffsetY += deltaY;
-
-        // 立即更新目标（拖动要跟手）
-        panel.anchoredPosition = new Vector2(panel.anchoredPosition.x, panel.anchoredPosition.y + deltaY);
-
-        // 同时更新动画目标，避免松手后被动画拉回
-        AnimateToTarget();
-        currentTime = transitionTime; // 取消平滑，保持跟手（也可以不取消）
+        if (!dragable || lastKeyboardHeight <= 0 || !EnsureInitialized()) return;
+        animating = false;
+        float currentOffset = panel.anchoredPosition.y - originalPanelPos.y;
+        float offset = ClampOffset(currentOffset + eventData.delta.y / PixelsPerPanelUnit());
+        dragOffsetY = offset - autoOffsetY;
+        panel.anchoredPosition = originalPanelPos + Vector2.up * offset;
     }
 
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        // 你也可以在这里做惯性、回弹等
-    }
-#endif
+    public void OnEndDrag(PointerEventData eventData) => dragging = false;
 
     public float GetInputToKeyboardHeight()
     {
-        // 如果没有键盘高度或者没有选择输入框，返回 -1 表示无效值
-        if (lastKeyboardHeight <= 0 || EventSystem.current == null || EventSystem.current.currentSelectedGameObject == null)
-        {
-            return -1f;
-        }
-
-        // 获取当前选择的输入框
-        GameObject targetObject = EventSystem.current.currentSelectedGameObject;
-        if (targetObject.GetComponent<AdvancedInputField>() == null)
-        {
-            return -1f;
-        }
-
-        RectTransform target = targetObject.GetComponent<RectTransform>();
-
-        // 获取输入框的底部位置
-        if (!TryGetInputBottomScreenY(target, out float inputBottomScreenY))
-        {
-            return -1f;
-        }
-
-        // 计算键盘顶部的位置
-        float keyboardTopScreenY = lastKeyboardHeight;
-
-        // 返回输入框底部到键盘顶部的距离
-        return inputBottomScreenY - keyboardTopScreenY;
-    }
-
-    private bool TryGetInputBottomScreenY(RectTransform target, out float inputBottomScreenY)
-    {
-        inputBottomScreenY = 0f; Vector3[] corners = new Vector3[4]; target.GetWorldCorners(corners); // 0 = 左下 
-        Vector3 bottomLeftWorld = corners[0];
-        if (Canvas.renderMode == RenderMode.ScreenSpaceOverlay) { inputBottomScreenY = bottomLeftWorld.y; return true; }
-        Camera cam = Canvas.worldCamera; if (cam == null)
-        {
-            Debug.LogWarning("[KeyBoardPanel] Canvas.worldCamera is null.");
-            return false;
-        }
-        inputBottomScreenY = RectTransformUtility.WorldToScreenPoint(cam, bottomLeftWorld).y; return true;
+        if (lastKeyboardHeight <= 0 || !EnsureInitialized() || !TryGetSelectedField(out var field)) return -1f;
+        return BottomScreenY(field) - lastKeyboardHeight;
     }
 }

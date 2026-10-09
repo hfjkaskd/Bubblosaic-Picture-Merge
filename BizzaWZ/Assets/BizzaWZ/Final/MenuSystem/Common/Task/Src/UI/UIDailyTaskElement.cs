@@ -23,6 +23,9 @@ public class UIDailyTaskElement : MonoBehaviour
     private List<UIItem> ins = new();
 
     public GameObject[] stateObjs;
+    [System.Serializable] public struct TaskIcon { public E_AllTaskType type; public GameObject visual; }
+    [SerializeField] private TaskIcon[] taskIcons;
+    [SerializeField] private GameObject defaultIcon;
 
     [Button]
     public void Test()
@@ -53,6 +56,14 @@ public class UIDailyTaskElement : MonoBehaviour
         m_dailyRuntimeInfo = runtimeDailyTaskInfo;
         m_dailyRuntimeInfo.onUpdateProgress += OnTaskUpdateProgress;
         descTxt.text = LanguageUtils.GetText(m_dailyRuntimeInfo.config.Description);
+        bool matched = false;
+        if (taskIcons != null) foreach (var entry in taskIcons)
+        {
+            bool active = entry.type == m_dailyRuntimeInfo.config.CompleteConditions;
+            if (entry.visual != null) entry.visual.SetActive(active);
+            matched |= active;
+        }
+        if (defaultIcon != null) defaultIcon.SetActive(!matched);
         btnReward.onClick.RemoveAllListeners();
         btnReward.onClick.AddListener(() =>
         {
@@ -134,7 +145,7 @@ public class UIDailyTaskElement : MonoBehaviour
     {
         //进度
         progressTxt.text = $"{m_dailyRuntimeInfo.CurrentProgress}/{m_dailyRuntimeInfo.TargetProgress}";
-        progressBar.fillAmount = Mathf.Clamp01(m_dailyRuntimeInfo.CurrentProgress * 1.0f / m_dailyRuntimeInfo.TargetProgress);
+        progressBar.fillAmount = m_dailyRuntimeInfo.TargetProgress > 0 ? Mathf.Clamp01(m_dailyRuntimeInfo.CurrentProgress * 1.0f / m_dailyRuntimeInfo.TargetProgress) : 0;
         //按钮
         objRewarded.gameObject.SetActive(m_dailyRuntimeInfo.TaskState == E_TaskState.Rewarded);
         objRewardedMask.gameObject.SetActive(m_dailyRuntimeInfo.TaskState == E_TaskState.Rewarded);

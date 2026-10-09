@@ -19,6 +19,8 @@ public class AddPropPanel : UIPageBase<E_ItemType>
     public TMP_Text limitTxt;
     public Sprite busAwaySortPropIcon;
     public Sprite busAwayShufflePropIcon;
+    [SerializeField] private GameObject authoredHintVisual;
+    [SerializeField] private TMP_Text descriptionText;
 
     private E_ItemType _itemType;
     private PropConfigSO propConfigSO;
@@ -90,11 +92,23 @@ public class AddPropPanel : UIPageBase<E_ItemType>
             E_ItemType.GameProp_3 => "BUBBLE_TOOL_MAGNET",
             _ => throw new ArgumentOutOfRangeException(nameof(itemType))
         });
+        if (authoredHintVisual != null)
+        {
+            authoredHintVisual.SetActive(itemType == E_ItemType.GameProp_1);
+            propIcon.gameObject.SetActive(itemType != E_ItemType.GameProp_1);
+            propName.text = BubblePics.Localization.Tr(itemType == E_ItemType.GameProp_1 ? "seq_need_hint" : "seq_more_tools");
+        }
+        if (descriptionText != null) descriptionText.text = BubblePics.Localization.Tr(itemType switch
+        {
+            E_ItemType.GameProp_1 => "seq_hint_description",
+            E_ItemType.GameProp_2 => "seq_drop_description",
+            _ => "seq_magnet_description"
+        });
         var _propUseTimes = NumbericalStatistics._propUseTimes;
         var maxTimes = config.preLimitNum;
         _propUseTimes.TryGetValue(itemType, out var curTimes);
         limitTxt.gameObject.SetActive(maxTimes != int.MaxValue);
-        limitTxt.text = LanguageUtils.GetFormatText("Limit_Tip", curTimes, maxTimes);
+        limitTxt.text = curTimes + " / " + maxTimes;
     }
 
     protected override void OnClose()

@@ -426,27 +426,22 @@ namespace BubblePics
                 nowOn,
                 _page != null ? "game_setting" : "home_setting");
             RefreshToggles();
-            if (nowOn)
-                Haptics.Play(HapticLevel.Medium);
         }
 
         void OnClosePressed()
         {
             if (!BeginDismiss()) return;
-            Haptics.Play(HapticLevel.Weak);
         }
 
         void OnRestartPressed()
         {
             if (!BeginDismiss()) return;
-            Haptics.Play(HapticLevel.Weak);
             if (_page != null) _page.RestartLevel();
         }
 
         void OnHomePressed()
         {
             if (!BeginDismiss()) return;
-            Haptics.Play(HapticLevel.Weak);
             if (_page != null) _page.RequestGoHome();
         }
 

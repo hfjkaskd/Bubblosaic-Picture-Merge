@@ -14,6 +14,12 @@ namespace BubblePics
         public const int MOVES_UNLOCK_LEVEL = 2;
         public const int STEP_SAFETY_BUFFER = 5;
         const float SPAWN_INTERVAL_SEC = 0.05f;
+        [Header("Puzzle drop pacing")]
+        [SerializeField, Min(4)] int _maxBoardBubbles = 15;
+        [SerializeField, Range(2, 3)] int _maxBoardImages = 3;
+        [SerializeField, Min(1)] int _minDropBubbles = 6;
+        [SerializeField, Min(1)] int _maxDropBubbles = 10;
+        int _nextDropSize;
         public const int COIN_PER_STEP = 5;
         const float SETTLE_DELAY_BEFORE_BARS_SLIDE_SEC = 1.25f;
 
@@ -160,7 +166,7 @@ namespace BubblePics
             Toolbar?.InitializePrefabRuntime(app.HudRoot, this);
 
             Combo = InstantiateMounted<ComboOverlay>(catalog.ComboOverlay, app);
-            Combo?.InitializePrefabRuntime(app.WorldRoot);
+            Combo?.InitializePrefabRuntime(app.HudRoot);
 
             Completion = GetOrAddController<CompletionFx>();
             Completion.InitializePrefabRuntime(this, app.WorldRoot);
@@ -238,9 +244,8 @@ namespace BubblePics
             Specials = gameObject.AddComponent<BubbleSpecialMechanics>();
             Specials.Initialize(this);
 
-            var comboGo = new GameObject("ComboOverlay");
-            Combo = comboGo.AddComponent<ComboOverlay>();
-            Combo.Build(app.WorldRoot);
+            Combo = PrefabCatalog.InstantiateComponent<ComboOverlay>(PrefabCatalog.Current.ComboOverlay, app.HudRoot);
+            Combo.InitializePrefabRuntime(app.HudRoot);
 
             Completion = gameObject.AddComponent<CompletionFx>();
             Completion.Page = this;
@@ -314,7 +319,7 @@ namespace BubblePics
         public void SetVisible(bool v)
         {
             if (TopBar != null && TopBar.Root != null)
-                TopBar.Root.gameObject.SetActive(v);
+                TopBar.SetVisible(v);
             if (Toolbar != null && Toolbar.Root != null)
                 Toolbar.Root.gameObject.SetActive(v);
             if (App.I != null && App.I.WorldRoot != null)
@@ -358,11 +363,13 @@ namespace BubblePics
         {
             if (!LevelRepo.TryGet(levelNumber, out var level))
             {
-                Debug.LogWarning($"Level {levelNumber} is beyond the bundled content.");
-                SetVisible(false);
-                BizzaGameplayBridge.OnLoadFailed();
-                LevelOpenCompleted?.Invoke(levelNumber, false);
-                return;
+                // A catalog gap follows the same local reuse path as a missing image.
+                level = new LevelData
+                {
+                    level = levelNumber,
+                    chapter = (Mathf.Max(1, levelNumber) - 1) / 25 + 1,
+                    level_unique_id = "local-reuse-" + levelNumber,
+                };
             }
 
             _openLevelGeneration++;
@@ -440,7 +447,7 @@ namespace BubblePics
             yield return null;
             if (generation != _openLevelGeneration) yield break;
             Canvas.ForceUpdateCanvases();
-            App.I?.HideLoading();
+            if (!BizzaGameplayBridge.IsLoadingLevel) App.I?.HideLoading();
             LevelOpenCompleted?.Invoke(selection.GlobalLevel, true);
             _openLevelCo = null;
         }
@@ -460,22 +467,29 @@ namespace BubblePics
             bool usingFrozenLevel = frozenLevel != null;
             if (usingFrozenLevel) level = frozenLevel;
 
-            LoadingOverlay loading = null; // Framework owns the loading page.
-            loading?.SetProgress(0f);
+            float loadingProgress = 0f;
 
             void UpdateLoadingProgress(float progress)
             {
+                loadingProgress = progress;
                 if (generation == _openLevelGeneration)
-                    loading?.SetProgress(progress);
+                    App.I?.ActiveLoading?.SetProgress(progress);
+            }
+
+            void ShowReconnecting()
+            {
+                if (generation == _openLevelGeneration)
+                    App.I?.ShowReconnecting()?.SetProgress(loadingProgress);
             }
 
             Texture2D[] loaded = null;
             string error = null;
-            yield return LevelImageLoader.Load(
+            yield return LevelImageLoader.LoadForGameplay(
                 level,
                 textures => loaded = textures,
                 message => error = message,
-                UpdateLoadingProgress);
+                UpdateLoadingProgress,
+                ShowReconnecting);
 
             if (generation != _openLevelGeneration)
             {
@@ -494,12 +508,13 @@ namespace BubblePics
                 level = catalogLevel;
                 loaded = null;
                 error = null;
-                loading?.SetProgress(0f);
-                yield return LevelImageLoader.Load(
+                loadingProgress = 0f;
+                yield return LevelImageLoader.LoadForGameplay(
                     level,
                     textures => loaded = textures,
                     message => error = message,
-                    UpdateLoadingProgress);
+                    UpdateLoadingProgress,
+                    ShowReconnecting);
             }
 
             if (generation != _openLevelGeneration) yield break;
@@ -515,7 +530,7 @@ namespace BubblePics
                         (Time.realtimeSinceStartup - loadStartedRealtime) *
                         1000f),
                     error);
-                loading?.Hide();
+                App.I?.ActiveLoading?.Hide();
                 _openLevelCo = null;
                 Debug.LogError($"Could not open level {levelNumber}: {error}");
                 SetVisible(false);
@@ -581,15 +596,17 @@ namespace BubblePics
             Backdrop.Ambient?.StartLayer();
             Backdrop.MidDepth?.StartLayer();
 
-            // Keep the original modal loader over the synchronous setup and
-            // first settled wave. Hiding it immediately after the download
+            // If missing resources required a reconnect popup, keep it over
+            // setup and the first settled wave. Hiding it after the download
             // exposed a blank gameplay background while these objects were
             // still being built. One rendered frame also lets Canvas/TMP and
             // the freshly created bubble meshes submit before the reveal.
             yield return null;
             if (generation != _openLevelGeneration) yield break;
             Canvas.ForceUpdateCanvases();
-            loading?.Hide();
+            // Direct GM/preview entry has no bridge awaiting this completion.
+            // Framework entry owns its popup until the first wave has landed.
+            if (!BizzaGameplayBridge.IsLoadingLevel) App.I?.HideLoading();
             LevelOpenCompleted?.Invoke(levelNumber, true);
             _openLevelCo = null;
         }
@@ -683,6 +700,7 @@ namespace BubblePics
         {
             BizzaGameplayBridge.OnRoundClearing();
             RoundSeq++;
+            _nextDropSize = 0;
             Specials?.CancelRoundEffects();
             _deferNextWave = false;
             _delayDropOwned.Clear();
@@ -804,7 +822,7 @@ namespace BubblePics
         /// <summary>
         /// GM-only direct jump. The active round is invalidated immediately;
         /// OpenLevel then either starts from prepared local/cache textures or
-        /// presents the normal level-loading overlay until they are ready.
+        /// presents the reconnect overlay only if resources are missing.
         /// </summary>
         public void GmJumpToLevelImmediately(int levelNumber)
         {
@@ -988,7 +1006,13 @@ namespace BubblePics
         IEnumerator ConsumeNextWaveCo(bool preSettled, bool isOpening)
         {
             int myRound = RoundSeq;
-            var tokens = Scheduler.PullNextWave();
+            // Reserve against the completed previous drop, including bubbles
+            // that have not yet spawned when two closure callbacks overlap.
+            while (myRound == RoundSeq && Field.IsSpawnInFlight)
+                yield return null;
+            if (myRound != RoundSeq || _dead || _persisted) yield break;
+            var tokens = PullPlayableBatch();
+            if (tokens.Count == 0) yield break;
             Specials?.PrepareWave(tokens, isOpening);
             if (tokens.Count > 0) Field.BeginSpawnBatch();
 
@@ -1017,10 +1041,21 @@ namespace BubblePics
             if (myRound == RoundSeq) SaveRoundSnapshot();
         }
 
-        public IEnumerator DropPendingBubbles(int count)
+        public IEnumerator DropPendingBubbles()
         {
             int myRound = RoundSeq;
-            var toks = Scheduler.PullPendingTokens(count);
+            while (myRound == RoundSeq && Field.IsSpawnInFlight)
+                yield return null;
+            if (myRound != RoundSeq || _dead || _persisted) yield break;
+            // The drop tool explicitly requests more bubbles. Automatic board
+            // capacity, visible-image and group-pacing rules must not reject it.
+            // Keep the configured batch size instead of emptying the queue.
+            int minimum = Mathf.Max(1, _minDropBubbles);
+            int maximum = Mathf.Max(minimum, _maxDropBubbles);
+            var toks = ModeSession.ActiveKind == GameplayKind.Tangram
+                ? Scheduler.PullNextWave()
+                : Scheduler.PullPendingTokens(Random.Range(minimum, maximum + 1));
+            if (toks.Count == 0) yield break;
             if (toks.Count > 0) Field.BeginSpawnBatch();
             for (int i = 0; i < toks.Count; i++)
             {
@@ -1034,6 +1069,62 @@ namespace BubblePics
             if (toks.Count > 0) Field.EndSpawnBatch();
             if (myRound == RoundSeq) Specials?.OnWaveDropped(false);
             if (myRound == RoundSeq) SaveRoundSnapshot();
+        }
+
+        public bool CanDropPendingBubbles()
+        {
+            return GetDropAvailability() == DropAvailability.Ready;
+        }
+
+        public DropAvailability GetDropAvailability()
+        {
+            if (Scheduler == null || Field == null || _dead || _persisted)
+                return DropAvailability.RoundUnavailable;
+            if (Field.IsSpawnInFlight) return DropAvailability.Spawning;
+            if (!Scheduler.HasPendingTokens()) return DropAvailability.NoPending;
+            return DropAvailability.Ready;
+        }
+
+        List<string> PullPlayableBatch()
+        {
+            if (Scheduler == null) return new List<string>();
+
+            // Tangram uses a mold bubble that must stay with all four shape
+            // pieces until the final merge. Its authored wave is already
+            // small; bypass quadrant batching so the mold cannot be separated
+            // from the pieces it completes.
+            if (ModeSession.ActiveKind == GameplayKind.Tangram)
+                return Scheduler.PullNextWave();
+
+            // Keep the same target while waiting for room. UI availability
+            // checks never reroll the count or consume random state.
+            if (_nextDropSize <= 0)
+            {
+                int minimum = Mathf.Max(1, _minDropBubbles);
+                int maximum = Mathf.Max(minimum, _maxDropBubbles);
+                _nextDropSize = Random.Range(minimum, maximum + 1);
+            }
+            List<string> tokens = Scheduler.PullNextPlayableBatch(
+                PuzzleBoardFragments(), _maxBoardBubbles, _maxBoardImages,
+                _nextDropSize, _minDropBubbles, _maxDropBubbles);
+            if (tokens.Count > 0) _nextDropSize = 0;
+            return tokens;
+        }
+
+        List<BubbleFragment> PuzzleBoardFragments()
+        {
+            var boardFragments = new List<BubbleFragment>();
+            if (Field != null)
+            {
+                foreach (BubbleView bubble in Field.AllBubbles())
+                {
+                    if (bubble != null && bubble.State == BubbleState.Alive &&
+                        bubble.Fragment != null && !bubble.IsStarfish &&
+                        !bubble.IsMagnetBubble && !bubble.Fragment.IsRainbow)
+                        boardFragments.Add(bubble.Fragment);
+                }
+            }
+            return boardFragments;
         }
 
         public void RequestDeferNextWave() { _deferNextWave = true; }
@@ -1173,6 +1264,7 @@ namespace BubblePics
 
         public void EmitImageCollected(int imageId, int slotIdx, Vector3 world)
         {
+            BizzaGameplayBridge.OnImageCollected(world);
             Specials?.OnImageCollected(imageId);
             if (!_delayDropOwned.Remove(imageId)) return;
             StartCoroutine(DelayDropCo());
@@ -1689,7 +1781,9 @@ namespace BubblePics
                         "Stopped restored-board wave repair after 100 waves.");
                     yield break;
                 }
+                int pendingBefore = Scheduler.CountTotalFragments();
                 yield return ConsumeNextWaveCo(false, false);
+                if (Scheduler.CountTotalFragments() == pendingBefore) break;
             }
 
             if (myRound == RoundSeq && restoredWaves > 0)

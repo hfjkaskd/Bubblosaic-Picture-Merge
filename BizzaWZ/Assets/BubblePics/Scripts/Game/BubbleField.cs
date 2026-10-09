@@ -34,6 +34,7 @@ namespace BubblePics
         [SerializeField] BoxCollider2D _wallLeft;
         [SerializeField] BoxCollider2D _wallRight;
         [SerializeField] BoxCollider2D _wallBottom;
+        [SerializeField, Range(0f, 1f)] float _playfieldBottomRatio;
 
         public Transform Container
         {
@@ -96,6 +97,8 @@ namespace BubblePics
                 ? NAV_BOTTOM_HEIGHT_PX_V2
                 : NAV_BOTTOM_HEIGHT_PX;
             FloorY = DeviceLayout.Current.FloorY(navHeight);
+            if (_playfieldBottomRatio > 0f)
+                FloorY = Mathf.Min(FloorY, DeviceLayout.Current.SafeTop + DeviceLayout.Current.UsableHeight * _playfieldBottomRatio);
         }
 
         public void BuildWalls()
@@ -494,7 +497,15 @@ namespace BubblePics
 
         public void ClearBoard()
         {
-            foreach (var b in AllBubbles()) Destroy(b.gameObject);
+            foreach (var b in AllBubbles())
+            {
+                // Destroy is deferred until the end of the frame. A new round
+                // can select its opening batch immediately, so remove old
+                // fragments from board queries before that selection happens.
+                b.State = BubbleState.Dead;
+                b.gameObject.SetActive(false);
+                Destroy(b.gameObject);
+            }
         }
     }
 }

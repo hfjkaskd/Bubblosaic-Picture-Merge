@@ -19,6 +19,9 @@ public partial class UIPageIds
 public class DailyMissionPanel : UIPageBase
 {
     public TMP_Text hintsTxt;
+    [SerializeField] private TMP_Text rewardAmountText;
+    [SerializeField] private TMP_Text taskProgressText;
+    [SerializeField] private Image taskProgressFill;
     public TMP_Text refreshTimeTxt;
     // public TMP_Text adsCountTxt;
 
@@ -83,7 +86,7 @@ public class DailyMissionPanel : UIPageBase
     {
         if (!this) return;
 
-        if (responses.success && responses.data != null)
+        if (responses.success && responses.data != null && responses.data.Count > 0)
         {
             int cur = SaveDataUtils.GameData.userLookDailyAdCount;
             int max = SaveDataUtils.GameData.userLookDailyAdCountMax;
@@ -98,6 +101,8 @@ public class DailyMissionPanel : UIPageBase
                 );
             countTxt = $" (<color=#9039D8>{cur}/{max}</color>)";
              hintsTxt.text = hintTxt + countTxt;
+            if(rewardAmountText!=null)rewardAmountText.text=LanguageUtils.GetText("CurrencyToken")+WithdrawalUtil.GetCustomizedValueByCountryType((float)data.Os_My);
+            RefreshProgress(cur,max);
 
             LogLogger.LogVerbose(LogTag.DailyAD, $"每日任务界面刷新 ： " +
                                              $"{cur}/{max}");
@@ -125,7 +130,11 @@ public class DailyMissionPanel : UIPageBase
             timer = 0f;
             UpdateRemainingTime();
         }
-        UpdateRemainingTime();
+    }
+    private void RefreshProgress(int current,int total)
+    {
+        if(taskProgressText!=null)taskProgressText.text=current+" / "+total;
+        if(taskProgressFill!=null)taskProgressFill.fillAmount=total>0?Mathf.Clamp01((float)current/total):0;
     }
 
     private void UpdateRemainingTime()
@@ -133,12 +142,12 @@ public class DailyMissionPanel : UIPageBase
         DateTime now = DateTime.Now;
         DateTime tomorrow = now.Date.AddDays(1); // 明天 00:00
         TimeSpan remain = tomorrow - now;
-        refreshTimeTxt.text = LanguageUtils.GetFormatText("DailyMissionPanel_RefreshTime", $"{remain.Hours:D2}:{remain.Minutes:D2}:{remain.Seconds:D2}");
+        refreshTimeTxt.text = string.Format(BubblePics.Localization.Tr("seq_daily_reset"), $"{remain.Hours:D2}:{remain.Minutes:D2}:{remain.Seconds:D2}");
     }
 
     public void OnClickGoStateBtn()
     {
-        BizzaSdk.Ad.ShowRewardAd(E_AdPos.DailyMission.ToString(), 0, OnGoResponse, ecpmLimit);
+        BizzaSdk.Ad.ShowRewardAd(nameof(E_AdPos.DailyMission), 0, OnGoResponse, ecpmLimit);
         UIModule.Instance.m_curadvertistics--;
         SaveDataUtils.GameData.btnDailyTaskClick++;
     }
@@ -156,6 +165,7 @@ public class DailyMissionPanel : UIPageBase
             LogLogger.LogVerbose(LogTag.DailyAD, $"每日任---务界面刷新 ： " + $"{lookAdCount}/{lookMax}");
             countTxt = $"<color=#9039D8>{lookAdCount}/{lookMax}</color>";
             hintsTxt.text = hintTxt + countTxt;
+            RefreshProgress(lookAdCount,lookMax);
             AccountModule.Instance.Request_RoutineTaskLookAdMoneyRequest(true, OnResultCallback, black);
         }
         else

@@ -10,6 +10,8 @@
 /APIReplaceReports/
 /ArtChanges/
 /output/
+/_ui_audit/
+/_ui_audit-empty-move-residue/
 
 # Generated files from opening the repository root instead of BizzaWZ
 /[Ll]ibrary/

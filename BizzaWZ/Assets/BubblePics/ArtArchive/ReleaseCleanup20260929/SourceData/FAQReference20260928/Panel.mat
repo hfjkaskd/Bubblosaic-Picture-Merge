@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Panel
+  m_Shader: {fileID: 4800000, guid: 65abc5ecccac25b4bbbe0edc14b9a7ac, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: 15
+    - _EraseFeather: 0.5
+    - _EraseRadius: 15
+    - _Feather: 1
+    - _Radius: 0
+    - _SampleX: -1
+    - _SampleY: 1560
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Erase0: {r: 74, g: 298, b: 704, a: 1233}
+    - _Erase1: {r: 91, g: 582, b: 670, a: 17}
+    - _Erase2: {r: 91, g: 909, b: 670, a: 17}
+    - _Erase3: {r: 91, g: 1236, b: 670, a: 17}
+    - _Erase4: {r: 783, g: 292, b: 19, a: 198}
+    - _Erase5: {r: 0, g: 0, b: 0, a: 0}
+    - _TextureSize: {r: 852, g: 1846, b: 0, a: 0}
+    - _VisibleRect: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []

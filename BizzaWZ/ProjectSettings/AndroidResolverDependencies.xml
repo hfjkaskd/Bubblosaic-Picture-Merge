@@ -13,7 +13,7 @@
     <package>com.applovin.mediation:moloco-adapter:4.11.1.0</package>
     <package>com.applovin.mediation:unityads-adapter:4.20.0.0</package>
     <package>com.applovin.mediation:vungle-adapter:7.7.7.1</package>
-    <package>com.applovin:applovin-sdk:13.6.2</package>
+    <package>com.applovin:applovin-sdk:13.6.4</package>
     <package>com.google.android.gms:play-services-auth:17.0.0</package>
     <package>com.google.android.gms:play-services-auth-api-phone:17.1.0</package>
     <package>com.google.android.play:core-common:2.0.4</package>
@@ -34,7 +34,7 @@
     <setting name="packageDir" value="Assets/Plugins/Android" />
     <setting name="patchAndroidManifest" value="True" />
     <setting name="patchMainTemplateGradle" value="True" />
-    <setting name="projectExportEnabled" value="True" />
+    <setting name="projectExportEnabled" value="False" />
     <setting name="useFullCustomMavenRepoPathWhenExport" value="True" />
     <setting name="useFullCustomMavenRepoPathWhenNotExport" value="False" />
     <setting name="useJetifier" value="True" />

@@ -69,6 +69,13 @@ namespace BubblePics
         [SerializeField] DolphinDecoration _dolphin;
         [SerializeField] BonusChestDecoration _bonusChest;
         [SerializeField] Vector2 _portraitOffset = new Vector2(0f, 170f);
+        [SerializeField] float _layoutHeight = 390f;
+        [SerializeField] float _panelsTop = 50f;
+        GameplayHudHeader _header;
+        float _slideOffset;
+        public float LayoutHeight => _layoutHeight + (_header == null ? App.SafeTopDesign : 0f);
+        float PanelsTop => _panelsTop + (_header == null ? App.SafeTopDesign : 0f);
+        float HeaderScale => _header != null ? _header.LayoutScale : 1f;
         public DolphinDecoration Dolphin => _dolphin;
         public BonusChestDecoration BonusChest => _bonusChest;
 
@@ -190,13 +197,32 @@ namespace BubblePics
             BindPrefabRuntime();
         }
 
+        public void MountHeader(GameplayHudHeader header)
+        {
+            _header = header;
+            if (Root.parent != header.StatusMount) Root.SetParent(header.StatusMount, false);
+            header.gameObject.SetActive(Root.gameObject.activeSelf);
+            ApplyDeviceLayout();
+        }
+
+        public void SetVisible(bool visible)
+        {
+            Root.gameObject.SetActive(visible);
+            if (_header != null) _header.gameObject.SetActive(visible);
+        }
+
+        public void SetHudBarOffset(float offset)
+        {
+            _slideOffset = offset;
+            _dolphin?.SetHudBarOffset(offset * HeaderScale);
+            _bonusChest?.SetHudBarOffset(offset * HeaderScale);
+        }
+
         public void ApplyDeviceLayout()
         {
             if (Root != null)
             {
-                var offsetMin = Root.offsetMin;
-                offsetMin.y = -TOPBAR_HEIGHT;
-                Root.offsetMin = offsetMin;
+                Root.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, LayoutHeight);
             }
 
             var panels = _targetPanel != null
@@ -205,36 +231,67 @@ namespace BubblePics
             if (panels != null)
             {
                 var offsetMax = panels.offsetMax;
-                offsetMax.y = -PANELS_TOP;
+                offsetMax.y = -PanelsTop;
                 panels.offsetMax = offsetMax;
             }
-
-            if (_targetPanel != null)
-                _targetPanel.anchoredPosition = new Vector2(
-                    TARGET_PANEL_SHIFT,
-                    SIDE_PANEL_UP);
-            if (_movesPanel != null)
-                _movesPanel.anchoredPosition = new Vector2(
-                    MOVES_PANEL_SHIFT,
-                    SIDE_PANEL_UP);
 
             if (_dolphin != null)
             {
                 _dolphin.ApplyHudLayout(
                     App.DesignToWorld(DolphinPanelCenterDesign),
-                    App.WorldPerDesign);
+                    App.WorldPerDesign * HeaderScale);
             }
+            _bonusChest?.ApplyHudLayout(App.DesignToWorld(DolphinPanelCenterDesign), App.WorldPerDesign * HeaderScale);
+            SetHudBarOffset(_slideOffset);
+        }
+
+        public float GetExitSlideDistance(float restAnchoredY, float margin = 20f)
+        {
+            float topInset = _header != null ? _header.StatusTopDesign / HeaderScale : 0f;
+            float distance = LayoutHeight + topInset - restAnchoredY;
+            if (Root != null)
+            {
+                // Work in the bar's local coordinates so an existing slide,
+                // or the HUD canvas not yet being mounted, cannot affect its extent.
+                var corners = new Vector3[4];
+                foreach (Graphic graphic in Root.GetComponentsInChildren<Graphic>(false))
+                {
+                    if (!graphic.enabled) continue;
+                    Matrix4x4 toBar = Matrix4x4.identity;
+                    for (Transform current = graphic.transform; current != Root; current = current.parent)
+                        toBar = Matrix4x4.TRS(current.localPosition, current.localRotation, current.localScale) * toBar;
+                    graphic.rectTransform.GetLocalCorners(corners);
+                    for (int i = 0; i < corners.Length; i++)
+                        distance = Mathf.Max(distance, topInset - toBar.MultiplyPoint3x4(corners[i]).y - restAnchoredY);
+                }
+            }
+
+            // The portrait is mounted in world space but follows this same slide.
+            // Measure its visible frame around the authored resting position.
+            if (_dolphin != null && _dolphin.gameObject.activeInHierarchy)
+            {
+                float portraitY = topInset + PanelsTop + _portraitOffset.y + DolphinDecoration.PORTRAIT_OFFSET_FROM_CENTER.y;
+                foreach (Renderer renderer in _dolphin.GetComponentsInChildren<Renderer>(false))
+                {
+                    if (!renderer.enabled) continue;
+                    float belowOrigin = (_dolphin.transform.position.y - renderer.bounds.min.y) / (App.WorldPerDesign * HeaderScale);
+                    distance = Mathf.Max(distance, portraitY + belowOrigin);
+                }
+            }
+            return Mathf.Max(0f, distance) + Mathf.Max(0f, margin);
         }
 
         // The Godot CenterPanel spans the live middle third of the expanded
         // viewport, so its global centre follows the actual design width.
         // A fixed x=540 only centres the portrait at the reference 1080 width.
-        Vector2 DolphinPanelCenterDesign =>
-            new Vector2(DeviceLayout.ViewWidth * 0.5f + _portraitOffset.x, PANELS_TOP + _portraitOffset.y);
+        Vector2 DolphinPanelCenterDesign => _header != null
+            ? _header.StatusToDesign(new Vector2(_portraitOffset.x, PanelsTop + _portraitOffset.y))
+            : new Vector2(DeviceLayout.ViewWidth * 0.5f + _portraitOffset.x, PanelsTop + _portraitOffset.y);
 
         /// <summary>Restores runtime-only bindings after prefab instantiation.</summary>
         public void BindPrefabRuntime()
         {
+            if (!_movesUnlimitedActive && _movesNumber != null) _authoredMovesFontSize = _movesNumber.fontSize;
             RefreshLocalizedLabels();
             if (_dolphin != null)
                 _dolphin.BindPrefabRuntime();
@@ -318,11 +375,11 @@ namespace BubblePics
             if (App.I != null && !_dolphin.transform.IsChildOf(App.I.WorldRoot))
                 _dolphin.transform.SetParent(App.I.WorldRoot, false);
             Vector3 world = App.DesignToWorld(DolphinPanelCenterDesign);
-            _dolphin.InitializePrefabRuntime(world, App.WorldPerDesign);
+            _dolphin.InitializePrefabRuntime(world, App.WorldPerDesign * HeaderScale);
             if (AppConfig.BonusLevel)
             {
                 EnsureBonusChest();
-                _bonusChest.InitializePrefabRuntime(world, App.WorldPerDesign);
+                _bonusChest.InitializePrefabRuntime(world, App.WorldPerDesign * HeaderScale);
             }
         }
 
@@ -449,11 +506,13 @@ namespace BubblePics
                 : COUNT_NORMAL;
         }
 
+        float _authoredMovesFontSize;
+
         void ExitUnlimitedFontIfNeeded()
         {
             if (!_movesUnlimitedActive) return;
             _movesUnlimitedActive = false;
-            _movesNumber.fontSize = 52;
+            _movesNumber.fontSize = _authoredMovesFontSize;
         }
 
         public void SetMovesUnlimited()
@@ -636,7 +695,6 @@ namespace BubblePics
                 yield return null;
             }
             SoundManager.I.Play("coin");
-            Fx.Vibrate(0);
             PunchRewardIcon();
             yield return new WaitForSeconds(REWARD_FLY_HOLD_AFTER_LAND);
             float ft = 0;

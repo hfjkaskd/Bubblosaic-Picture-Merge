@@ -32,6 +32,7 @@ namespace BubblePics
         public int request_timeout_seconds = 20;
         public int memory_cache_limit = 48;
         public string cache_directory = "level_images";
+        public int previous_level_search_limit = 25;
 
         static LevelContentPolicy _current;
 
@@ -71,6 +72,7 @@ namespace BubblePics
             max_concurrent_downloads = Mathf.Clamp(max_concurrent_downloads, 1, 16);
             request_timeout_seconds = Mathf.Clamp(request_timeout_seconds, 3, 120);
             memory_cache_limit = Mathf.Clamp(memory_cache_limit, 8, 256);
+            previous_level_search_limit = Mathf.Clamp(previous_level_search_limit, 1, 100);
             cache_directory = SanitizeDirectory(cache_directory);
 
             var unique = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

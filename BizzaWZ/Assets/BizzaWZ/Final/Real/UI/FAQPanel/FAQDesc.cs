@@ -20,9 +20,15 @@ public class FAQDesc : MonoBehaviour
 
     private string desc;
 
-    public void Start()
-    { 
+    private void OnEnable()
+    {
+        BubblePics.Localization.LocaleChanged += Refresh;
         Refresh();
+    }
+
+    private void OnDisable()
+    {
+        BubblePics.Localization.LocaleChanged -= Refresh;
     }
 
     [Button("Refresh")]

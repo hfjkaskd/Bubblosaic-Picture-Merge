@@ -46,6 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _spine: {fileID: 7396634554605762638}
+  _portrait: {fileID: 0}
+  _legacyPortraitRenderer: {fileID: 7914770502272682410}
 --- !u!1 &7454181558614578254
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,13 +126,13 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 7d0d45abe407bf441baef0f2e95218cb, type: 2}
+  - {fileID: 2100000, guid: 3f0591866d13f634dba9913495964f9a, type: 2}
+  - {fileID: 2100000, guid: 7d0d45abe407bf441baef0f2e95218cb, type: 2}
   - {fileID: 2100000, guid: cabaa87683d71b14c9a354db52bdba0e, type: 2}
   - {fileID: 2100000, guid: 7d0d45abe407bf441baef0f2e95218cb, type: 2}
   - {fileID: 2100000, guid: 3f0591866d13f634dba9913495964f9a, type: 2}
   - {fileID: 2100000, guid: 7d0d45abe407bf441baef0f2e95218cb, type: 2}
-  - {fileID: 2100000, guid: 3f0591866d13f634dba9913495964f9a, type: 2}
-  - {fileID: 2100000, guid: 7d0d45abe407bf441baef0f2e95218cb, type: 2}
-  - {fileID: 2100000, guid: 3f0591866d13f634dba9913495964f9a, type: 2}
+  - {fileID: 2100000, guid: cabaa87683d71b14c9a354db52bdba0e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -162,8 +164,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d247ba06193faa74d9335f5481b2b56c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   skeletonDataAsset: {fileID: 11400000, guid: 7c4a13d17384c014aa2148662865006f, type: 2}
   initialSkinName: default
   fixPrefabOverrideViaMeshFilter: 2

@@ -142,11 +142,6 @@ namespace BubblePics.GameModes
             float entryMaskAlpha,
             bool fallbackToMain)
         {
-            LoadingOverlay loading = App.I != null &&
-                                     !App.I.SplashOwnsLevelLoading
-                ? App.I.ShowLoading()
-                : null;
-            loading?.SetProgress(0f);
             ModePreparedLevel prepared = null;
             string error = null;
             IModeLevelPreparationHandler handler = Handlers[selection.Kind];
@@ -154,12 +149,11 @@ namespace BubblePics.GameModes
                 selection,
                 value => prepared = value,
                 message => error = message,
-                value => loading?.SetProgress(value));
+                value => App.I?.ActiveLoading?.SetProgress(value));
             Pending.Remove(page);
 
             if (prepared == null || !string.IsNullOrWhiteSpace(error))
             {
-                loading?.Hide();
                 Debug.LogWarning(
                     $"{selection.Kind} level {selection.GlobalLevel} is not " +
                     $"deliverable; {(fallbackToMain ? "using Main" : "preview cancelled")}: " +
@@ -174,6 +168,7 @@ namespace BubblePics.GameModes
                 }
                 else
                 {
+                    App.I?.ActiveLoading?.Hide();
                     Toast.Show(Localization.Tr("NET_ERROR_LOADING_FAILED"));
                 }
                 yield break;

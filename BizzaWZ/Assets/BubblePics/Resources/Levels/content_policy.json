@@ -11,5 +11,6 @@
   "max_concurrent_downloads": 4,
   "request_timeout_seconds": 20,
   "memory_cache_limit": 48,
-  "cache_directory": "level_images"
+  "cache_directory": "level_images",
+  "previous_level_search_limit": 25
 }

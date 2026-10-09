@@ -325,9 +325,5 @@ namespace BubblePics
             Object.Destroy(ps.gameObject, 0.8f);
         }
 
-        public static void Vibrate(int level)
-        {
-            Haptics.Play(Haptics.FromLegacyIndex(level));
-        }
     }
 }

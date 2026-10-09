@@ -1,9 +1,5 @@
 #if BIZZA_REAL_WITHDRAW
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Bizza.Sdk;
-using cfg;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,77 +10,39 @@ public class WzIconAmend : MonoBehaviour
     public Image image;
     public bool isNativeSize = false;
 
-    private bool isInit = false;
-
-    private void Awake()
-    {
-        BizzaEventSystem.On(EventDefine.Login.InitContentByCountry, UpdateContent);
-    }
-
+    // Legacy authoring fields retained for old asset tools; country art always wins.
+    [SerializeField, HideInInspector] private string skinAtlasResource;
+    [SerializeField, HideInInspector] private string skinSpriteName;
+    [SerializeField, HideInInspector] private string singleCurrencySkinSpriteName;
+    [SerializeField, HideInInspector] private Material skinMaterial;
+    [SerializeField, HideInInspector] private Material singleCurrencySkinMaterial;
     private void OnEnable()
     {
-        UpdateContent();
+        BizzaEventSystem.Set(EventDefine.Login.InitContentByCountry, Refresh, true);
+        Refresh();
     }
 
-    private void UpdateContent()
+    private void OnDisable()
     {
-        if (!this || isInit)
-        {
-            return;
-        }
-        if (Tables.Instance == null || Tables.Instance.TblCommonWzTexture == null 
-            || Tables.Instance.TblCommonWzTexture.DataMap == null)
-        {
-            LogLogger.LogVerbose(BaseConst.LOG_Asset, "WzIconAmend - 未初始化");
-            return;
-        }
-        if (image == null && TryGetComponent(out image) == false)
-        {
-            LogLogger.LogVerbose(BaseConst.LOG_Asset, "未设置图片");
-            return;
-        }
-
-        ResetIconType();
-        // isInit = true;
-        UIUtils.SetWzSprite(image, iconType.ToString(), isNativeSize);
+        BizzaEventSystem.Set(EventDefine.Login.InitContentByCountry, Refresh, false);
     }
 
-    private void ResetIconType()
+    public void Refresh()
     {
-        if (!ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode)
-        {
-            return;
-        }
+        if (ChannelConfig.Instance == null) return;
+        ApplyForCountry(AccountModule.CountryType, ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode);
+    }
 
-        if (iconType == E_WzIconType.GoldCoin)
-        {
-            iconType = E_WzIconType.StackMoney;
-            return;
-        }
-
-        if (iconType == E_WzIconType.PileGold)
-        {
-            iconType = E_WzIconType.HundredMoney;
-            return;
-        }
-
-        if (iconType == E_WzIconType.PileWealth)
-        {
-            iconType = E_WzIconType.HundredMoney;
-            return;
-        }
-
-        if (iconType == E_WzIconType.MoneyEnhancement)
-        {
-            iconType = E_WzIconType.StackMoney;
-            return;
-        }
-
-        // if (iconType == E_WzIconType.BubbleCoin)
-        // {
-        //     // iconType = E_WzIconType.BubbleMoney;
-        //     return;
-        // }
+    public void ApplyForCountry(AccountModule.E_CountryType country, bool singleCurrency)
+    {
+        if (image == null && !TryGetComponent(out image)) return;
+        Sprite sprite = CountryCurrencyIcons.Load(iconType, country, singleCurrency);
+        if (sprite == null) return; // Country is assigned by login; retry on its event.
+        image.sprite = sprite;
+        image.material = null;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = true;
+        if (isNativeSize) image.SetNativeSize();
     }
 
 }

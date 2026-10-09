@@ -85,7 +85,6 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
                     if (!native) VFXUtils.PlayItemCollectArriveFeedback();
                     else
                     {
-                        VibrationUtils.VibrateStableClick(E_VibrateType.Light);
                         if (SoundManager.Instance != null) VFXUtils.PlayGetCoinSound(itemType);
                     }
                 }
@@ -208,16 +207,12 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
                 VFXUtils.PlayLegacyItemCollectFx(request).Forget();
                 return;
             }
-            Sprite paper;
-            Sprite bundle;
+            Sprite paper = VFXUtils.ResolveItemCollectSprite(request.itemType, request.target, out Material iconMaterial);
+            Sprite bundle = paper;
             bool cash = request.itemType == E_ItemType.Dollar || request.itemType == E_ItemType.WithDrawDanDollar ||
                 (request.itemType == E_ItemType.Gold && Bizza.Sdk.ChannelConfig.Instance.real_CustomConfig.singleCurrencyMode);
-            if (cash && resources != null)
+            if (paper == null && cash && resources != null)
                 resources.Resolve(AccountModule.CountryType, out paper, out bundle);
-            else
-            {
-                paper = bundle = VFXUtils.ResolveItemCollectSprite(request.itemType, request.target);
-            }
             Vector2 origin = new Vector2(request.position.x, request.position.y);
             if ((!request.uiPosition && !VFXUtils.TryGetAnchoredPosition(request.position, rect, canvas, out origin)) ||
                 !VFXUtils.TryGetAnchoredPosition(request.target.position, rect, canvas, out Vector2 destination))
@@ -230,7 +225,7 @@ public sealed class RewardItemCollectFlow : MonoBehaviour
             SyncSound();
             if (!player.TryPlay(paper, bundle, origin, destination, settings, (uint)request.id,
                     reason => request.End(reason == FlyMoneyEndReason.Completed), request.target,
-                    () => request.Notify(true), request.id)) request.End(false);
+                    () => request.Notify(true), request.id, iconMaterial, iconMaterial)) request.End(false);
         }
         catch (Exception exception)
         {

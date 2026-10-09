@@ -69,7 +69,7 @@ public class UIDailyActivityElement : MonoBehaviour
 
     private void OnDestroy()
     {
-        m_runtimeTaskInfo.onUpdateProgress -= OnTaskUpdateProgress;
+        if (m_runtimeTaskInfo != null) m_runtimeTaskInfo.onUpdateProgress -= OnTaskUpdateProgress;
     }
 
     public void OnActivityClick()

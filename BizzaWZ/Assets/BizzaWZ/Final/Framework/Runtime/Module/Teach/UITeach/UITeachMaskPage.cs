@@ -50,65 +50,54 @@ public class UITeachMaskPage : UIPageBase<UITeachMaskPage.InitParam>
     private InitParam param;
 
     public RectTransform maskParent;
-    public UITouchListener fakeButton;
-    // public Button fakeButtonTwon;
-    // public UIMask mask;
     public Image imgMask;
     public Image block;
-    public SkeletonGraphic finger;
+    public Image finger;
     public Sprite circleSprite;
+    [SerializeField] private Button[] backgroundButtons;
     private GameObject target;
-
-    private float clickTime = 0;
-
-    private bool press = false;
-
+    private Button targetButton;
+    private bool savedInteractable;
+    private bool temporarilyDisabled;
+    private Coroutine cooldownRoutine;
+    private float clickTime;
+    private RectTransform targetRect;
+    private RectTransform maskViewport;
+    private Camera targetCamera;
+    private Camera maskCamera;
+    private readonly Vector3[] targetCorners = new Vector3[4];
+    public bool TargetReady { get; private set; }
     private void Awake()
     {
-        void OnPointerDown(PointerEventData eventData)
-        {
-            if (target == null || Time.unscaledTime < clickTime)
-            {
-                return;
-            }
-
-            press = true;
-            ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerDownHandler);
-        }
-
-        void OnPointerUp(PointerEventData eventData)
-        {
-
-            if (target == null || Time.unscaledTime < clickTime || !press)
-            {
-                return;
-            }
-
-            press = false;
-            ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerUpHandler);
-            ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerClickHandler);
-            CloseSelf();
-        }
-
-        void OnPointerExit(PointerEventData eventData)
-        {
-            if (target == null || Time.unscaledTime < clickTime || !press)
-            {
-                return;
-            }
-
-            press = false;
-            ExecuteEvents.Execute(target, eventData, ExecuteEvents.pointerExitHandler);
-        }
-
-        fakeButton.OnTouchStart += OnPointerDown;
-        fakeButton.OnTouchEnd += OnPointerUp;
-        fakeButton.OnTouchExit += OnPointerExit;
+        foreach(var button in backgroundButtons) button.onClick.AddListener(OnBackgroundClick);
+    }
+    private void OnBackgroundClick()
+    {
+        if(param.bgBlock && Time.unscaledTime>=clickTime) CloseSelf();
+    }
+    private void OnTargetClick()
+    {
+        if(Time.unscaledTime>=clickTime) CloseSelf();
+    }
+    private void UnbindTarget()
+    {
+        if(cooldownRoutine!=null){StopCoroutine(cooldownRoutine);cooldownRoutine=null;}
+        if(targetButton!=null){targetButton.onClick.RemoveListener(OnTargetClick);if(temporarilyDisabled)targetButton.interactable=savedInteractable;}
+        temporarilyDisabled=false;targetButton=null;
+    }
+    private IEnumerator RestoreAfterCooldown(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        if(targetButton!=null)targetButton.interactable=savedInteractable;
+        temporarilyDisabled=false;cooldownRoutine=null;
     }
 
     protected override void OnOpen(InitParam param)
     {
+        UnbindTarget();
         this.param = param;
+        TargetReady = false;
+        targetRect = null;
         target = null;
         clickTime = float.MaxValue;
         maskParent.sizeDelta = Vector2.zero;
@@ -138,89 +127,107 @@ public class UITeachMaskPage : UIPageBase<UITeachMaskPage.InitParam>
         }
 
         this.param.onOpen?.Invoke(this);
-
-        // fakeButtonTwon.onClick.AddListener(CloseSelf);
     }
 
     public static (Vector2 pos, Vector2 size) GetCanvasPosByTransform(Transform target, bool isUI)
     {
-        Vector2 canvasPos;
-        Vector2 size;
-        if (isUI)
+        var canvas=UIModule.Instance.UICanvas;var rect=(RectTransform)canvas.transform;
+        var camera=canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
+        Vector2 screen=isUI?RectTransformUtility.WorldToScreenPoint(camera,target.position):(Vector2)Camera.main.WorldToScreenPoint(target.position);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rect,screen,camera,out Vector2 local);
+        Vector2 size=target is RectTransform rt?rt.rect.size*rt.lossyScale.x/rect.lossyScale.x:Vector2.zero;
+        return(local-rect.rect.min,size);
+    }
+
+    public void Init()
+    {
+        UnbindTarget();
+        maskParent.gameObject.SetActive(true);
+        Vector2 size=new Vector2(param.width,param.height);
+        Vector2 position;
+        if(target!=null)
         {
-            var rtf = target as RectTransform;
-            Rect canvasRect = rtf.GetWorldRect().ScreenToCanvasRect(UIModule.Instance.UICanvas);
-            canvasPos = canvasRect.center;
-            size = new Vector2(canvasRect.width, canvasRect.height);
+            var mapped=GetCanvasPosByTransform(target.transform,target.transform is RectTransform);
+            position=mapped.pos;if(size.x<=0&&size.y<=0)size=mapped.size;
         }
         else
         {
-            float rate = 1 / UIModule.Instance.UICanvas.scaleFactor;
-            var worldPos = target.position;
-            canvasPos = Camera.main.WorldToScreenPoint(worldPos);
-            canvasPos.x *= rate;
-            canvasPos.y *= rate;
-            size = Vector2.zero;
+            var canvas=UIModule.Instance.UICanvas;var rect=(RectTransform)canvas.transform;
+            var camera=canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera;
+            var screen=Camera.main.WorldToScreenPoint(param.worldPos);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(rect,screen,camera,out Vector2 local);
+            position=local-rect.rect.min;
         }
+        maskParent.anchoredPosition=position;maskParent.sizeDelta=size;
+        FocusTarget(target != null ? target.transform as RectTransform : null, param.width, param.height);
+        imgMask.enabled=param.shape==Shape.Circle;
 
-        return (canvasPos, size);
-    }
-
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
+        Color color = block.color;
+        color.a = param.alpha / 255;
+        block.color = color;
+        foreach(var button in backgroundButtons)
         {
-            if (param.bgBlock)
+            button.targetGraphic.raycastTarget=param.block||param.bgBlock;
+            button.interactable=true;
+        }
+        finger.gameObject.SetActive(param.showHand);
+        clickTime=Time.unscaledTime+Mathf.Max(0,param.clickCD);
+        UnbindTarget();
+        targetButton=target!=null?target.GetComponent<Button>():null;
+        if(targetButton!=null)
+        {
+            targetButton.onClick.AddListener(OnTargetClick);
+            if(param.block&&param.clickCD>0)
             {
-                CloseSelf();
+                savedInteractable=targetButton.interactable;
+                temporarilyDisabled=true;targetButton.interactable=false;
+                cooldownRoutine=StartCoroutine(RestoreAfterCooldown(param.clickCD));
             }
         }
     }
 
-    
-    public void Init()
+    public void FocusTarget(RectTransform rect, float width = -1f, float height = -1f)
     {
-        Vector2 canvasPos;
-        Vector2 size = new Vector2(param.width, param.height);
-        maskParent.gameObject.SetActive(true);
-        switch (param.type)
+        targetRect = rect;
+        param.width = width;
+        param.height = height;
+        maskViewport = (RectTransform)maskParent.parent;
+        targetCamera = CanvasCamera(targetRect);
+        maskCamera = CanvasCamera(maskViewport);
+        TargetReady = true;
+        RefreshTargetBounds();
+    }
+
+    private static Camera CanvasCamera(Transform item)
+    {
+        var canvas = item != null ? item.GetComponentInParent<Canvas>() : null;
+        if (canvas != null) canvas = canvas.rootCanvas;
+        return canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+    }
+
+    private void LateUpdate()
+    {
+        if (TargetReady) RefreshTargetBounds();
+    }
+
+    private void RefreshTargetBounds()
+    {
+        if (targetRect == null || maskViewport == null) return;
+        targetRect.GetWorldCorners(targetCorners);
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue), max = -min;
+        for (int i = 0; i < targetCorners.Length; i++)
         {
-            case Type.Pos:
-                var worldPos = param.worldPos;
-                canvasPos = UIUtils.WorldPos2UIPos(worldPos, maskParent.parent.GetComponent<RectTransform>());
-                break;
-            case Type.Path:
-            default:
-                var (outPos, outSize) = GetCanvasPosByTransform(target.transform, target.transform is RectTransform);
-                canvasPos = outPos;
-                if (size is { x: <= 0, y: <= 0 })
-                {
-                    size = outSize;
-                }
-                break;
+            Vector2 screen = RectTransformUtility.WorldToScreenPoint(targetCamera, targetCorners[i]);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(maskViewport, screen, maskCamera, out var local);
+            min = Vector2.Min(min, local);
+            max = Vector2.Max(max, local);
         }
-        
-        // maskParent
-        maskParent.anchoredPosition = canvasPos;
-        maskParent.sizeDelta = size;
-
-        // maskImg
-        imgMask.sprite = param.shape == Shape.Rect ? null : circleSprite;
-
-        // fakeButton
-        var btnImg = fakeButton.Target;
-        btnImg.raycastTarget = param.block;
-
-        // block
-        Color color = block.color;
-        color.a = param.alpha / 255;
-        block.color = color;
-        block.raycastTarget = param.block;
-        finger.gameObject.SetObjActive(param.showHand);
-
-        clickTime = Time.unscaledTime + param.clickCD;
-
-        press = false;
+        Vector2 anchor = maskViewport.rect.min + Vector2.Scale(maskViewport.rect.size, maskParent.anchorMin);
+        Vector2 position = (min + max) * .5f - anchor;
+        Vector2 size = new Vector2(param.width > 0 ? param.width : max.x - min.x,
+            param.height > 0 ? param.height : max.y - min.y);
+        if (maskParent.anchoredPosition != position) maskParent.anchoredPosition = position;
+        if (maskParent.sizeDelta != size) maskParent.sizeDelta = size;
     }
 
     protected override void OnShow()
@@ -233,6 +240,9 @@ public class UITeachMaskPage : UIPageBase<UITeachMaskPage.InitParam>
 
     protected override void OnClose()
     {
+        TargetReady = false;
+        targetRect = null;
+        UnbindTarget();
         this.param.onClose?.Invoke();
         // fakeButtonTwon.onClick.RemoveListener(CloseSelf);
     }

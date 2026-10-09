@@ -110,7 +110,6 @@ namespace BubblePics
                 BubbleSpecialRules.IsDiagonalPerfect(src.Fragment, target.Fragment);
             Merging = true;
             float mult = 1f;
-            BubbleView.MuteCollideFor((FUSION_DURATION + FUSION_RINGDOWN) * mult + 0.5f);
             src.MarkMerging();
             _mergeTargets.Add(target);
 
@@ -230,12 +229,7 @@ namespace BubblePics
                 Page.ConsumeNextWave();
             Page.CommitDeath();
 
-            // Every successful merge is eligible, including partial pictures. Settlement wins priority.
-            if (!isLastImageOfRound && !Page.IsDead())
-                FlowModule.SynthesisLogic(Mathf.Max(0, Page.PickedTextures.Length - Page.CollectedImgs.Count), target.transform.position);
-
             Page.EmitMergeStarted(target, isUpgrade, isClosure, completedGroup);
-            Fx.Vibrate(1); // WEAK
 
             bool numberTarget = NumberMatchContent.IsNumberImage(target.ImageId);
             bool wordTarget = WordMatchContent.IsWordImage(target.ImageId);

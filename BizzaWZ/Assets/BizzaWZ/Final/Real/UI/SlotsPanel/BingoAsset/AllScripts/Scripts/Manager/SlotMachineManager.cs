@@ -52,6 +52,20 @@ public class SlotMachineManager : MonoBehaviour
         new SlotEntrys(E_SlotType.Brick, null),
     };
     public List<SlotEntrys> SlotEntryss => slotEntryss;
+    [SerializeField] private string symbolAtlasPath;
+    [SerializeField] private string[] symbolNames;
+    [SerializeField] private string[] symbolResources;
+    [SerializeField, Min(1f)] private float rewardPulseScale = 2f;
+
+    void Awake()
+    {
+        if(string.IsNullOrEmpty(symbolAtlasPath)||symbolNames==null)return;
+        for(int i=0;i<slotEntryss.Count&&i<symbolNames.Length;i++)
+        {
+            string path=symbolResources!=null&&i<symbolResources.Length&&!string.IsNullOrEmpty(symbolResources[i])?symbolResources[i]:symbolAtlasPath;
+            var entry=slotEntryss[i];entry.sprite=BubblePics.CoralResourceSprite.Load(path,symbolNames[i]);slotEntryss[i]=entry;
+        }
+    }
 
     public Action<string> onComplete;
 
@@ -153,7 +167,7 @@ public class SlotMachineManager : MonoBehaviour
             var target = v.transform;//.GetChild(1);
             if (i == 0)
             {
-                target.DOScale(2f, 0.6f).OnComplete(() =>
+                target.DOScale(rewardPulseScale, 0.6f).OnComplete(() =>
                 {
                     // UiManager.Instance.mainCanvas.GetOrAddComponent<CameraShake>().Shake();
                     SoundManager.Instance.PlaySFX("SevensGetReward");
@@ -166,7 +180,7 @@ public class SlotMachineManager : MonoBehaviour
             }
             else
             {
-                target.DOScale(2f, 0.6f).OnComplete(() =>
+                target.DOScale(rewardPulseScale, 0.6f).OnComplete(() =>
                 {
                     target.DOScale(1f, 0.2f);
                 });
@@ -178,7 +192,6 @@ public class SlotMachineManager : MonoBehaviour
 
     public void ActiveRewardIm(SkeletonGraphic graphic, GameObject go)
     {
-        VibrationUtils.Vibrate(E_VibrateType.Light);
         SoundManager.Instance.PlaySFX("SevenMachineStop");
         if (graphic != null && graphic.AnimationState != null)
         {

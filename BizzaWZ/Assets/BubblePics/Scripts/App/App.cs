@@ -59,7 +59,11 @@ namespace BubblePics
 
         SplashPage _splash;
         LoadingOverlay _loading;
+        public LoadingOverlay ActiveLoading => _loading;
         float _startupT0;
+        Canvas _mountedCanvas;
+        float _mountedCanvasScaleFactor;
+        GameplayHudHeader _gameplayHeader;
 
         /// <summary>Screen pixels per design pixel (uniform expand scale).</summary>
         public static float HudScale => DeviceLayout.PixelsPerDesignUnit;
@@ -164,6 +168,19 @@ namespace BubblePics
             if (_cam != null)
                 _cam.orthographicSize = DeviceLayout.ViewHeight / 2f;
             FitCanvas(_hudRoot); FitCanvas(_panelRoot); FitCanvas(_dialogRoot);
+            if (_gameplayHeader != null)
+                _gameplayHeader.ApplyDeviceLayout(DeviceLayout.Current);
+            if (_mountedCanvas != null)
+                _mountedCanvasScaleFactor = _mountedCanvas.scaleFactor;
+        }
+
+        void LateUpdate()
+        {
+            // CanvasScaler can settle after mounting or a viewport change.
+            // Refit before rendering even when Screen dimensions stayed the same.
+            if (_mountedCanvas != null &&
+                !Mathf.Approximately(_mountedCanvasScaleFactor, _mountedCanvas.scaleFactor))
+                ApplyDeviceLayout();
         }
 
         /// <summary>
@@ -225,10 +242,17 @@ namespace BubblePics
 
         public void MountGameplayUi(RealGamePanel panel)
         {
-            MountCanvas(_hudRoot, panel.content);
-            MountCanvas(_panelRoot, panel.content);
-            MountCanvas(_dialogRoot, panel.content);
+            // These canvases mirror the full gameplay camera viewport. Content
+            // has its own UI inset and is not the viewport's coordinate frame.
+            MountCanvas(_hudRoot, panel.transform);
+            MountCanvas(_panelRoot, panel.transform);
+            MountCanvas(_dialogRoot, panel.transform);
+            _mountedCanvas = _hudCanvas.rootCanvas;
             ApplyDeviceLayout();
+            _gameplayHeader = panel.GetComponentInChildren<GameplayHudHeader>(true);
+            if (_gameplayHeader == null)
+                throw new System.InvalidOperationException("GameUiWidget is missing its authored gameplay header.");
+            _gameplayHeader.Mount(_hudRoot, Page.TopBar, Page.Toolbar);
         }
 
         void MountCanvas(RectTransform root, Transform parent)
@@ -250,8 +274,32 @@ namespace BubblePics
         }
 
         public HomePage EnsureHomePage() => throw new System.InvalidOperationException("Gameplay navigation is owned by the framework.");
-        public LoadingOverlay ShowLoading() => throw new System.InvalidOperationException("Use the framework loading lifecycle.");
-        public void HideLoading() { BizzaGameplayBridge.OnLevelAssetsReady(); }
+        public LoadingOverlay ShowLoading()
+        {
+            // This prefab owns its overlay Canvas so it is also visible while
+            // the gameplay canvases are hidden during startup/scene changes.
+            if (_loading == null)
+                _loading = PrefabCatalog.InstantiateComponent<LoadingOverlay>(
+                    Prefabs.LoadingOverlay, transform);
+            if (_loading == null)
+                throw new System.InvalidOperationException("LoadingOverlay prefab is missing.");
+            _loading.Show();
+            return _loading;
+        }
+        public LoadingOverlay ShowReconnecting()
+        {
+            // Local/cache decoding is silent. Only a loader that actually needs
+            // the network opens this overlay; retries retain their progress.
+            if (_loading == null || !_loading.IsVisible)
+                ShowLoading();
+            _loading.SetReconnecting();
+            return _loading;
+        }
+        public void HideLoading()
+        {
+            _loading?.Hide();
+            BizzaGameplayBridge.OnLevelAssetsReady();
+        }
 
         /// <summary>
         /// Instantiates one catalog entry and attaches any authored world/UI

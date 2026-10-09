@@ -22,6 +22,9 @@ public class StarRatingPopup : UIPageBase
     public Image[] starImages;
     public Sprite starOn;
     public Sprite starOff;
+    [SerializeField] private string starAtlasPath;
+    [SerializeField] private string starOnName;
+    [SerializeField] private string starOffName;
     public BizzaButton goToRateButton;
 
     [Header("Tween Tuning")]
@@ -45,6 +48,11 @@ public class StarRatingPopup : UIPageBase
 
     protected override void OnAwake()
     {
+        if (!string.IsNullOrEmpty(starAtlasPath))
+        {
+            starOn = BubblePics.CoralResourceSprite.Load(starAtlasPath, starOnName);
+            starOff = BubblePics.CoralResourceSprite.Load(starAtlasPath, starOffName);
+        }
 #if UNITY_ANDROID && !UNITY_EDITOR && BIZZA_ENABLE_MAX
         reviewManager = new ReviewManager();
 #endif

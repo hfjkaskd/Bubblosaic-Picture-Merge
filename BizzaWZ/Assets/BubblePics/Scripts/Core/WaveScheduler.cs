@@ -124,6 +124,309 @@ namespace BubblePics
             return wave;
         }
 
+        /// <summary>
+        /// Select a random-sized drop requested by the caller, completing one
+        /// or two sibling groups with the live board. Old images must receive
+        /// all their queued pieces before new images can enter the same drop.
+        /// Counts that do not fit wait for another closure instead of topping
+        /// up four bubbles after every completed picture.
+        /// </summary>
+        public List<string> PullNextPlayableBatch(
+            IEnumerable<BubbleFragment> boardFragments,
+            int maxBoardBubbles,
+            int maxBoardImages = 3,
+            int preferredBatchSize = 8,
+            int minBatchSize = 6,
+            int maxBatchSize = 10)
+        {
+            List<PendingToken> selected = SelectPlayableBatch(boardFragments,
+                maxBoardBubbles, maxBoardImages, preferredBatchSize,
+                minBatchSize, maxBatchSize);
+            foreach (var wave in selected.GroupBy(value => value.WaveIndex))
+            {
+                foreach (PendingToken token in wave.OrderByDescending(
+                             value => value.TokenIndex))
+                    _waves[wave.Key].RemoveAt(token.TokenIndex);
+            }
+            return selected.OrderBy(value => value.WaveIndex)
+                .ThenBy(value => value.TokenIndex)
+                .Select(value => value.Token).ToList();
+        }
+
+        public bool CanPullPlayableBatch(
+            IEnumerable<BubbleFragment> boardFragments,
+            int maxBoardBubbles,
+            int maxBoardImages = 3,
+            int preferredBatchSize = 8,
+            int minBatchSize = 6,
+            int maxBatchSize = 10)
+        {
+            // No random state is consumed by availability checks.
+            return SelectPlayableBatch(boardFragments, maxBoardBubbles,
+                maxBoardImages, preferredBatchSize, minBatchSize, maxBatchSize).Count > 0;
+        }
+
+        List<PendingToken> SelectPlayableBatch(
+            IEnumerable<BubbleFragment> boardFragments,
+            int maxBoardBubbles,
+            int maxBoardImages,
+            int preferredBatchSize,
+            int minBatchSize,
+            int maxBatchSize)
+        {
+            var board = (boardFragments ?? Enumerable.Empty<BubbleFragment>())
+                .Where(value => value != null && !value.IsFull()).ToList();
+            var pending = CollectPendingTokens();
+            if (pending.Count == 0) return new List<PendingToken>();
+            int minimum = System.Math.Max(1, minBatchSize);
+            int maximum = System.Math.Max(minimum, maxBatchSize);
+            int preferred = System.Math.Max(minimum,
+                System.Math.Min(maximum, preferredBatchSize));
+            int room = System.Math.Max(0, maxBoardBubbles - board.Count);
+            int limit = System.Math.Min(maximum, room);
+            var visible = new HashSet<int>(board.Select(value => value.ImageId));
+            var oldTokens = pending.Where(value => visible.Contains(value.Fragment.ImageId)).ToList();
+            var masks = BoardMasks(board);
+
+            var oldPlans = new DropPlan[limit + 1, 3, 1];
+            oldPlans[0, 0, 0] = new DropPlan();
+            foreach (var image in oldTokens.GroupBy(value => value.Fragment.ImageId))
+                oldPlans = CombineImage(oldPlans,
+                    ImageOptions(image.ToList(), masks, limit), false);
+
+            // New pictures are only considered after all pending old pieces
+            // are selected, even when a nested image spans several parents.
+            int imageSlots = System.Math.Max(0, maxBoardImages - visible.Count);
+            var newPlans = new DropPlan[limit + 1, 3, imageSlots + 1];
+            if (oldTokens.Count <= limit)
+            {
+                for (int completed = 0; completed <= 2; completed++)
+                    newPlans[oldTokens.Count, completed, 0] =
+                        oldPlans[oldTokens.Count, completed, 0];
+                foreach (var image in pending.Where(value =>
+                             !visible.Contains(value.Fragment.ImageId))
+                             .GroupBy(value => value.Fragment.ImageId))
+                    newPlans = CombineImage(newPlans,
+                        ImageOptions(image.ToList(), masks, limit), true);
+            }
+
+            // Try the requested random count first. If that exact count cannot
+            // preserve the image/group limits, use another count in the range.
+            for (int offset = 0; offset <= maximum - minimum; offset++)
+            {
+                int count = minimum + (preferred - minimum + offset) %
+                    (maximum - minimum + 1);
+                DropPlan plan = BestPlan(oldPlans, newPlans, count, visible.Count);
+                if (plan != null) return plan.Tokens;
+            }
+
+            bool boardReady = masks.Values.Any(value => value == 15);
+            // Do not spend pending pieces on a small top-up while the player
+            // can clear existing groups. A short final tail is allowed.
+            if (pending.Count >= minimum && boardReady)
+                return new List<PendingToken>();
+            for (int count = System.Math.Min(minimum - 1, limit); count > 0; count--)
+            {
+                DropPlan plan = BestPlan(oldPlans, newPlans, count, visible.Count);
+                if (plan != null) return plan.Tokens;
+            }
+
+            // Old snapshots can already be full of stranded pieces. Add only
+            // the smallest old-image cover to release space; never a new image.
+            if (!boardReady)
+            {
+                var repair = new DropPlan[5, 3, 1];
+                repair[0, 0, 0] = new DropPlan();
+                foreach (var image in oldTokens.GroupBy(value => value.Fragment.ImageId))
+                    repair = CombineImage(repair,
+                        ImageOptions(image.ToList(), masks, 4), false);
+                for (int count = 1; count <= 4; count++)
+                    if (repair[count, 1, 0] != null)
+                        return repair[count, 1, 0].Tokens;
+            }
+            return new List<PendingToken>();
+        }
+
+        sealed class PendingToken
+        {
+            public int WaveIndex;
+            public int TokenIndex;
+            public string Token;
+            public BubbleFragment Fragment;
+        }
+
+        sealed class DropPlan
+        {
+            public readonly List<PendingToken> Tokens = new List<PendingToken>();
+            public int Completed;
+            public int Priority;
+        }
+
+        List<PendingToken> CollectPendingTokens()
+        {
+            var pending = new List<PendingToken>();
+            for (int waveIndex = 0; waveIndex < _waves.Count; waveIndex++)
+            {
+                for (int tokenIndex = 0; tokenIndex < _waves[waveIndex].Count; tokenIndex++)
+                {
+                    string token = _waves[waveIndex][tokenIndex];
+                    BubbleFragment fragment = BubbleFragment.FromToken(token);
+                    if (fragment == null || fragment.IsFull() || fragment.TangramMold)
+                        continue;
+                    pending.Add(new PendingToken
+                    {
+                        WaveIndex = waveIndex,
+                        TokenIndex = tokenIndex,
+                        Token = token,
+                        Fragment = fragment,
+                    });
+                }
+            }
+            return pending;
+        }
+
+        static Dictionary<string, int> BoardMasks(IEnumerable<BubbleFragment> board)
+        {
+            var masks = new Dictionary<string, int>();
+            foreach (BubbleFragment fragment in board)
+            {
+                string key = GroupKey(fragment);
+                masks.TryGetValue(key, out int mask);
+                masks[key] = mask | QuadrantMask(fragment);
+            }
+            return masks;
+        }
+
+        static string GroupKey(BubbleFragment fragment)
+        {
+            return fragment.ImageId + "|" + string.Join(",", fragment.ParentPath());
+        }
+
+        static int QuadrantMask(BubbleFragment fragment)
+        {
+            int mask = 0;
+            foreach (var path in fragment.HeldPaths)
+                if (path.Count > 0) mask |= 1 << path[path.Count - 1];
+            return mask;
+        }
+
+        static DropPlan Join(DropPlan left, DropPlan right)
+        {
+            var plan = new DropPlan
+            {
+                Completed = left.Completed + right.Completed,
+                Priority = left.Priority + right.Priority,
+            };
+            plan.Tokens.AddRange(left.Tokens);
+            plan.Tokens.AddRange(right.Tokens);
+            return plan;
+        }
+
+        static List<DropPlan> ImageOptions(
+            List<PendingToken> tokens,
+            Dictionary<string, int> masks,
+            int limit)
+        {
+            var plans = new DropPlan[limit + 1, 3, 1];
+            plans[0, 0, 0] = new DropPlan();
+            foreach (var group in tokens.GroupBy(value => GroupKey(value.Fragment)))
+            {
+                var members = group.ToList();
+                masks.TryGetValue(group.Key, out int boardMask);
+                var options = new List<DropPlan>();
+                // Valid quadrant groups contain at most four disjoint tokens.
+                if (members.Count > 4) continue;
+                for (int subset = 1; subset < (1 << members.Count); subset++)
+                {
+                    var option = new DropPlan();
+                    int occupied = boardMask;
+                    bool compatible = true;
+                    for (int i = 0; i < members.Count; i++)
+                    {
+                        if ((subset & (1 << i)) == 0) continue;
+                        int added = QuadrantMask(members[i].Fragment);
+                        if (added == 0 || (occupied & added) != 0)
+                        {
+                            compatible = false;
+                            break;
+                        }
+                        occupied |= added;
+                        option.Tokens.Add(members[i]);
+                    }
+                    if (!compatible || option.Tokens.Count > limit) continue;
+                    option.Completed = occupied == 15 ? 1 : 0;
+                    // Within old images, prefer completing visible parent groups.
+                    option.Priority = boardMask != 0
+                        ? option.Tokens.Count + option.Completed * 16 : 0;
+                    options.Add(option);
+                }
+                plans = CombineImage(plans, options, false);
+            }
+            var result = new List<DropPlan>();
+            for (int count = 1; count <= limit; count++)
+                for (int completed = 0; completed <= 2; completed++)
+                    if (plans[count, completed, 0] != null)
+                        result.Add(plans[count, completed, 0]);
+            return result;
+        }
+
+        static DropPlan[,,] CombineImage(
+            DropPlan[,,] plans,
+            List<DropPlan> options,
+            bool newImage)
+        {
+            var next = (DropPlan[,,])plans.Clone();
+            int limit = plans.GetLength(0) - 1;
+            int imageSlots = plans.GetLength(2) - 1;
+            for (int count = 0; count <= limit; count++)
+            for (int completed = 0; completed <= 2; completed++)
+            for (int images = 0; images <= imageSlots; images++)
+            {
+                DropPlan before = plans[count, completed, images];
+                if (before == null) continue;
+                int nextImages = images + (newImage ? 1 : 0);
+                if (nextImages > imageSlots) continue;
+                foreach (DropPlan option in options)
+                {
+                    int total = count + option.Tokens.Count;
+                    int closures = completed + option.Completed;
+                    if (total > limit || closures > 2) continue;
+                    DropPlan current = next[total, closures, nextImages];
+                    if (current == null ||
+                        current.Priority < before.Priority + option.Priority)
+                        next[total, closures, nextImages] = Join(before, option);
+                }
+            }
+            return next;
+        }
+
+        static DropPlan BestPlan(
+            DropPlan[,,] oldPlans,
+            DropPlan[,,] newPlans,
+            int count,
+            int visibleImages)
+        {
+            if (count >= oldPlans.GetLength(0)) return null;
+            for (int completed = 2; completed >= 1; completed--)
+                if (oldPlans[count, completed, 0] != null)
+                    return oldPlans[count, completed, 0];
+            // Prefer two pictures on the board, then three. A single picture
+            // is retained when only one image remains in the level.
+            for (int totalImages = 2; totalImages <= 3; totalImages++)
+            {
+                int images = totalImages - visibleImages;
+                if (images < 1 || images >= newPlans.GetLength(2)) continue;
+                for (int completed = 2; completed >= 1; completed--)
+                    if (newPlans[count, completed, images] != null)
+                        return newPlans[count, completed, images];
+            }
+            if (visibleImages == 0 && newPlans.GetLength(2) > 1)
+                for (int completed = 2; completed >= 1; completed--)
+                    if (newPlans[count, completed, 1] != null)
+                        return newPlans[count, completed, 1];
+            return null;
+        }
+
         public List<string> PullPendingTokens(int count)
         {
             var outList = new List<string>();

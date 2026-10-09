@@ -122,6 +122,8 @@ namespace BubblePics
         {
             int chapter = ChapterForLevel(levelHint);
             if (_chapter != null && _loadedChapter == chapter) return;
+            _resolved = new Dictionary<int, LevelData>();
+            _resolveReports = new Dictionary<int, LevelResolveResult>();
 
             // Match the restored ChapterRepo: load only the requested 25-level
             // chapter. The flattened 1800-level catalog stays an editor/import
@@ -129,14 +131,19 @@ namespace BubblePics
             var txt = Resources.Load<TextAsset>($"Levels/chapter_{chapter}");
             if (txt == null)
             {
-                Debug.LogError(
+                Debug.LogWarning(
                     $"Missing level chapter: Resources/Levels/chapter_{chapter}.json");
                 _chapter = new ChapterData { levels = Array.Empty<LevelData>() };
                 _loadedChapter = chapter;
                 return;
             }
-            _chapter = JsonUtility.FromJson<ChapterData>(txt.text)
-                ?? new ChapterData { levels = Array.Empty<LevelData>() };
+            try { _chapter = JsonUtility.FromJson<ChapterData>(txt.text); }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Invalid level chapter {chapter}: {exception.Message}");
+                _chapter = null;
+            }
+            _chapter ??= new ChapterData { levels = Array.Empty<LevelData>() };
             if (_chapter.levels == null)
                 _chapter.levels = Array.Empty<LevelData>();
 
@@ -200,6 +207,8 @@ namespace BubblePics
 
         public static bool TryGet(int level, out LevelData data)
         {
+            data = null;
+            if (level < 1 || level > Count) return false;
             EnsureLoaded(level);
             if (!HasLevel(level))
             {
@@ -250,6 +259,14 @@ namespace BubblePics
             if (Count == 0) return null;
             int bounded = Mathf.Clamp(level, 1, Count);
             return TryGet(bounded, out LevelData data) ? data : null;
+        }
+
+        public static bool TryGetBundled(int level, out LevelData data)
+        {
+            data = null;
+            if (level < 1 || level > Count) return false;
+            EnsureLoaded(level);
+            return TryResolvePlayable(FindLoaded(level), out data, out _);
         }
 
         public static bool TryGetResolveReport(

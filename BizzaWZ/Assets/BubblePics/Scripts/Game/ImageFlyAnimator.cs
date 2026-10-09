@@ -115,15 +115,15 @@ namespace BubblePics
             canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = false;
             var nestedCanvas = fly.AddComponent<Canvas>();
-            nestedCanvas.overrideSorting = true;
-            nestedCanvas.sortingOrder = 1000;
+            // Collection belongs to the gameplay page; reward popups must cover it.
+            nestedCanvas.overrideSorting = false;
             _activeNodes.Add(fly);
 
             var backgroundObject = new GameObject("CategoryDisc");
             backgroundObject.transform.SetParent(fly.transform, false);
             var background = backgroundObject.AddComponent<RawImage>();
-            background.texture =
-                AssetLib.Texture("Art/Sprites/Bubble/gp_pic_bubble_number");
+            // Use the active gameplay skin rather than the legacy orange result disc.
+            background.texture = BubbleView.ActiveBubblePicTex();
             background.raycastTarget = false;
             RectTransform backgroundRect = background.rectTransform;
             backgroundRect.anchorMin = Vector2.zero;
@@ -291,7 +291,6 @@ namespace BubblePics
             yield return new WaitForSeconds(0.12f);
             Page.TopBar.FillCollected(slotIdx);
             if (rainbowShine) Page.TopBar.PlayLastLinkShine();
-            Fx.Vibrate(1);
             _activeNodes.Remove(fly);
             Destroy(fly);
             if (trail != null)
@@ -325,15 +324,14 @@ namespace BubblePics
             canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = false;
             var nestedCanvas = fly.AddComponent<Canvas>();
-            nestedCanvas.overrideSorting = true;
-            nestedCanvas.sortingOrder = 1000;
+            // Inherit the gameplay page's order, including when a popup opens mid-flight.
+            nestedCanvas.overrideSorting = false;
             _activeNodes.Add(fly);
 
             var backgroundObject = new GameObject("WordDisc");
             backgroundObject.transform.SetParent(fly.transform, false);
             var background = backgroundObject.AddComponent<RawImage>();
-            background.texture =
-                AssetLib.Texture("Art/Sprites/Bubble/gp_pic_bubble_number");
+            background.texture = BubbleView.ActiveBubblePicTex();
             background.raycastTarget = false;
             RectTransform backgroundRect = background.rectTransform;
             backgroundRect.anchorMin = Vector2.zero;
@@ -502,7 +500,6 @@ namespace BubblePics
             yield return new WaitForSeconds(0.12f);
             Page.TopBar.FillCollected(slotIdx);
             if (rainbowShine) Page.TopBar.PlayLastLinkShine();
-            Fx.Vibrate(1);
             _activeNodes.Remove(fly);
             Destroy(fly);
             if (trail != null)
@@ -532,10 +529,9 @@ namespace BubblePics
             flyCanvasGroup.alpha = 0f;
             flyCanvasGroup.blocksRaycasts = false;
             _activeNodes.Add(fly);
-            // put above panels/bubbles but below dialogs (z=100 in Godot page)
             var nestedCanvas = fly.AddComponent<Canvas>();
-            nestedCanvas.overrideSorting = true;
-            nestedCanvas.sortingOrder = 1000;
+            // Inherit the gameplay page's order, including when a popup opens mid-flight.
+            nestedCanvas.overrideSorting = false;
 
             // frame (behind photo; opaque white card with border)
             var frameGo = new GameObject("Frame");
@@ -555,7 +551,7 @@ namespace BubblePics
             var photo = photoGo.AddComponent<RawImage>();
             bool numberMode = NumberMatchContent.IsNumberImage(imageId);
             photo.texture = numberMode
-                ? AssetLib.Texture("Art/Sprites/Bubble/gp_pic_bubble_number")
+                ? BubbleView.ActiveBubblePicTex()
                 : flyTex;
             photo.raycastTarget = false;
             var photoRt = photo.rectTransform;
@@ -650,7 +646,6 @@ namespace BubblePics
             Page.TopBar.FillCollected(slotIdx);
             if (rainbowShine)
                 Page.TopBar.PlayLastLinkShine();
-            Fx.Vibrate(1);
             _activeNodes.Remove(fly);
             Destroy(fly);
             if (trail != null)

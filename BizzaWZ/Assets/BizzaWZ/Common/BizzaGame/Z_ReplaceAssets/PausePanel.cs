@@ -33,6 +33,7 @@ public class PausePanel : UIPageBase
 
 
     public TMP_Text LanguageText;
+    [SerializeField] private TMP_Text versionText;
 
     public string[] languages = new string[8] { "","", "", "", "", "", "", ""};
 
@@ -76,7 +77,7 @@ public class PausePanel : UIPageBase
     private void Awake()
     {
         CloseButton.onClick.AddListener((() => {
-            World.Current.Pause(this);
+            World.Current.Resume(this);
             this.CloseSelf();
         }));
         ContinueButton.onClick.AddListener(() =>
@@ -94,6 +95,7 @@ public class PausePanel : UIPageBase
 
     protected override void OnOpen()
     {
+        if(versionText!=null)versionText.text="v"+Application.version;
         Init();
     }
 
@@ -173,6 +175,7 @@ public class PausePanel : UIPageBase
         }
         languageDropdown.ClearOptions();
         languageDropdown.AddOptions(options);
+        languageDropdown.onValueChanged.RemoveListener(ChangeLanguage);
         languageDropdown.onValueChanged.AddListener(ChangeLanguage);
     }
 

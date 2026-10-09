@@ -1,0 +1,27 @@
+{
+  "source": "Assets/BubblePics/ArtArchive/ReleaseCleanup20260929/SourceData/SequentialUI20260928/PausePanel/ApprovedSource.png",
+  "atlas": "Assets/BubblePics/Resources/ReleaseUI/SequentialUI20260928/PausePanel/Atlas0.png",
+  "material": "Assets/BubblePics/ArtArchive/ReleaseCleanup20260929/SourceData/SequentialUI20260928/PausePanel/Panel.mat",
+  "sprite": "Panel__3fb94cd170",
+  "sourceRect": [10,11,829,960],
+  "outer": {
+    "start": [0,120],
+    "curves": [
+      {"p":[0,60,20,33,75,24]}, {"p":[180,6,315,0,414,0]},
+      {"p":[550,0,682,8,759,28]}, {"p":[811,42,828,73,828,123]},
+      {"p":[828,380,828,625,828,856]}, {"p":[828,923,811,952,747,956]},
+      {"p":[574,961,253,961,80,956]}, {"p":[20,953,0,931,0,863]},
+      {"p":[0,620,0,363,0,120]}
+    ]
+  },
+  "interior": {
+    "start": [25,126],
+    "curves": [
+      {"p":[25,72,40,54,91,44]}, {"p":[211,26,326,21,414,21]},
+      {"p":[540,21,670,29,745,45]}, {"p":[793,55,804,82,804,128]},
+      {"p":[804,380,804,625,804,852]}, {"p":[804,908,788,927,733,932]},
+      {"p":[574,937,253,937,91,932]}, {"p":[43,929,25,913,25,852]},
+      {"p":[25,620,25,363,25,126]}
+    ]
+  }
+}

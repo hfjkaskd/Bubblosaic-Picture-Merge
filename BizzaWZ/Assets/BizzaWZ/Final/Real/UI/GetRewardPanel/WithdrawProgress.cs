@@ -11,6 +11,8 @@ public class WithdrawProgress : MonoBehaviour
     public Image progressImg;
     public Image paymentImg;
     public TMP_Text progressTxt;
+    public TMP_Text percentageText;
+    [SerializeField] private bool percentOnly;
 
     [Header("Config")]
     public PaymentConfig payCfg;
@@ -40,7 +42,7 @@ public class WithdrawProgress : MonoBehaviour
 
         // 文案
         string earn = $"{LanguageUtils.GetText("CurrencyToken")}{WithdrawalUtil.GetCustomizedValueByCountryType(target - cur)}";
-        string withdraw = $"{LanguageUtils.GetText("CurrencyToken")}{target}";
+        string withdraw = $"{LanguageUtils.GetText("CurrencyToken")}{WithdrawalUtil.GetCustomizedValueByCountryType(target)}";
         progressTxt.text = LanguageUtils.GetFormatText("WithdrawProgressHint", earn, withdraw);
 
         // icon
@@ -52,7 +54,9 @@ public class WithdrawProgress : MonoBehaviour
             _ => paymentImg.sprite
         };
 
-        float targetFill = Mathf.Clamp01(cur / target);
+        float targetFill = target > 0 ? Mathf.Clamp01(cur / target) : 0;
+        if (percentOnly) progressTxt.text = Mathf.RoundToInt(targetFill * 100) + "%";
+        if (percentageText != null) percentageText.text = Mathf.RoundToInt(targetFill * 100) + "%";
         float startFill = alwaysFromZero ? 0f : progressImg.fillAmount;
 
         progressImg.fillAmount = startFill;
