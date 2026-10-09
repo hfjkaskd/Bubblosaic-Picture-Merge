@@ -51,7 +51,7 @@ namespace BubblePics.EditorTools
             var go=PrefabUtility.LoadPrefabContents(PrefabPath);
             try
             {
-                var page=go.GetComponent<FAQPanel>();var tr=go.transform;int buttons=go.GetComponentsInChildren<Button>(true).Length;
+                var page=go.GetComponent<FAQPanel>();var tr=go.transform;
                 var nested=PrefabUtility.GetNearestPrefabInstanceRoot(tr.Find("BG (2)").gameObject);if(nested!=null)PrefabUtility.UnpackPrefabInstance(nested,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);
                 foreach(string name in new[]{"PageBackdrop","OpaqueUnderlay"}){var old=tr.Find(name);if(old!=null)old.gameObject.SetActive(false);}
                 var backdrop=Child(tr,"ReferenceBackdrop");Box(backdrop,SliceRect("Backdrop"));Visual(backdrop,"Backdrop");backdrop.SetAsFirstSibling();
@@ -97,7 +97,7 @@ namespace BubblePics.EditorTools
                 var area=Child(bar,"SlidingArea");Stretch(area);var thumb=Child(area,"Handle");Stretch(thumb);Visual(thumb,"Thumb");thumb.GetComponent<Image>().type=Image.Type.Sliced;thumb.GetComponent<Image>().pixelsPerUnitMultiplier=1/S;thumb.GetComponent<Image>().raycastTarget=true;scrollbar.handleRect=(RectTransform)thumb;scrollbar.targetGraphic=thumb.GetComponent<Image>();scroll.verticalScrollbar=scrollbar;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.AutoHide;
                 var data=new SerializedObject(page);data.FindProperty("scrollView").objectReferenceValue=scroll;data.ApplyModifiedPropertiesWithoutUndo();close.SetAsLastSibling();
                 if(original.Length!=7)throw new InvalidOperationException("Expected all seven original FAQ descriptions.");
-                if(buttons!=go.GetComponentsInChildren<Button>(true).Length)throw new InvalidOperationException("Standard Button count changed.");
+                FAQAccordionAuthoring.Configure(go);
                 foreach(var button in go.GetComponentsInChildren<Button>(true))if(button.targetGraphic==null||button.onClick.GetPersistentEventCount()!=0)throw new InvalidOperationException("Invalid standard Button binding.");
                 PrefabUtility.SaveAsPrefabAsset(go,PrefabPath);
             }

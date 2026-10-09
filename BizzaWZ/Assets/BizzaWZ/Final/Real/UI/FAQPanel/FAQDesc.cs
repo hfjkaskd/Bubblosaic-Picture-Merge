@@ -36,7 +36,9 @@ public class FAQDesc : MonoBehaviour
     {
         desc = LanguageUtils.GetText(key);
         desc = desc.GetReplaceDesc(titleColor).GetReplaceDesc(contentColor).GetReplaceDesc(highlightColor);
-        tMP_Text.text = desc;
+        var accordion = GetComponentInParent<FAQAccordionItem>(true);
+        if (accordion != null) accordion.RefreshDetailedText(this, desc);
+        else tMP_Text.text = desc;
     }
 
 

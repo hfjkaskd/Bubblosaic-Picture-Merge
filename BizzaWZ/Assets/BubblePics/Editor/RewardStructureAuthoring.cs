@@ -141,7 +141,7 @@ namespace BubblePics.EditorTools
             var ad = content.Find("AdBonusProgress");
             Place(ad, 0, -496, 880, 218);
             Place(ad.Find("AdBonusCard"), 0, 0, 880, 218);
-            Place(ad.Find("AdBonusTitle"), 0, 66, 780, 40);
+            Place(ad.Find("AdBonusTitle"), 0, 68, 780, 40);
             Place(ad.Find("CurrentBonus"), -338, 10, 145, 45);
             Place(ad.Find("NextBonus"), 338, 10, 145, 45);
             Place(ad.Find("CurrentBonusCaption"), -338, -34, 160, 34);
@@ -149,12 +149,16 @@ namespace BubblePics.EditorTools
             Place(ad.Find("Track"), 0, 10, 500, 48);
             Place(ad.Find("Fill"), 0, 10, 480, 29);
             Place(ad.Find("VideoCount"), 0, 10, 480, 48);
-            Place(ad.Find("VideoHint"), 0, -74, 820, 44);
+            Place(ad.Find("VideoHint"), 0, -82, 820, 44);
             foreach (var label in ad.GetComponentsInChildren<TMP_Text>(true))
             {
                 float size = label.name.Contains("Caption") ? 23 : label.name == "VideoHint" ? 27 : 32;
                 label.fontSize = label.fontSizeMax = size;
             }
+            var bonusTitle = ad.Find("AdBonusTitle").GetComponent<TMP_Text>();
+            bonusTitle.enableAutoSizing = true; bonusTitle.fontSizeMin = 22; bonusTitle.enableWordWrapping = false;
+            var bonusHint = ad.Find("VideoHint").GetComponent<TMP_Text>();
+            bonusHint.enableAutoSizing = true; bonusHint.fontSizeMin = 18; bonusHint.enableWordWrapping = true;
             Progress(content.Find("WithdrawalProgress"));
             Progress(content.Find("RealWithdrawalProgress"));
             RewardGeneratedArtAuthoring.Configure(root);
@@ -168,12 +172,15 @@ namespace BubblePics.EditorTools
         {
             Place(progress, 0, -726, 880, 170);
             Place(progress.Find("ProgressCard"), 0, 0, 880, 170);
+            progress.Find("ProgressCard").gameObject.SetActive(false);
             Place(progress.Find("ProgressCaption"), -40, 48, 690, 38);
+            progress.Find("ProgressCaption").GetComponent<TMP_Text>().color = Color.white;
             Place(progress.Find("PaymentMethod"), 369, 48, 58, 38);
             Place(progress.Find("Track"), 0, -4, 784, 48);
             Place(progress.Find("Fill"), 0, -4, 764, 29);
             var percent = progress.Find("Percent"); if (percent != null) Place(percent, 0, -4, 720, 48);
             Place(progress.Find("WithdrawalHint"), 0, -55, 820, 44);
+            progress.Find("WithdrawalHint").GetComponent<TMP_Text>().color = Color.white;
             foreach (var label in progress.GetComponentsInChildren<TMP_Text>(true))
                 label.fontSize = label.fontSizeMax = label.name == "ProgressCaption" ? 31 : label.name == "WithdrawalHint" ? 24 : 27;
         }

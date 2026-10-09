@@ -82,10 +82,11 @@ namespace BubblePics.EditorTools
         static void ProgressCard(ReferencePrefabTools a,Transform root,out Image fill,out Image payment,out TMP_Text hint)
         {
             Card(a,root,"ProgressCard",new Rect(46,1618,755,163));
-            Localize(a.Text(root,"ProgressCaption",new Rect(80,1627,606,43),31,TextAlignmentOptions.MidlineLeft),"seq_withdraw_progress");
+            root.Find("ProgressCard").gameObject.SetActive(false);
+            Localize(a.Text(root,"ProgressCaption",new Rect(80,1627,606,43),31,TextAlignmentOptions.MidlineLeft,Color.white),"seq_withdraw_progress");
             payment=Ensure<Image>(Child(root,"PaymentMethod"));a.Place(payment.transform,new Rect(702,1628,60,43));payment.preserveAspect=true;payment.raycastTarget=false;
             fill=Bar(a,root,new Rect(90,1676,665,43));
-            hint=a.Text(root,"WithdrawalHint",new Rect(79,1723,690,49),25);hint.enableWordWrapping=true;hint.overrideColorTags=true;
+            hint=a.Text(root,"WithdrawalHint",new Rect(79,1723,690,49),25,color:Color.white);hint.enableWordWrapping=true;hint.overrideColorTags=true;
         }
     }
 }

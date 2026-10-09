@@ -47,7 +47,11 @@ public class FAQPanel : UIPageBase
 
     protected override void OnOpen()
     {
+        BubblePics.Localization.LocaleChanged -= Refresh;
+        BubblePics.Localization.LocaleChanged += Refresh;
         Refresh();
+        foreach (var item in GetComponentsInChildren<FAQAccordionItem>(true))
+            item.SetExpanded(false);
         if (scrollView != null)
         {
             scrollView.StopMovement();
@@ -58,7 +62,7 @@ public class FAQPanel : UIPageBase
 
     protected override void OnClose()
     {
-
+        BubblePics.Localization.LocaleChanged -= Refresh;
     }
 
     public void OnClickCloseBtn()
@@ -69,7 +73,17 @@ public class FAQPanel : UIPageBase
     [Button("刷新")]
     public void Refresh()
     {
-        var descs = GetComponentsInChildren<FAQDesc>();
+        if (scrollView != null)
+        {
+            for (int i = 1; i <= 4; i++)
+            {
+                var row = scrollView.content.Find("QuickQuestion" + i);
+                if (row == null) continue;
+                row.Find("Question")?.GetComponent<BubblePics.CoralLocalizedLabel>()?.SetKey("faq_quick_question_" + i);
+                row.Find("Answer")?.GetComponent<BubblePics.CoralLocalizedLabel>()?.SetKey("faq_quick_answer_" + i);
+            }
+        }
+        var descs = GetComponentsInChildren<FAQDesc>(true);
         foreach (var desc in descs)
         {
             desc.Refresh();

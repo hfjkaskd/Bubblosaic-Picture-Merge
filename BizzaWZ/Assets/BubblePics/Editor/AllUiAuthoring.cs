@@ -53,6 +53,7 @@ namespace BubblePics.EditorTools
                 else if(cmd.operation=="refine-history")HistoryReferenceAuthoring.Apply();
                 else if(cmd.operation=="review-history")ReviewHistory();
                 else if(cmd.operation=="refine-faq")FAQReferenceAuthoring.Apply();
+                else if(cmd.operation=="refine-faq-accordion")FAQAccordionAuthoring.Apply();
                 else if(cmd.operation=="review-faq")ReviewFAQ();
                 else if(cmd.operation=="refine-tier")TierReferenceAuthoring.Apply();
                 else if(cmd.operation=="review-tier")ReviewTier();

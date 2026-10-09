@@ -19,11 +19,21 @@ namespace BubblePics.EditorTools
             const string path="Assets/BizzaWZ/Final/Real/UI/AddPropPanel/AddPropPanel.prefab";var go=PrefabUtility.LoadPrefabContents(path);
             try
             {
-                var p=go.GetComponent<AddPropPanel>();var t=go.transform;Clear(t);Stretch(t);a.Overlay(t,new Color(0,.12f,.24f,.16f));a.Graphic(t,"Panel");a.Graphic(t,"Title").GetComponent<Image>().material=titleBlank;p.propName=a.Text(t,"TitleCaption",new Rect(216,511,418,75),60,color:Color.white);a.Caption(t,p.propName,"Title","Need a hint?");
+                var p=go.GetComponent<AddPropPanel>();var t=go.transform;Clear(t);Stretch(t);a.Overlay(t,new Color(0,.12f,.24f,.16f));
+                var panel=a.Graphic(t,"Panel").GetComponent<Image>();
+                panel.material=AssetDatabase.LoadAssetAtPath<Material>("Assets/BizzaWZ/Final/Real/UI/AddPropPanel/Res/SingleFramePanel.mat");
+                a.Graphic(t,"Title").GetComponent<Image>().material=titleBlank;p.propName=a.Text(t,"TitleCaption",new Rect(216,511,418,75),60,color:Color.white);a.Caption(t,p.propName,"Title","Need a hint?");
                 p.closeBtn=a.Button(t,"Close","Close");var hint=a.Graphic(t,"Hint");Bind(p,"authoredHintVisual",hint.gameObject);
                 var icon=Child(t,"OtherTool");a.Place(icon,new Rect(281,714,287,287));p.propIcon=Ensure<Image>(icon);p.propIcon.preserveAspect=true;p.propIcon.raycastTarget=false;
                 var desc=a.Text(t,"Description",new Rect(127,1076,601,64),39);desc.enableWordWrapping=true;Bind(p,"descriptionText",desc);
-                p.adBuyBtn=a.Button(t,"Free","Free",key:"seq_free",caption:"Free",size:68);a.Local(p.adBuyBtn.transform.Find("FreeLabel"),new Rect(202,35,260,104));p.limitTxt=a.Text(t,"Limit",new Rect(275,1330,300,66),46);Validate(t);PrefabUtility.SaveAsPrefabAsset(go,path);
+                p.adBuyBtn=a.Button(t,"Free","Free",key:"seq_free",caption:"Free",size:68);a.Local(p.adBuyBtn.transform.Find("FreeLabel"),new Rect(202,35,260,104));p.limitTxt=a.Text(t,"Limit",new Rect(275,1330,300,66),46);Validate(t);
+                float centerOffset=-panel.rectTransform.anchoredPosition.y;
+                foreach(Transform child in t)
+                {
+                    if(child.name=="ModalOverlay")continue;
+                    if(child is RectTransform rect)rect.anchoredPosition+=Vector2.up*centerOffset;
+                }
+                PrefabUtility.SaveAsPrefabAsset(go,path);
             }finally{PrefabUtility.UnloadPrefabContents(go);}AssetDatabase.SaveAssets();
         }
     }
