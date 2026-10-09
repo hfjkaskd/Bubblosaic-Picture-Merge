@@ -19,6 +19,6 @@ MonoBehaviour:
   HintSprite: Hint
   DropSprite: Drop
   MagnetResource: BubblePicsDynamic/588febfffe00a554cabdb727c28e81b8/drop_small
-  NormalBackgroundMaterial: {fileID: 0}
-  LockedBackgroundMaterial: {fileID: 0}
+  NormalBackgroundMaterial: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
+  LockedBackgroundMaterial: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
   DisabledTint: {r: 0.68, g: 0.77, b: 0.84, a: 1}

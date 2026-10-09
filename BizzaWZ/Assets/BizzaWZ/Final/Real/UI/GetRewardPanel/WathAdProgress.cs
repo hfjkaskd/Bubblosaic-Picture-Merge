@@ -37,7 +37,7 @@ public class WathAdProgress : MonoBehaviour
 
         var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(info);
 #if DEBUG_MODE
-        Debug.LogError("恭喜获得界面配置信息: " + info);
+//         Debug.LogError("恭喜获得界面配置信息: " + info);
 #endif
         int threeLook = Convert.ToInt32(dict[AccountModuleCfg.three_Count]);
         int threeRatio = Convert.ToInt32(dict[AccountModuleCfg.three_Ratio]);

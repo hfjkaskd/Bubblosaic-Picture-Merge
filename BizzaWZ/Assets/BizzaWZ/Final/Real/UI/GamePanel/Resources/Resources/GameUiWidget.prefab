@@ -955,6 +955,7 @@ MonoBehaviour:
   canDrag: 1
   standardButton: {fileID: 3764434063189175481}
   pressScaleRatio: 0.92
+  animateStandardButtonPress: 1
   longClickPeriod: 0.5
   interactable: 1
   onLongClick:
@@ -977,7 +978,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -1332,8 +1333,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1397,10 +1398,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.94, g: 0.97, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.94, g: 0.97, b: 1, a: 1}
     m_PressedColor: {r: 0.83, g: 0.89, b: 1, a: 1}
-    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.94, g: 0.97, b: 1, a: 1}
     m_DisabledColor: {r: 0.73, g: 0.7, b: 0.88, a: 0.65}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -2193,7 +2194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: b832458990e546c78306436922ac2df0, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -2279,10 +2280,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a5231d3687f2e24c8d6c89e5469ae4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   _resourcePath: ReleaseUI/CoralV3/ApprovedHudSource
-  _spriteName: Withdraw__3090466b89
+  _spriteName: Withdraw__673b2ae03d
   _image: {fileID: 8109119981673301615}
   _renderer: {fileID: 0}
 --- !u!114 &2659891064608554789
@@ -2299,11 +2300,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 4936807084207024948}
   _surface: {fileID: 8109119981673301615}
-  _authoredCaption: Withdraw
-  _captionMaterial: {fileID: 0}
-  _translatedMaterial: {fileID: 0}
+  _authoredCaption: ''
+  _captionMaterial: {fileID: 2100000, guid: b832458990e546c78306436922ac2df0, type: 2}
+  _translatedMaterial: {fileID: 2100000, guid: b832458990e546c78306436922ac2df0, type: 2}
   _captionGroup: {fileID: 0}
-  _bakedResourcePath: ReleaseUI/CoralV3/ApprovedHudSource
+  _bakedResourcePath: ''
   _bakedCaptionSprite: Withdraw__3090466b89
   _bakedTranslatedSprite: Withdraw__673b2ae03d
 --- !u!1 &3248029166944288721
@@ -2820,7 +2821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -2915,7 +2916,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -2949,6 +2950,7 @@ MonoBehaviour:
   canDrag: 1
   standardButton: {fileID: 1420433490705778373}
   pressScaleRatio: 0.92
+  animateStandardButtonPress: 1
   longClickPeriod: 0.5
   interactable: 1
   onLongClick:
@@ -3234,8 +3236,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: 78ec6e651ce9443b9be0b407a5ce8b87, type: 2}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3299,10 +3301,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.94, g: 0.97, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.94, g: 0.97, b: 1, a: 1}
     m_PressedColor: {r: 0.83, g: 0.89, b: 1, a: 1}
-    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.94, g: 0.97, b: 1, a: 1}
     m_DisabledColor: {r: 0.73, g: 0.7, b: 0.88, a: 0.65}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -4521,7 +4523,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 3ed9f64146b34aa0b40f19621a512ea9, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -4607,8 +4609,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a5231d3687f2e24c8d6c89e5469ae4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   _resourcePath: ReleaseUI/CoralV3/ApprovedHudSource
   _spriteName: Conversion__05aeb52bea
   _image: {fileID: 7967313735095636668}
@@ -4757,7 +4759,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: c4dc0db604b84707877e9fa2f3c37044, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -5191,6 +5193,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5183219477884508254}
     - target: {fileID: 7089875217308296933, guid: 8c21a225bdfdef34099599e454f631c0, type: 3}
+      propertyPath: animateStandardButtonPress
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7089875217308296933, guid: 8c21a225bdfdef34099599e454f631c0, type: 3}
       propertyPath: onClick.m_PersistentCalls.m_Calls.Array.size
       value: 0
       objectReference: {fileID: 0}
@@ -5408,7 +5414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: c4dc0db604b84707877e9fa2f3c37044, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}

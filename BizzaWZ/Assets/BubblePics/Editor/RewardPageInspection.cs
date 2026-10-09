@@ -22,13 +22,13 @@ namespace BubblePics.EditorTools
             }
             var p=await OpenView();
             float delay=new SerializedObject(p).FindProperty("normalCollectRevealDelay").floatValue;
-            check(Mathf.Approximately(delay,3),"Normal collect delay is authored as 3 seconds in the prefab");
+            check(Mathf.Approximately(delay,0.75f),"Normal collect delay is authored as 0.75 seconds in the prefab");
             check(!p.closeBtn.gameObject.activeSelf&&!p.closeBtn.GetComponent<Button>().IsActive(),
                 "Blue action and its native Button are hidden immediately on opening");
-            await UniTask.Delay(800,ignoreTimeScale:true);
+            await UniTask.Delay(600,ignoreTimeScale:true);
             check(HitStandard(p.claimBtn.GetComponent<Button>()),"Ad action retains its original short accidental-click guard");
             check(!p.closeBtn.gameObject.activeSelf,"Blue action remains hidden after the ad action becomes available");
-            await PayPalCapture(folder,"Before-3s.png");
+            await PayPalCapture(folder,"Before-0.75s.png");
             await UniTask.WaitUntil(()=>p.closeBtn.gameObject.activeSelf).Timeout(TimeSpan.FromSeconds(delay+3));
             check(HitStandard(p.closeBtn.GetComponent<Button>()),"Blue action is visible and raycastable after its delay");
             check(p.claimBtn.GetComponent<Button>().onClick.GetPersistentEventCount()==0&&
@@ -39,7 +39,7 @@ namespace BubblePics.EditorTools
                 check(material.shader.name=="UI/Default",
                     "Amount background uses repaired baked artwork without runtime erase material / "+path);
             }
-            await PayPalCapture(folder,"After-3s.png");
+            await PayPalCapture(folder,"After-0.75s.png");
             CloseRuntime();await UniTask.DelayFrame(3);
             p=await OpenView();
             check(!p.closeBtn.gameObject.activeSelf,"Reopening resets the delay and hides the previously visible button");

@@ -300,7 +300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 1d98ecf9a6474aa39e2acb75f7026d83, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -328,8 +328,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a5231d3687f2e24c8d6c89e5469ae4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   _resourcePath: ReleaseUI/CoralV3/ApprovedHudSource
   _spriteName: Status__8f6fcaad6c
   _image: {fileID: 270270891574489364}
@@ -348,11 +348,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 3383656137122752544}
   _surface: {fileID: 270270891574489364}
-  _authoredCaption: Target
-  _captionMaterial: {fileID: 0}
-  _translatedMaterial: {fileID: 0}
+  _authoredCaption: ''
+  _captionMaterial: {fileID: 2100000, guid: 1d98ecf9a6474aa39e2acb75f7026d83, type: 2}
+  _translatedMaterial: {fileID: 2100000, guid: 1d98ecf9a6474aa39e2acb75f7026d83, type: 2}
   _captionGroup: {fileID: 0}
-  _bakedResourcePath: ReleaseUI/CoralV3/ApprovedHudSource
+  _bakedResourcePath: ''
   _bakedCaptionSprite: Status__17dbed2906
   _bakedTranslatedSprite: Status__8f6fcaad6c
 --- !u!1 &2617677784362795287
@@ -1356,7 +1356,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 06e487142ae64854b601390ad4d3bd45, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -1384,8 +1384,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a5231d3687f2e24c8d6c89e5469ae4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   _resourcePath: ReleaseUI/CoralV3/ApprovedHudSource
   _spriteName: MovesStatus__1377090f0c
   _image: {fileID: 1933238549657201879}
@@ -1404,11 +1404,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 475905067242354653}
   _surface: {fileID: 1933238549657201879}
-  _authoredCaption: Moves
-  _captionMaterial: {fileID: 0}
-  _translatedMaterial: {fileID: 0}
+  _authoredCaption: ''
+  _captionMaterial: {fileID: 2100000, guid: 06e487142ae64854b601390ad4d3bd45, type: 2}
+  _translatedMaterial: {fileID: 2100000, guid: 06e487142ae64854b601390ad4d3bd45, type: 2}
   _captionGroup: {fileID: 0}
-  _bakedResourcePath: ReleaseUI/CoralV3/ApprovedHudSource
+  _bakedResourcePath: ''
   _bakedCaptionSprite: MovesStatus__f616055779
   _bakedTranslatedSprite: MovesStatus__1377090f0c
 --- !u!1 &8944355495654705496

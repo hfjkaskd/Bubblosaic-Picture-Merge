@@ -89,7 +89,7 @@ namespace BubblePics.EditorTools
             Bind(page, "titleText", title);
             var pageData = new SerializedObject(page);
             pageData.FindProperty("alwaysShowLevel").boolValue = false;
-            pageData.FindProperty("normalCollectRevealDelay").floatValue = 3;
+            pageData.FindProperty("normalCollectRevealDelay").floatValue = 0.75f;
             pageData.ApplyModifiedPropertiesWithoutUndo();
 
             Place(page.LevelObj.transform, 0, 523, 360, 100);

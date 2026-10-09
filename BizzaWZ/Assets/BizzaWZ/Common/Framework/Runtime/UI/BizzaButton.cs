@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -54,6 +55,9 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     [SerializeField, Min(0f)]
     private float pressScaleRatio = 0.92f;
 
+    [SerializeField] private bool animateStandardButtonPress;
+    private Coroutine pressReleaseRoutine;
+
     public float longClickPeriod = 0.5f; // 长按时间
 
     public bool interactable = true; // 是否可交互
@@ -98,7 +102,10 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private void OnDisable()
     {
         if (standardButton != null) standardButton.interactable = false;
+        bool wasReleasing = pressReleaseRoutine != null;
+        StopPressRelease();
         RestoreNormalScale();
+        if (wasReleasing && scaleTarget != null) scaleTarget.localScale = m_NormalScale;
     }
 
     private void Update()
@@ -118,17 +125,12 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     // 按下事件
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (standardButton != null) return;
-        if (scaleTarget != null)
+        if (standardButton != null)
         {
-            if (!m_IsPointerDown)
-            {
-                m_NormalScale = scaleTarget.localScale;
-                m_IsPointerDown = true;
-            }
-
-            scaleTarget.localScale = m_NormalScale * pressScaleRatio;
+            if (animateStandardButtonPress && standardButton.IsInteractable()) ApplyPressedScale();
+            return;
         }
+        ApplyPressedScale();
         // if (interactable)
         // {
         // isLongClick = true;
@@ -139,7 +141,11 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     // 抬起事件
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (standardButton != null) return;
+        if (standardButton != null)
+        {
+            if (animateStandardButtonPress) RestoreNormalScale(true);
+            return;
+        }
         RestoreNormalScale();
         // isLongClick = false;
         if (interactable && RectTransformUtility.RectangleContainsScreenPoint(gameObject.GetComponent<RectTransform>(), eventData.position))
@@ -198,15 +204,61 @@ public class BizzaButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         }
     }
 
-    private void RestoreNormalScale()
+    private void ApplyPressedScale()
+    {
+        if (scaleTarget == null) return;
+        bool wasReleasing = pressReleaseRoutine != null;
+        StopPressRelease();
+        if (!m_IsPointerDown)
+        {
+            if (!wasReleasing) m_NormalScale = scaleTarget.localScale;
+            m_IsPointerDown = true;
+        }
+        scaleTarget.localScale = m_NormalScale * pressScaleRatio;
+    }
+
+    private void RestoreNormalScale(bool animate = false)
     {
         if (!m_IsPointerDown || scaleTarget == null)
         {
             return;
         }
 
-        scaleTarget.localScale = m_NormalScale;
         m_IsPointerDown = false;
+        if (animate && isActiveAndEnabled)
+        {
+            pressReleaseRoutine = StartCoroutine(AnimatePressRelease(scaleTarget.localScale, m_NormalScale));
+        }
+        else
+        {
+            scaleTarget.localScale = m_NormalScale;
+        }
+    }
+
+    private IEnumerator AnimatePressRelease(Vector3 from, Vector3 normal)
+    {
+        const float reboundDuration = 0.09f;
+        const float settleDuration = 0.09f;
+        Vector3 rebound = normal * 1.05f;
+        for (float elapsed = 0f; elapsed < reboundDuration; elapsed += Time.unscaledDeltaTime)
+        {
+            scaleTarget.localScale = Vector3.LerpUnclamped(from, rebound, Mathf.SmoothStep(0f, 1f, elapsed / reboundDuration));
+            yield return null;
+        }
+        for (float elapsed = 0f; elapsed < settleDuration; elapsed += Time.unscaledDeltaTime)
+        {
+            scaleTarget.localScale = Vector3.LerpUnclamped(rebound, normal, Mathf.SmoothStep(0f, 1f, elapsed / settleDuration));
+            yield return null;
+        }
+        scaleTarget.localScale = normal;
+        pressReleaseRoutine = null;
+    }
+
+    private void StopPressRelease()
+    {
+        if (pressReleaseRoutine == null) return;
+        StopCoroutine(pressReleaseRoutine);
+        pressReleaseRoutine = null;
     }
 
     public void OnInitializePotentialDrag(PointerEventData eventData)

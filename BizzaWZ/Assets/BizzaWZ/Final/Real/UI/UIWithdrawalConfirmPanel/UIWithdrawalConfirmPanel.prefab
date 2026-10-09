@@ -4870,7 +4870,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -300, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5708411866161662664
 CanvasRenderer:
@@ -4900,7 +4900,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Nome completo incompat\xEDvel com CPF/CNPJ \u2192 pagamento n\xE3o recebido."
+  m_text: "Nome completo incompat\xEDvel com CPF/CNPJ\n\u2192 pagamento n\xE3o recebido."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b87791258a80cd44abac4d0abd082ee0, type: 2}
   m_sharedMaterial: {fileID: 7462680210171167928, guid: b87791258a80cd44abac4d0abd082ee0, type: 2}
@@ -4927,12 +4927,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42.188515
-  m_fontSizeBase: 30
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 20
-  m_fontSizeMax: 32
+  m_fontSizeMax: 24
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512

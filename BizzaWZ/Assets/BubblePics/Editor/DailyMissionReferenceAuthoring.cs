@@ -34,15 +34,24 @@ namespace BubblePics.EditorTools
                 var clock=a.Graphic(t,"ClockIcon");a.Place(clock,new Rect(185,1261,43,44));
                 p.refreshTimeTxt=a.Text(t,"ResetTime",new Rect(240,1256,419,54),34,TextAlignmentOptions.Midline);
                 p.refreshTimeTxt.enableAutoSizing=false;
-                p.GoObj=Child(t,"GoState").gameObject;Stretch(p.GoObj.transform);var watch=a.Button(p.GoObj.transform,"Watch","Watch",key:"seq_watch_video",caption:"Watch video",size:56);var label=watch.transform.Find("WatchLabel");a.Local(label,new Rect(184,33,408,95));Bind(p,"goBtn",watch);
+                p.GoObj=Child(t,"GoState").gameObject;Stretch(p.GoObj.transform);var watch=a.Button(p.GoObj.transform,"Watch","Watch",key:"seq_watch_video",caption:"Watch video",size:56);var label=watch.transform.Find("WatchLabel");Bind(p,"goBtn",watch);
                 var actionBlank=a.Material("ActionBlank");a.Erase(actionBlank,new Rect(182,1357,514,110));actionBlank.SetFloat("_SampleX",299);actionBlank.SetFloat("_EraseFeather",5);a.Round(actionBlank,a.R("Watch"),79);
-                watch.GetComponent<Image>().material=actionBlank;watch.transform.Find("ReferenceWatch").gameObject.SetActive(false);
+                actionBlank.SetFloat("_HueShift",0);actionBlank.SetFloat("_Saturation",1);actionBlank.SetFloat("_Brightness",1);
+                var watchBlue=a.Material("ActionWatchBlue");watchBlue.CopyPropertiesFromMaterial(actionBlank);watchBlue.SetFloat("_HueShift",.53f);watchBlue.SetFloat("_Saturation",.88f);watchBlue.SetFloat("_Brightness",1);
+                var claimedGray=a.Material("ActionClaimedGray");claimedGray.CopyPropertiesFromMaterial(actionBlank);claimedGray.SetFloat("_HueShift",0);claimedGray.SetFloat("_Saturation",.12f);claimedGray.SetFloat("_Brightness",.88f);
+                watch.GetComponent<Image>().material=watchBlue;watch.transform.Find("ReferenceWatch").gameObject.SetActive(false);
                 a.Local(label,new Rect(123,30,388,106));var watchText=label.GetComponent<TMP_Text>();
-                watchText.alignment=TextAlignmentOptions.Midline;watchText.fontSize=watchText.fontSizeMax=64*a.SY;watchText.fontSizeMin=48*a.SY;
+                watchText.alignment=TextAlignmentOptions.MidlineLeft;watchText.fontSize=watchText.fontSizeMax=64*a.SY;watchText.fontSizeMin=48*a.SY;
                 label.GetComponent<CanvasGroup>().alpha=1;
                 var video=a.Graphic(watch.transform,"WatchIcon");a.Local(video,new Rect(52,41,68,82));video.GetComponent<Image>().preserveAspect=true;
+                video.SetAsFirstSibling();
+                var iconLayout=Ensure<LayoutElement>(video);iconLayout.minWidth=iconLayout.preferredWidth=68*a.SX;
+                var watchLayout=Ensure<HorizontalLayoutGroup>(watch);watchLayout.padding=new RectOffset(Mathf.RoundToInt(60*a.SX),Mathf.RoundToInt(60*a.SX),0,0);
+                watchLayout.childAlignment=TextAnchor.MiddleCenter;watchLayout.spacing=24*a.SX;
+                watchLayout.childControlWidth=true;watchLayout.childControlHeight=false;
+                watchLayout.childForceExpandWidth=false;watchLayout.childForceExpandHeight=false;
                 p.WithdrawObj=Child(t,"WithdrawState").gameObject;Stretch(p.WithdrawObj.transform);var withdraw=a.Button(p.WithdrawObj.transform,"Withdraw","Watch",key:"sequential_withdraw",caption:"Watch video",size:56);withdraw.GetComponent<Image>().material=actionBlank;Bind(p,"withdrawBtn",withdraw);
-                p.ClaimedObj=Child(t,"ClaimedState").gameObject;Stretch(p.ClaimedObj.transform);var claimed=a.Button(p.ClaimedObj.transform,"Claimed","Watch",key:"seq_claimed",caption:"Watch video",size:56);claimed.GetComponent<Image>().material=actionBlank;Bind(p,"claimedBtn",claimed);p.claimedHint=a.Text(t,"ClaimedNote",new Rect(127,1501,595,53),27);Localize(p.claimedHint,"seq_claimed");Validate(t);PrefabUtility.SaveAsPrefabAsset(go,path);
+                p.ClaimedObj=Child(t,"ClaimedState").gameObject;Stretch(p.ClaimedObj.transform);var claimed=a.Button(p.ClaimedObj.transform,"Claimed","Watch",key:"seq_claimed",caption:"Watch video",size:56);claimed.GetComponent<Image>().material=claimedGray;Bind(p,"claimedBtn",claimed);p.claimedHint=a.Text(t,"ClaimedNote",new Rect(127,1501,595,53),27);Localize(p.claimedHint,"seq_claimed");Validate(t);PrefabUtility.SaveAsPrefabAsset(go,path);
             }finally{PrefabUtility.UnloadPrefabContents(go);}AssetDatabase.SaveAssets();
         }
     }

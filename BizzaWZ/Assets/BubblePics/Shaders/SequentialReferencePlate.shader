@@ -31,6 +31,9 @@ Shader "BubblePics/UI/SequentialReferencePlate"
         _TopCurve("Arched top: center X, top Y, half width, edge depth",Vector)=(0,0,0,0)
         _MirrorPatch("Reconstruct circular edge behind badge",Vector)=(0,0,0,0)
         _MirrorY("Source circle center Y",Float)=0
+        _HueShift("Button hue shift",Range(0,1))=0
+        _Saturation("Button saturation",Range(0,2))=1
+        _Brightness("Button brightness",Range(0,2))=1
         _StencilComp("Stencil Comparison",Float)=8
         _Stencil("Stencil ID",Float)=0
         _StencilOp("Stencil Operation",Float)=0
@@ -59,7 +62,25 @@ Shader "BubblePics/UI/SequentialReferencePlate"
             float _InkOnly,_MirrorY,_WhiteMatte,_BlueMatte,_WarmMatte,_WarmChroma,_CoolMatte,_ChromaBlue;float4 _MirrorPatch,_TopCurve;
             float4 _TextureSize,_Erase0,_Erase1,_Erase2,_Erase3,_Erase4,_Erase5,_ClipRect;
             float _SampleX,_SampleY,_TailSampleX,_Radius,_Feather,_EraseRadius,_EraseFeather;float4 _VisibleRect;
+            float _HueShift,_Saturation,_Brightness;
             v2f vert(appdata v) {v2f o;o.vertex=UnityObjectToClipPos(v.vertex);o.local=v.vertex;o.color=v.color*_Color;o.uv=v.uv;return o;}
+            float3 Recolor(float3 rgb)
+            {
+                float high=max(rgb.r,max(rgb.g,rgb.b));
+                float low=min(rgb.r,min(rgb.g,rgb.b));
+                float range=high-low;
+                float hue=0;
+                if(range>0.0001)
+                {
+                    if(high==rgb.r)hue=(rgb.g-rgb.b)/range;
+                    else if(high==rgb.g)hue=(rgb.b-rgb.r)/range+2;
+                    else hue=(rgb.r-rgb.g)/range+4;
+                    hue=frac(hue/6+_HueShift);
+                }
+                float saturation=saturate(range/max(high,0.0001)*_Saturation);
+                float3 spectrum=saturate(abs(frac(hue+float3(0,2.0/3.0,1.0/3.0))*6-3)-1);
+                return saturate(high*_Brightness*lerp(1,spectrum,saturation));
+            }
             float inside(float2 p,float4 r)
             {
                 if(_EraseRadius<=0)
@@ -117,6 +138,7 @@ Shader "BubblePics/UI/SequentialReferencePlate"
                 if(_CoolMatte>0)col.a*=1-smoothstep(.025,.13,min(col.g-.3,col.b-col.r));
                 if(_TopCurve.z>0){float edge=abs(p.x-_TopCurve.x)/_TopCurve.z;float top=_TopCurve.y+_TopCurve.w*(.21*edge*edge+.79*pow(edge,10));col.a*=smoothstep(top,top+1,p.y);}
                 if(_VisibleRect.z>0){float2 q=abs(p-_VisibleRect.xy-_VisibleRect.zw*.5)-_VisibleRect.zw*.5+_Radius;float d=length(max(q,0))+min(max(q.x,q.y),0)-_Radius;col.a*=1-smoothstep(-_Feather,0,d);}
+                if(abs(_HueShift)+abs(_Saturation-1)+abs(_Brightness-1)>0.0001)col.rgb=Recolor(col.rgb);
                 col*=i.color;
                 #ifdef UNITY_UI_CLIP_RECT
                 col.a*=UnityGet2DClipping(i.local.xy,_ClipRect);
