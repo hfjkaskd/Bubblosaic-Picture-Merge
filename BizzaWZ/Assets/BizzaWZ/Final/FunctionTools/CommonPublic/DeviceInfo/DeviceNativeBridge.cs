@@ -259,14 +259,11 @@ public static class DeviceNativeBridge
     {
         DeviceInfoLog.LogCountry($"oversea中的国家设置为 ： {country} —— ChannelConfig.real_CustomConfig.CountryName: {country} - defaultCountry: {defaultCountry}");
 
+#if UNITY_ANDROID && !UNITY_EDITOR
 #if !DEBUG_MODE
         country = "";
         DeviceInfoLog.LogCountry("被正式包强制修改为 默认国家 ");
 #endif
-
-
-
-#if UNITY_ANDROID && !UNITY_EDITOR
         LogDeviceEnvironmentOnce(nameof(GetCountryCode), "安卓真机");
         if (string.Equals(country, "None", StringComparison.OrdinalIgnoreCase))
         {

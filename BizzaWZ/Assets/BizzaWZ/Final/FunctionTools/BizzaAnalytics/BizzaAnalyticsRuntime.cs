@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -52,7 +53,9 @@ internal sealed class BizzaAnalyticsRuntime
   private readonly BizzaAnalyticsAgent _host;
   private readonly BizzaAnalyticsConfig _config;
   private readonly BizzaStateStore _stateStore;
-  private readonly BizzaState _state;
+  private BizzaState _state;
+  private BizzaAnalyticsBudget _budget;
+  private Task<BizzaAnalyticsBudget> _loadTask;
   private readonly string _ingestEndpoint;
   private readonly string _authorizationHeaderValue;
   private BizzaCrypto _crypto;
@@ -61,6 +64,25 @@ internal sealed class BizzaAnalyticsRuntime
   private bool _isSending;
   private Coroutine _sendCoroutine;
   private float _reportingBucket = -1f;
+  private bool _stateDirty;
+  private double _saveElapsed;
+  private int _workFrame = -1;
+  private int _frameWork;
+  private string _lastPromotedDay = "";
+  private string _oldestDelayedOrigin = "";
+  private bool _senderScheduleDirty = true;
+  private DateTime _nextSendCheck = DateTime.MinValue;
+  private DateTime _utcDate = DateTime.UtcNow.Date;
+  private string _today = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+  internal int RemainingFrameWork => _workFrame == Time.frameCount
+    ? Math.Max(0, BizzaAnalyticsLimits.MaxRecordsPerFrame - _frameWork)
+    : BizzaAnalyticsLimits.MaxRecordsPerFrame;
+  internal int DelayedMaintenancePasses { get; private set; }
+  internal int QueuedRecords { get { return _budget == null ? 0 : _budget.RecordCount; } }
+  internal int QueuedBytes { get { return _budget == null ? 0 : _budget.QueueBytes; } }
+  internal long DroppedRecords { get { return _budget == null ? 0 : _budget.DroppedRecords; } }
+  internal BizzaStateStore StateStore { get { return _stateStore; } }
+  internal BizzaState DiagnosticState { get { return _state; } }
 
   public bool IsReady { get; private set; }
   public bool IsReportingEnabled { get; private set; }
@@ -87,9 +109,23 @@ internal sealed class BizzaAnalyticsRuntime
     }
 
     _stateStore = new BizzaStateStore(Application.persistentDataPath, _config.verboseLog);
-    _state = _stateStore.Load();
     _ingestEndpoint = _config.ingestUrl + "/v1/ingest";
     _authorizationHeaderValue = "Bearer " + _config.ingestToken;
+    _loadTask = Task.Run(() => BizzaAnalyticsBudget.Restore(_stateStore.Load()));
+  }
+
+  internal bool CompleteInitialization()
+  {
+    if (IsReady) return true;
+    if (_loadTask == null || !_loadTask.IsCompleted) return false;
+    if (_loadTask.IsFaulted || _loadTask.IsCanceled)
+    {
+      var observedError = _loadTask.Exception;
+      _budget = BizzaAnalyticsBudget.Restore(BizzaState.CreateDefault());
+    }
+    else _budget = _loadTask.Result;
+    _loadTask = null;
+    _state = _budget.State;
     EnsureStableIds();
     BootstrapAutoSignals();
     SaveState();
@@ -97,10 +133,8 @@ internal sealed class BizzaAnalyticsRuntime
     IsReady = true;
     LogReportingSamplingSnapshot();
     LogStartupSnapshot();
-#if UNITY_EDITOR
-    FlushUserProfileNow("bootstrap_unity_editor_immediate");
-#endif
     FlushNow("bootstrap");
+    return true;
   }
 
   public void Tick(float deltaTime)
@@ -110,20 +144,31 @@ internal sealed class BizzaAnalyticsRuntime
       return;
     }
 
-    if (deltaTime < 0f)
+    if (deltaTime < 0f || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime))
     {
       deltaTime = 0f;
     }
 
+    var date = DateTime.UtcNow.Date;
+    if (date != _utcDate)
+    {
+      _utcDate = date;
+      _today = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+      BizzaAnalyticsBudget.PruneHistory(_state, _today);
+      SaveState();
+    }
     var today = UtcDateToday();
+    _saveElapsed += deltaTime;
     AddDailyElapsed(today, deltaTime);
     AddDailyFirstPhaseFlushElapsed(today, deltaTime);
     AddDailyFallbackFlushElapsed(today, deltaTime);
     _timeSinceHeartbeat += deltaTime;
 
-    while (_timeSinceHeartbeat >= HeartbeatIntervalSeconds)
+    if (_timeSinceHeartbeat >= HeartbeatIntervalSeconds)
     {
-      _timeSinceHeartbeat -= HeartbeatIntervalSeconds;
+      var ticks = Math.Floor(_timeSinceHeartbeat / HeartbeatIntervalSeconds);
+      _state.gameDurationSeconds += (ticks - 1d) * HeartbeatIntervalSeconds;
+      _timeSinceHeartbeat %= HeartbeatIntervalSeconds;
       OnHeartbeatTick();
     }
 
@@ -162,6 +207,7 @@ internal sealed class BizzaAnalyticsRuntime
 
     PromoteDelayedQueue(today);
     EnsureSenderRunning();
+    PersistIfDue(false);
   }
 
   public void Track(string eventName, Dictionary<string, object> data)
@@ -171,16 +217,21 @@ internal sealed class BizzaAnalyticsRuntime
       return;
     }
 
-    if (string.IsNullOrWhiteSpace(eventName))
+    if (string.IsNullOrEmpty(eventName) || eventName.Length > 128 || string.IsNullOrWhiteSpace(eventName))
     {
       LogWarn("BTrack eventName is empty, ignored.");
       return;
     }
 
-    var payload = BizzaValueUtil.NormalizeDictionary(data ?? new Dictionary<string, object>());
-    LogVerbose("track(user) event=" + eventName.Trim() + " payload=" + SerializeForLog(payload));
+    if (!TryTakeWork()) return;
+    object copy;
+    int bytes;
+    if (!BizzaAnalyticsLimits.TryCopy(data, BizzaAnalyticsLimits.MaxPayloadBytes, out copy, out bytes))
+    { _budget.NoteDrop(); return; }
+    var payload = copy as Dictionary<string, object>;
+    if (_config.verboseLog) LogVerbose("track(user) event=" + eventName.Trim() + " payload=" + SerializeForLog(payload));
     var record = BizzaRecord.NewEvent(eventName.Trim(), payload);
-    EnqueueEventRealtimeRecord(record);
+    if (!EnqueueEventRealtimeRecord(record)) return;
     IncrementDailyRecordCount(UtcDateToday());
     OnEventRecordEnqueued();
   }
@@ -192,9 +243,11 @@ internal sealed class BizzaAnalyticsRuntime
       return;
     }
 
+    if (data.Count > BizzaAnalyticsLimits.MaxUserProperties) { _budget.NoteDrop(); return; }
     var changed = 0;
     foreach (var kv in data)
     {
+      if (_workFrame == Time.frameCount && _frameWork >= BizzaAnalyticsLimits.MaxRecordsPerFrame) break;
       if (string.IsNullOrWhiteSpace(kv.Key))
       {
         continue;
@@ -250,6 +303,7 @@ internal sealed class BizzaAnalyticsRuntime
     FinalizePendingGameDurationBeforeLifecycleFlush();
     FlushNow(reason);
     FlushUserProfileNow(reason + "_user_profile");
+    PersistIfDue(true);
   }
 
   private bool ValidateConfig()
@@ -453,7 +507,11 @@ internal sealed class BizzaAnalyticsRuntime
 
   private bool ApplyUserProperty(string key, object value, bool countAsDailyRecord, string source)
   {
-    var normalizedValue = BizzaValueUtil.Normalize(value);
+    if (key.Length > 128 || !TryTakeWork()) return false;
+    object normalizedValue;
+    int bytes;
+    if (!BizzaAnalyticsLimits.TryCopy(value, BizzaAnalyticsLimits.MaxPropertyBytes, out normalizedValue, out bytes))
+    { _budget.NoteDrop(); return false; }
     object oldValue = null;
     var exists = _state.userProps.TryGetValue(key, out oldValue);
     if (exists && BizzaValueUtil.AreEqual(oldValue, normalizedValue))
@@ -461,15 +519,16 @@ internal sealed class BizzaAnalyticsRuntime
       return false;
     }
 
-    _state.userProps[key] = normalizedValue;
+    if (!exists && _state.userProps.Count >= BizzaAnalyticsLimits.MaxUserProperties) return false;
     var record = BizzaRecord.NewUserProfileChange(
       key,
       exists ? oldValue : null,
       normalizedValue,
       DateTime.UtcNow.ToString("o")
     );
-    EnqueueUserProfileRecord(record);
-    LogVerbose(
+    if (!EnqueueUserProfileRecord(record)) return false;
+    _state.userProps[key] = normalizedValue;
+    if (_config.verboseLog) LogVerbose(
       "user_prop(" + source + ") key=" + key +
       " old=" + SerializeForLog(SanitizeUserPropertyValueForLog(key, exists ? oldValue : null)) +
       " new=" + SerializeForLog(SanitizeUserPropertyValueForLog(key, normalizedValue)));
@@ -520,9 +579,6 @@ internal sealed class BizzaAnalyticsRuntime
   {
     SaveState();
 
-#if UNITY_EDITOR
-    FlushNow("unity_editor_immediate_event");
-#else
     var today = UtcDateToday();
     var dailyRecordCount = GetDailyRecordCount(today);
     if (dailyRecordCount <= 4)
@@ -542,26 +598,25 @@ internal sealed class BizzaAnalyticsRuntime
         FlushNow("count_threshold");
       }
     }
-#endif
   }
 
   private void OnUserProfileRecordEnqueued()
   {
     SaveState();
-
-#if UNITY_EDITOR
-    FlushUserProfileNow("unity_editor_immediate_user_profile");
-#endif
   }
 
-  private void EnqueueEventRealtimeRecord(BizzaRecord record)
+  private bool EnqueueEventRealtimeRecord(BizzaRecord record)
   {
+    if (!_budget.TryAdd(record)) return false;
     _state.realtimeBuffer.Add(record);
+    return true;
   }
 
-  private void EnqueueUserProfileRecord(BizzaRecord record)
+  private bool EnqueueUserProfileRecord(BizzaRecord record)
   {
+    if (!_budget.TryAdd(record)) return false;
     _state.userProfileBuffer.Add(record);
+    return true;
   }
 
   private void MoveEventRealtimeToPendingBatches(bool flushAll)
@@ -659,6 +714,7 @@ internal sealed class BizzaAnalyticsRuntime
       nextRetryAt = "",
       records = records,
     });
+    _senderScheduleDirty = true;
   }
 
   private int ResolveEffectiveBatchSize()
@@ -701,33 +757,29 @@ internal sealed class BizzaAnalyticsRuntime
 
   private void PromoteDelayedQueue(string today)
   {
-    if (_state.delayedQueue.Count == 0)
-    {
-      _state.delayedQueueNonEmptySince = "";
-      return;
-    }
-
-    _state.delayedQueue.Sort((a, b) =>
-    {
-      var cmp = string.CompareOrdinal(a.originDt, b.originDt);
-      if (cmp != 0) return cmp;
-      return string.CompareOrdinal(a.earliestSendDt, b.earliestSendDt);
-    });
-
+    // Newly deferred batches become eligible tomorrow. No sorting is needed.
+    if (_lastPromotedDay == today) return;
+    _lastPromotedDay = today;
+    DelayedMaintenancePasses++;
+    _oldestDelayedOrigin = "";
     var moved = 0;
-    while (_state.delayedQueue.Count > 0)
+    var retained = 0;
+    for (var i = 0; i < _state.delayedQueue.Count; i++)
     {
-      var next = _state.delayedQueue[0];
+      var next = _state.delayedQueue[i];
       var earliest = string.IsNullOrEmpty(next.earliestSendDt) ? today : next.earliestSendDt;
       if (string.CompareOrdinal(earliest, today) > 0)
       {
-        break;
+        _state.delayedQueue[retained++] = next;
+        RememberDelayedOrigin(next.originDt);
       }
-
-      _state.delayedQueue.RemoveAt(0);
-      _state.pendingBatches.Add(next);
-      moved += 1;
+      else
+      {
+        _state.pendingBatches.Add(next);
+        moved++;
+      }
     }
+    _state.delayedQueue.RemoveRange(retained, _state.delayedQueue.Count - retained);
 
     if (_state.delayedQueue.Count == 0)
     {
@@ -740,6 +792,7 @@ internal sealed class BizzaAnalyticsRuntime
 
     if (moved > 0)
     {
+      _senderScheduleDirty = true;
       SaveState();
     }
   }
@@ -762,6 +815,9 @@ internal sealed class BizzaAnalyticsRuntime
   private bool HasReadyBatch()
   {
     var now = DateTime.UtcNow;
+    if (!_senderScheduleDirty && now < _nextSendCheck) return false;
+    _senderScheduleDirty = false;
+    _nextSendCheck = DateTime.MaxValue;
     for (var i = 0; i < _state.pendingBatches.Count; i++)
     {
       var batch = _state.pendingBatches[i];
@@ -783,6 +839,7 @@ internal sealed class BizzaAnalyticsRuntime
       {
         return true;
       }
+      if (retryAt < _nextSendCheck) _nextSendCheck = retryAt;
     }
     return false;
   }
@@ -808,9 +865,12 @@ internal sealed class BizzaAnalyticsRuntime
         int part;
         if (!TryAllocatePart(batch, today, out part))
         {
-          _state.pendingBatches.RemoveAt(index);
-          MoveBatchToDelayedQueue(batch, today);
+          // A restored backlog can contain thousands of batches. Moving and
+          // saving them one at a time, without yielding, serializes the entire
+          // state thousands of times on Unity's main thread.
+          DeferBatchesWithoutCapacity(today);
           SaveState();
+          yield return null;
           continue;
         }
 
@@ -837,12 +897,17 @@ internal sealed class BizzaAnalyticsRuntime
       if (sent)
       {
         _state.pendingBatches.RemoveAt(index);
+        _budget.Release(batch);
+        _senderScheduleDirty = true;
         SaveState();
+        yield return null;
         continue;
       }
 
       HandleSendFailure(index, batch, today, statusCode, errorText);
       SaveState();
+      _senderScheduleDirty = true;
+      yield return null;
     }
 
     _isSending = false;
@@ -851,25 +916,23 @@ internal sealed class BizzaAnalyticsRuntime
 
   private IEnumerator SendBatchRequest(BizzaBatch batch, Action<bool, long, string> onDone)
   {
-    Dictionary<string, object> payload;
-    byte[] bodyRaw;
-    try
+    // One send coroutine owns this batch until completion. Record payloads are
+    // immutable copies, so encryption/serialization can run off the Unity thread.
+    var prepare = Task.Run(() => Encoding.UTF8.GetBytes(BizzaJson.Serialize(BuildRequestPayload(batch))));
+    while (!prepare.IsCompleted) yield return null;
+    if (prepare.IsFaulted || prepare.IsCanceled)
     {
-      payload = BuildRequestPayload(batch);
-      var json = BizzaJson.Serialize(payload);
-      bodyRaw = Encoding.UTF8.GetBytes(json);
-    }
-    catch (Exception ex)
-    {
+      var error = prepare.Exception == null ? "request_preparation_canceled" : prepare.Exception.GetBaseException().Message;
       LogError(
         "send(build_failed) batch=" + batch.batchId +
         " uid=" + _state.uid +
         " part=" + batch.part +
         " channel=" + batch.channel +
-        " error=" + ex.Message);
-      onDone(false, 0L, "build_payload_failed:" + ex.Message);
+        " error=" + error);
+      onDone(false, 0L, "build_payload_failed:" + error);
       yield break;
     }
+    var bodyRaw = prepare.Result;
 
     using (var request = new UnityWebRequest(_ingestEndpoint, "POST"))
     {
@@ -886,6 +949,7 @@ internal sealed class BizzaAnalyticsRuntime
       }
 
       request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+      request.timeout = 30;
       request.downloadHandler = new DownloadHandlerBuffer();
       request.SetRequestHeader("Authorization", _authorizationHeaderValue);
       request.SetRequestHeader("Content-Type", "application/json; charset=utf-8");
@@ -1050,9 +1114,6 @@ internal sealed class BizzaAnalyticsRuntime
       if (wireRecord.ContainsKey("payload"))
       {
         wireRecord["payload"] = _crypto.EncryptValue(wireRecord["payload"]);
-        LogVerbose(
-          "encrypt(event) event_name=" + BizzaValueUtil.AsString(wireRecord.ContainsKey("event_name") ? wireRecord["event_name"] : null, "") +
-          " encrypted_payload=" + SerializeForLog(wireRecord["payload"]));
       }
       return;
     }
@@ -1067,10 +1128,6 @@ internal sealed class BizzaAnalyticsRuntime
       {
         wireRecord["new"] = _crypto.EncryptValue(wireRecord["new"]);
       }
-      LogVerbose(
-        "encrypt(user_profile_change) key=" + BizzaValueUtil.AsString(wireRecord.ContainsKey("key") ? wireRecord["key"] : null, "") +
-        " encrypted_old=" + SerializeForLog(wireRecord.ContainsKey("old") ? wireRecord["old"] : null) +
-        " encrypted_new=" + SerializeForLog(wireRecord.ContainsKey("new") ? wireRecord["new"] : null));
     }
   }
 
@@ -1120,6 +1177,8 @@ internal sealed class BizzaAnalyticsRuntime
     batch.nextRetryAt = "";
 
     _state.delayedQueue.Add(batch);
+    RememberDelayedOrigin(batch.originDt);
+    _senderScheduleDirty = true;
     if (string.IsNullOrEmpty(_state.delayedQueueNonEmptySince))
     {
       _state.delayedQueueNonEmptySince = today;
@@ -1128,35 +1187,53 @@ internal sealed class BizzaAnalyticsRuntime
 
   private bool TryAllocatePart(BizzaBatch batch, string dt, out int part)
   {
-    var overloadMode = IsOverloadMode(dt);
-    var realtimeCap = overloadMode ? OverloadRealtimeCap : NormalRealtimeCap;
-    var delayedStart = realtimeCap;
-    var delayedCap = Partitions - delayedStart;
-
-    if (batch.channel == "realtime" || batch.channel == "user_profile_realtime")
-    {
-      var seq = GetCounter(_state.realtimeSeqByDt, dt);
-      if (seq >= realtimeCap)
-      {
-        part = -1;
-        return false;
-      }
-
-      part = seq;
-      _state.realtimeSeqByDt[dt] = seq + 1;
-      return true;
-    }
-
-    var delayedSeq = GetCounter(_state.delayedSeqByDt, dt);
-    if (delayedSeq >= delayedCap)
+    Dictionary<string, int> sequenceByDate;
+    int start, capacity;
+    GetPartitionRange(batch, dt, out sequenceByDate, out start, out capacity);
+    var sequence = GetCounter(sequenceByDate, dt);
+    if (sequence >= capacity)
     {
       part = -1;
       return false;
     }
 
-    part = delayedStart + delayedSeq;
-    _state.delayedSeqByDt[dt] = delayedSeq + 1;
+    part = start + sequence;
+    sequenceByDate[dt] = sequence + 1;
     return true;
+  }
+
+  private void GetPartitionRange(BizzaBatch batch, string dt,
+    out Dictionary<string, int> sequenceByDate, out int start, out int capacity)
+  {
+    var realtimeCap = IsOverloadMode(dt) ? OverloadRealtimeCap : NormalRealtimeCap;
+    var realtime = batch.channel == "realtime" || batch.channel == "user_profile_realtime";
+    sequenceByDate = realtime ? _state.realtimeSeqByDt : _state.delayedSeqByDt;
+    start = realtime ? 0 : realtimeCap;
+    capacity = realtime ? realtimeCap : Partitions - realtimeCap;
+  }
+
+  private void DeferBatchesWithoutCapacity(string today)
+  {
+    var pending = _state.pendingBatches;
+    var retained = 0;
+    for (var i = 0; i < pending.Count; i++)
+    {
+      var candidate = pending[i];
+      Dictionary<string, int> sequenceByDate;
+      int start, capacity;
+      GetPartitionRange(candidate, today, out sequenceByDate, out start, out capacity);
+      // Already allocated retries still own their partition. Keep those and
+      // channels with remaining capacity in their original pending order.
+      if (candidate.part >= 0 || GetCounter(sequenceByDate, today) < capacity)
+      {
+        pending[retained++] = candidate;
+      }
+      else
+      {
+        MoveBatchToDelayedQueue(candidate, today);
+      }
+    }
+    pending.RemoveRange(retained, pending.Count - retained);
   }
 
   private bool IsOverloadMode(string today)
@@ -1166,7 +1243,7 @@ internal sealed class BizzaAnalyticsRuntime
       return false;
     }
 
-    var oldestOrigin = _state.delayedQueue[0].originDt;
+    var oldestOrigin = _oldestDelayedOrigin;
     DateTime oldestOriginDate;
     DateTime todayDate;
     if (TryParseDate(oldestOrigin, out oldestOriginDate) && TryParseDate(today, out todayDate))
@@ -1399,7 +1476,33 @@ internal sealed class BizzaAnalyticsRuntime
 
   private void SaveState()
   {
-    _stateStore.Save(_state);
+    _stateDirty = true;
+  }
+
+  private bool TryTakeWork()
+  {
+    if (_workFrame != Time.frameCount) { _workFrame = Time.frameCount; _frameWork = 0; }
+    if (!_budget.HasCapacity || _frameWork >= BizzaAnalyticsLimits.MaxRecordsPerFrame)
+    { _budget.NoteDrop(); return false; }
+    _frameWork++;
+    return true;
+  }
+
+  private void RememberDelayedOrigin(string origin)
+  {
+    if (string.IsNullOrEmpty(_oldestDelayedOrigin) || string.CompareOrdinal(origin, _oldestDelayedOrigin) < 0)
+      _oldestDelayedOrigin = origin;
+  }
+
+  private void PersistIfDue(bool lifecycle)
+  {
+    if (!_stateDirty || (!lifecycle && _saveElapsed < BizzaAnalyticsLimits.SaveIntervalSeconds)) return;
+    // Copy bounded lists/maps only. Owned payload values stay immutable; the
+    // writer never enumerates a live mutable collection.
+    var snapshot = _state.ToStateObject();
+    _stateDirty = false;
+    _saveElapsed = 0d;
+    _stateStore.RequestSave(snapshot);
   }
 
   private void LogReportingSamplingSnapshot()
@@ -1465,9 +1568,9 @@ internal sealed class BizzaAnalyticsRuntime
     return id;
   }
 
-  private static string UtcDateToday()
+  private string UtcDateToday()
   {
-    return DateTime.UtcNow.ToString("yyyy-MM-dd");
+    return _today;
   }
 
   private static string NextUtcDate(string utcDate)

@@ -39,7 +39,7 @@ public class SlotPanel : UIPageBase
     protected override void OnClose()
     {
         BizzaEventSystem.Set(EventDefine.CustomGameEvent.SlotProgressChanged, OnProgressChanged, false);
-        SoundManager.Instance.PlayBGM("BGMusic");
+        SoundManager.Instance.PlayBGM("SFX_BGM");
     }
 
     protected override void OnOpen()

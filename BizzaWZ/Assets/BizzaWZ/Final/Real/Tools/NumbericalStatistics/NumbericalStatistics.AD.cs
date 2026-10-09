@@ -101,7 +101,7 @@ public partial class NumbericalStatistics
         ItemEntry dollar = new()
         {
             Type = E_ItemType.Dollar,
-            Count = WithdrawalUtil.GetCustomizedFloatByCountryType(moneyValue) / 5
+            Count = WithdrawalUtil.NormalizeIndonesianReward(WithdrawalUtil.GetCustomizedFloatByCountryType(moneyValue) / 5)
         };
 
         // UIUtils.ShowTips(dollar, default, (pos1, pos2) =>

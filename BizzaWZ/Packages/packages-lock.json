@@ -28,6 +28,20 @@
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
+    "com.applovin.mediation.adapters.facebook.android": {
+      "version": "6200000.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
+    "com.applovin.mediation.adapters.facebook.ios": {
+      "version": "6220003.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
     "com.applovin.mediation.adapters.fyber.android": {
       "version": "8040700.0.0",
       "depth": 0,

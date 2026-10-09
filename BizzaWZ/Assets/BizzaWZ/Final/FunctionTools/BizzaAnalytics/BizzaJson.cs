@@ -40,6 +40,7 @@ internal static class BizzaJson
     }
 
     private readonly StringReader _reader;
+    private int _depth;
 
     private Parser(string json)
     {
@@ -137,9 +138,11 @@ internal static class BizzaJson
         case Token.Number:
           return ParseNumber();
         case Token.CurlyOpen:
-          return ParseObject();
+          if (++_depth > 32) throw new InvalidDataException("Analytics JSON nesting limit exceeded.");
+          try { return ParseObject(); } finally { _depth--; }
         case Token.SquaredOpen:
-          return ParseArray();
+          if (++_depth > 32) throw new InvalidDataException("Analytics JSON nesting limit exceeded.");
+          try { return ParseArray(); } finally { _depth--; }
         case Token.True:
           return true;
         case Token.False:

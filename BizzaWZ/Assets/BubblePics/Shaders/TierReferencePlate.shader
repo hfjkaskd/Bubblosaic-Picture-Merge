@@ -11,6 +11,8 @@ Shader "BubblePics/UI/TierReferencePlate"
         _Erase3("Content slot 3",Vector)=(0,0,0,0)
         _Erase4("Content slot 4",Vector)=(0,0,0,0)
         _Erase5("Content slot 5",Vector)=(0,0,0,0)
+        _RelocateRect("Artwork region: left top width height",Vector)=(0,0,0,0)
+        _RelocateOffset("Artwork offset in source pixels",Vector)=(0,0,0,0)
         _SamplePoint("Clean pixel: x y enabled",Vector)=(0,0,0,0)
         _SampleX("Clean source column; negative uses row",Float)=-1
         _SampleY("Clean source row; negative interpolates edges",Float)=-1
@@ -45,6 +47,7 @@ Shader "BubblePics/UI/TierReferencePlate"
             sampler2D _MainTex;fixed4 _Color;
             float4 _SamplePoint;
             float4 _TextureSize,_Erase0,_Erase1,_Erase2,_Erase3,_Erase4,_Erase5,_ClipRect;
+            float4 _RelocateRect,_RelocateOffset;
             float _SampleX,_SampleY,_Radius,_Feather,_EraseRadius,_EraseFeather;float4 _VisibleRect;
             v2f vert(appdata v) {v2f o;o.vertex=UnityObjectToClipPos(v.vertex);o.local=v.vertex;o.color=v.color*_Color;o.uv=v.uv;return o;}
             float inside(float2 p,float4 r)
@@ -90,6 +93,18 @@ Shader "BubblePics/UI/TierReferencePlate"
                 col=clearSlot(col,p,i.uv,_Erase0);col=clearSlot(col,p,i.uv,_Erase1);
                 col=clearSlot(col,p,i.uv,_Erase2);col=clearSlot(col,p,i.uv,_Erase3);
                 col=clearSlot(col,p,i.uv,_Erase4);col=clearSlot(col,p,i.uv,_Erase5);
+                if(_RelocateRect.z>0 && _RelocateRect.w>0)
+                {
+                    // Reposition baked artwork while retaining the card and its rounded edges.
+                    col=clearSlot(col,p,i.uv,_RelocateRect);
+                    float2 sourcePixel=p-_RelocateOffset.xy;
+                    float mask=inside(sourcePixel,_RelocateRect);
+                    if(mask>0)
+                    {
+                        float2 sourceUV=float2(sourcePixel.x/_TextureSize.x,1-sourcePixel.y/_TextureSize.y);
+                        col=lerp(col,tex2D(_MainTex,sourceUV),mask);
+                    }
+                }
                 if(_VisibleRect.z>0){float2 q=abs(p-_VisibleRect.xy-_VisibleRect.zw*.5)-_VisibleRect.zw*.5+_Radius;float d=length(max(q,0))+min(max(q.x,q.y),0)-_Radius;col.a*=1-smoothstep(-_Feather,0,d);}
                 col*=i.color;
                 #ifdef UNITY_UI_CLIP_RECT

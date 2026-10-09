@@ -8,6 +8,12 @@ using System.Globalization;
 [Obfuz.ObfuzIgnore]
 public static class WithdrawalUtil
 {
+    public static float NormalizeIndonesianReward(float value)
+    {
+        return AccountModule.CountryType == AccountModule.E_CountryType.ID
+            ? (float)Math.Truncate(value) : value;
+    }
+
     #if !COMMONGAME
     public static float GetDollarCountByReward()
     {

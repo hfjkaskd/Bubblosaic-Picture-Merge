@@ -16,6 +16,9 @@ public partial class UIPageIds
 public class UIWithdrawalConfirmPanel : UIPageBase<WithDrawInfo>
 {
     public PaymentConfig paymentList;
+    [SerializeField] private GameObject brazilNameCpfWarning;
+    [SerializeField] private GameObject defaultConfirmationHint;
+    [SerializeField] private GameObject defaultConfirmationArtwork;
 
     public TMP_Text CPF_CNPJText;
     public TMP_Text CPFTitleText;
@@ -72,6 +75,11 @@ public class UIWithdrawalConfirmPanel : UIPageBase<WithDrawInfo>
         this.Name = info.Name;
         this.CPF_CNPJ = info.CPF_CNPJ;
         this.payType = info.payType;
+        bool brazil = AccountModule.CountryType == AccountModule.E_CountryType.BR &&
+            (payType == E_PayeeAccountType.PIX || payType == E_PayeeAccountType.Pagbank);
+        brazilNameCpfWarning.SetActive(brazil);
+        defaultConfirmationHint.SetActive(!brazil);
+        defaultConfirmationArtwork.SetActive(!brazil);
 
         paymentImage.sprite = paymentList.GetSpriteByType(payType);
         gameObject.SetActive(true);

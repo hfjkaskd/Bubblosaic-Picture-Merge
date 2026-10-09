@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 internal sealed class BizzaRecord
 {
+  internal int StorageBytes;
   public string type = "";
   public string ts = "";
   public string eventName = "";
@@ -266,17 +269,17 @@ internal sealed class BizzaState
       { "register_sent", registerSent },
       { "game_duration_seconds", gameDurationSeconds },
       { "user_profile_flush_elapsed_seconds", userProfileFlushElapsedSeconds },
-      { "daily_record_count_by_dt", dailyRecordCountByDt },
-      { "daily_active_seconds_by_dt", dailyActiveSecondsByDt },
-      { "daily_first_phase_flush_elapsed_by_dt", dailyFirstPhaseFlushElapsedByDt },
-      { "daily_fallback_flush_elapsed_by_dt", dailyFallbackFlushElapsedByDt },
-      { "user_props", userProps },
+      { "daily_record_count_by_dt", new Dictionary<string, int>(dailyRecordCountByDt) },
+      { "daily_active_seconds_by_dt", new Dictionary<string, double>(dailyActiveSecondsByDt) },
+      { "daily_first_phase_flush_elapsed_by_dt", new Dictionary<string, double>(dailyFirstPhaseFlushElapsedByDt) },
+      { "daily_fallback_flush_elapsed_by_dt", new Dictionary<string, double>(dailyFallbackFlushElapsedByDt) },
+      { "user_props", new Dictionary<string, object>(userProps) },
       { "realtime_buffer", realtimeList },
       { "user_profile_buffer", userProfileList },
       { "pending_batches", pendingList },
       { "delayed_queue", delayedList },
-      { "realtime_seq_by_dt", realtimeSeqByDt },
-      { "delayed_seq_by_dt", delayedSeqByDt },
+      { "realtime_seq_by_dt", new Dictionary<string, int>(realtimeSeqByDt) },
+      { "delayed_seq_by_dt", new Dictionary<string, int>(delayedSeqByDt) },
       { "delayed_queue_non_empty_since", delayedQueueNonEmptySince },
     };
   }
@@ -343,12 +346,18 @@ internal sealed class BizzaState
 internal sealed class BizzaStateStore
 {
   private readonly string _path;
-  private readonly bool _verboseLog;
+  private readonly object _saveLock = new object();
+  private Dictionary<string, object> _pendingSnapshot;
+  private bool _writerRunning;
+  private int _saveCount;
+  internal Task SaveTask { get; private set; }
+  internal int SaveCount { get { return Volatile.Read(ref _saveCount); } }
+  internal int LastSaveThreadId { get; private set; }
+  internal string LastError { get; private set; }
 
   public BizzaStateStore(string persistentDataPath, bool verboseLog)
   {
     _path = Path.Combine(persistentDataPath, "bizza_analytics_state.json");
-    _verboseLog = verboseLog;
   }
 
   public BizzaState Load()
@@ -360,7 +369,25 @@ internal sealed class BizzaStateStore
         return BizzaState.CreateDefault();
       }
 
-      var json = File.ReadAllText(_path, Encoding.UTF8);
+      byte[] bytes;
+      using (var stream = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+      {
+        if (stream.Length > BizzaAnalyticsLimits.MaxLegacyFileBytes)
+        {
+          LastError = "legacy_analytics_file_exceeds_load_limit";
+          return BizzaState.CreateDefault();
+        }
+        bytes = new byte[(int)stream.Length];
+        var read = 0;
+        while (read < bytes.Length)
+        {
+          var count = stream.Read(bytes, read, bytes.Length - read);
+          if (count == 0) break;
+          read += count;
+        }
+        if (read != bytes.Length) return BizzaState.CreateDefault();
+      }
+      var json = Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF');
       if (string.IsNullOrWhiteSpace(json))
       {
         return BizzaState.CreateDefault();
@@ -371,29 +398,71 @@ internal sealed class BizzaStateStore
     }
     catch (Exception ex)
     {
-      Debug.LogWarning("[BizzaAnalytics] Failed to load state, using default. " + ex.Message);
+      LastError = "load_failed:" + ex.Message;
       return BizzaState.CreateDefault();
     }
   }
 
   public void Save(BizzaState state)
   {
+    SaveSnapshot(state.ToStateObject());
+  }
+
+  internal void RequestSave(Dictionary<string, object> snapshot)
+  {
+    lock (_saveLock)
+    {
+      // One writer and at most one waiting snapshot. Newer state replaces a
+      // queued snapshot instead of creating an unbounded task/write backlog.
+      _pendingSnapshot = snapshot;
+      if (_writerRunning) return;
+      _writerRunning = true;
+      SaveTask = Task.Run((Action)DrainSaves);
+    }
+  }
+
+  private void DrainSaves()
+  {
+    while (true)
+    {
+      Dictionary<string, object> snapshot;
+      lock (_saveLock)
+      {
+        snapshot = _pendingSnapshot;
+        _pendingSnapshot = null;
+        if (snapshot == null) { _writerRunning = false; return; }
+      }
+      SaveSnapshot(snapshot);
+    }
+  }
+
+  private void SaveSnapshot(Dictionary<string, object> snapshot)
+  {
     try
     {
-      var json = BizzaJson.Serialize(state.ToStateObject());
+      var json = BizzaJson.Serialize(snapshot);
+      var bytes = Encoding.UTF8.GetBytes(json);
+      if (bytes.Length > BizzaAnalyticsLimits.MaxStateFileBytes)
+      {
+        LastError = "analytics_snapshot_exceeds_file_limit";
+        return;
+      }
       var dir = Path.GetDirectoryName(_path);
       if (!string.IsNullOrEmpty(dir))
       {
         Directory.CreateDirectory(dir);
       }
-      File.WriteAllText(_path, json, new UTF8Encoding(false));
+      var temp = _path + ".tmp";
+      File.WriteAllBytes(temp, bytes);
+      if (File.Exists(_path)) File.Replace(temp, _path, null);
+      else File.Move(temp, _path);
+      LastSaveThreadId = Thread.CurrentThread.ManagedThreadId;
+      Interlocked.Increment(ref _saveCount);
+      LastError = null;
     }
     catch (Exception ex)
     {
-      if (_verboseLog)
-      {
-        Debug.LogWarning("[BizzaAnalytics] Failed to save state. " + ex.Message);
-      }
+      LastError = "save_failed:" + ex.Message;
     }
   }
 }

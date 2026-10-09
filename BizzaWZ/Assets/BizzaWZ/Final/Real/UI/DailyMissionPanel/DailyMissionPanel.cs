@@ -37,6 +37,22 @@ public class DailyMissionPanel : UIPageBase
     public static bool isTestWithdraw = false;
     private float ecpmLimit = 1.5f;
 
+    [SerializeField] private BusinessPanelStatusView loadingStatus;
+    [SerializeField] private GameObject[] dataWidgets;
+    private enum ContentState { Closed, Loading, Ready, Failed }
+    private ContentState contentState;
+    private const float LoadTimeoutSeconds = 15f;
+    private int requestVersion;
+    private float loadStartedAt;
+    private bool platformsReady;
+    private bool adPending;
+    private AccountModule.RoutineTaskLookAdMoneyResponse pendingMission;
+#if UNITY_EDITOR
+    internal static Action<bool, Action<FailHttpResponse<List<AccountModule.RoutineTaskLookAdMoneyResponse>>>> EditorRequestMission;
+    internal static Action<Action<FailHttpResponse<AccountModule.OceanShineWithdrawalPageResponse>>> EditorRequestPlatforms;
+#endif
+
+
     private void SetLinster(bool enable)
     {
         BizzaEventSystem.Set(EventDefine.WithDraw.RefreshDailyMissionPage, OnrequestDailyMission, enable);
@@ -55,6 +71,7 @@ public class DailyMissionPanel : UIPageBase
         goBtn.onClick.AddListener(OnClickGoStateBtn);
         claimedBtn.onClick.AddListener(OnClickWithdrawedStateBtn);
         withdrawBtn.onClick.AddListener(OnClickWithdrawStateBtn);
+        loadingStatus.Bind(OnRequestData, false);
     }
     
     protected override void OnOpen()
@@ -65,34 +82,98 @@ public class DailyMissionPanel : UIPageBase
 
     public void OnRequestData()
     {
-        // AccountModule.Instance.
-        AccountModule.Instance.Request_RoutineTaskLookAdMoneyRequest(true, OnResultCallback, false);
-        AccountModule.Instance.Request_WithdrawalPageRequest(Refresh); // 刷新平台
+        RequestContent(true);
     }
 
     public void OnrequestDailyMission()
     {
-        AccountModule.Instance.Request_RoutineTaskLookAdMoneyRequest(true, OnResultCallback, true);
+        RequestContent(true);
     }
 
     public void OnRequestDailyMission()
     {
-        AccountModule.Instance.Request_RoutineTaskLookAdMoneyRequest(false, OnResultCallback, true);
+        RequestContent(false);
     }
 
-    private string hintTxt;
-    private string countTxt;
-    private void OnResultCallback(FailHttpResponse<List<AccountModule.RoutineTaskLookAdMoneyResponse>> responses)
+    private void RequestContent(bool update)
     {
-        if (!this) return;
-
-        if (responses.success && responses.data != null && responses.data.Count > 0)
+        if (IsClosing || !gameObject.activeInHierarchy) return;
+        int version = ++requestVersion;
+        pendingMission = null;
+        platformsReady = false;
+        plats.Clear();
+        loadStartedAt = Time.unscaledTime;
+        SetContentState(ContentState.Loading);
+        try
         {
-            int cur = SaveDataUtils.GameData.userLookDailyAdCount;
-            int max = SaveDataUtils.GameData.userLookDailyAdCountMax;
+            // Local loading feedback leaves the close button available.
+            Action<FailHttpResponse<List<AccountModule.RoutineTaskLookAdMoneyResponse>>> missionReply = response =>
+            {
+                if (AcceptResponse(version)) OnResultCallback(response);
+            };
+#if UNITY_EDITOR
+            if (EditorRequestMission != null) EditorRequestMission(update, missionReply);
+            else
+#endif
+                AccountModule.Instance.Request_RoutineTaskLookAdMoneyRequest(update, missionReply, false);
+            if (!AcceptResponse(version)) return;
+            Action<FailHttpResponse<AccountModule.OceanShineWithdrawalPageResponse>> platformReply = response =>
+            {
+                if (AcceptResponse(version)) Refresh(response);
+            };
+#if UNITY_EDITOR
+            if (EditorRequestPlatforms != null) EditorRequestPlatforms(platformReply);
+            else
+#endif
+                AccountModule.Instance.Request_WithdrawalPageRequest(platformReply, block: false);
+        }
+        catch (Exception exception)
+        {
+            if (AcceptResponse(version)) SetContentState(ContentState.Failed);
+            Debug.LogException(exception);
+        }
+    }
 
-            SaveDataUtils.GameData.userLookDailyAdCount = Math.Clamp(cur, 0, max);
-            var data = responses.data[0];
+    private bool AcceptResponse(int version)
+    {
+        return this != null && version == requestVersion && !IsClosing &&
+               gameObject.activeInHierarchy && contentState == ContentState.Loading;
+    }
+
+    private void SetContentState(ContentState state)
+    {
+        contentState = state;
+        bool ready = state == ContentState.Ready;
+        adPending = false;
+        if (state == ContentState.Loading || state == ContentState.Failed)
+            loadingStatus.Show(state == ContentState.Failed);
+        else loadingStatus.Hide();
+        foreach (var widget in dataWidgets) if (widget != null) widget.SetActive(ready);
+        hintsTxt.gameObject.SetActive(ready);
+        refreshTimeTxt.gameObject.SetActive(ready);
+        goBtn.interactable = goBtn.enabled = ready;
+        withdrawBtn.interactable = withdrawBtn.enabled = ready;
+        claimedBtn.interactable = claimedBtn.enabled = ready;
+        if (!ready)
+        {
+            GoObj.SetActive(false);
+            WithdrawObj.SetActive(false);
+            ClaimedObj.SetActive(false);
+            claimedHint.gameObject.SetActive(false);
+        }
+    }
+
+    private void TryShowContent()
+    {
+        if (pendingMission == null || !platformsReady) return;
+        try
+        {
+            var data = pendingMission;
+            int max = Math.Max(0, data.Os_An);
+            int cur = Math.Clamp(data.Os_Ln, 0, max);
+            SaveDataUtils.GameData.userLookDailyAdCountMax = max;
+            SaveDataUtils.GameData.userLookDailyAdCount = cur;
+            SetContentState(ContentState.Ready);
             hintTxt = 
                 LanguageUtils.GetFormatText(
                     "DailyWithdrawMissionPanel_Hint",
@@ -113,19 +194,46 @@ public class DailyMissionPanel : UIPageBase
             WithdrawObj.SetActive(data.Os_Ss == 2);
             ClaimedObj.SetActive(data.Os_Ss == 3);
             claimedHint.gameObject.SetActive(data.Os_Ss == 3);
+            timer = 0f;
+            UpdateRemainingTime();
+        }
+        catch (Exception exception)
+        {
+            SetContentState(ContentState.Failed);
+            Debug.LogException(exception);
+        }
+    }
+
+    private string hintTxt;
+    private string countTxt;
+    private void OnResultCallback(FailHttpResponse<List<AccountModule.RoutineTaskLookAdMoneyResponse>> responses)
+    {
+        if (responses.success && responses.data != null && responses.data.Count > 0 && responses.data[0] != null &&
+            responses.data[0].Os_Ss >= 0 && responses.data[0].Os_Ss <= 3)
+        {
+            pendingMission = responses.data[0];
+            TryShowContent();
         }
         else
         {
-            UIModule.Instance.ClosePage(UIPageIds.DailyMissionPanel);
-            LogLogger.LogVerbose(LogTag.DailyAD, $"获取服务器数据 OceanShineRoutineTaskLookAdMoneyResponse 失败 {responses}");
+            SetContentState(ContentState.Failed);
+            LogLogger.LogVerbose(LogTag.DailyAD, "每日任务数据加载失败");
         }
     }
 
     private float timer;
     private void Update()
     {
-        timer += Time.deltaTime;
-        if (timer >= 1f) // 每秒更新一次
+        if (IsClosing) return;
+        if (contentState == ContentState.Loading)
+        {
+            if (Time.unscaledTime - loadStartedAt >= LoadTimeoutSeconds)
+                SetContentState(ContentState.Failed);
+            return;
+        }
+        if (contentState != ContentState.Ready) return;
+        timer += Time.unscaledDeltaTime;
+        if (timer >= 1f)
         {
             timer = 0f;
             UpdateRemainingTime();
@@ -147,54 +255,57 @@ public class DailyMissionPanel : UIPageBase
 
     public void OnClickGoStateBtn()
     {
-        BizzaSdk.Ad.ShowRewardAd(nameof(E_AdPos.DailyMission), 0, OnGoResponse, ecpmLimit);
+        if (IsClosing || adPending) return;
+        if (contentState == ContentState.Failed)
+        {
+            OnRequestData();
+            return;
+        }
+        if (contentState != ContentState.Ready || !GoObj.activeSelf) return;
+        adPending = true;
+        goBtn.interactable = goBtn.enabled = false;
+        int version = requestVersion;
+        BizzaSdk.Ad.ShowRewardAd(E_AdPos.DailyMission.ToString(), 0, result =>
+        {
+            if (this != null && version == requestVersion && !IsClosing && gameObject.activeInHierarchy)
+                OnGoResponse(result);
+        }, ecpmLimit);
         UIModule.Instance.m_curadvertistics--;
         SaveDataUtils.GameData.btnDailyTaskClick++;
     }
 
     private void OnGoResponse(Bizza.Sdk.ShowAdResult showAdResult)
     {
-         bool success = showAdResult.success;
-        if (success)
+        if (showAdResult.success)
         {
             LogLogger.LogVerbose(LogTag.DailyAD, "用户点击了观看每日任务");
             SaveDataUtils.GameData.userLookDailyAdCount++;
-            int lookAdCount = SaveDataUtils.GameData.userLookDailyAdCount;
-            int lookMax = SaveDataUtils.GameData.userLookDailyAdCountMax;
-            bool black = lookAdCount + 1 >= lookMax;
-            LogLogger.LogVerbose(LogTag.DailyAD, $"每日任---务界面刷新 ： " + $"{lookAdCount}/{lookMax}");
-            countTxt = $"<color=#9039D8>{lookAdCount}/{lookMax}</color>";
-            hintsTxt.text = hintTxt + countTxt;
-            RefreshProgress(lookAdCount,lookMax);
-            AccountModule.Instance.Request_RoutineTaskLookAdMoneyRequest(true, OnResultCallback, black);
+            RequestContent(true);
         }
         else
         {
-            //  UIUtils.ShowTips(LanguageUtils.GetText("DailyMissionPanel_NoAd"));
             UIModule.Instance.ClosePage(UIPageIds.DailyMissionPanel);
-            LogLogger.LogVerbose(LogTag.DailyAD, $"获取服务器数据 OceanShineRoutineTaskLookAdMoneyResponse 失败 ");
         }
     }
 
     private void Refresh(FailHttpResponse<AccountModule.OceanShineWithdrawalPageResponse> response)
     {
-        if (!this)
+        if (!response.success || response.data?.Os_Wwf == null || response.data.Os_Wwf.Count == 0 || response.data.Os_Wwf.Exists(platform => platform == null || string.IsNullOrEmpty(platform.Os_Cn)))
         {
-            return;
-        }
-        if (!response.success || response.data == null)
-        {
-            LogLogger.LogVerbose(LogTag.DailyAD, "每日提现任务 ：为空 ");
-            CloseSelf();
+            SetContentState(ContentState.Failed);
+            LogLogger.LogVerbose(LogTag.DailyAD, "每日提现平台加载失败");
             return;
         }
 
-        LogLogger.LogVerbose(LogTag.DailyAD, "每日任务 ： " + response.data.Os_Wwf);
-        plats = response.data.Os_Wwf;
+        // Do not clear AccountModule's cached platform list when retrying.
+        plats = new List<AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform>(response.data.Os_Wwf);
+        platformsReady = true;
+        TryShowContent();
     }
 
     public void OnClickWithdrawStateBtn()
     {
+        if (contentState != ContentState.Ready || IsClosing || !WithdrawObj.activeSelf) return;
         bool isSelectPlatform = false;
         AccountModule.OceanShineWithdrawalPageResponse.WithdrawalPlatform plat = null;
         foreach (var _plat in plats)
@@ -227,6 +338,7 @@ public class DailyMissionPanel : UIPageBase
 
     public void OnClickWithdrawedStateBtn()
     {
+        if (contentState != ContentState.Ready || IsClosing || !ClaimedObj.activeSelf) return;
         UIUtils.ShowTips(LanguageUtils.GetText("DailyMissionPage_Claimed"));
 
     }
@@ -238,6 +350,9 @@ public class DailyMissionPanel : UIPageBase
 
     protected override void OnClose()
     {
+        requestVersion++;
+        pendingMission = null;
+        SetContentState(ContentState.Closed);
         SetLinster(false);
     }
 

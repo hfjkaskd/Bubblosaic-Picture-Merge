@@ -24,7 +24,7 @@ public class GetRewardPanel : UIPageBase<ItemEntry, ItemEntry, DoubleGetRewardPa
     public GameObject LevelObj;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private bool alwaysShowLevel;
-    [SerializeField, Min(0)] private float normalCollectRevealDelay = 3f;
+    [SerializeField, Min(0)] private float normalCollectRevealDelay = 1f;
     public TMP_Text itemATxt;
     public TMP_Text itemBTxt; // 另一个货币的
     public TMP_Text levelTxt;

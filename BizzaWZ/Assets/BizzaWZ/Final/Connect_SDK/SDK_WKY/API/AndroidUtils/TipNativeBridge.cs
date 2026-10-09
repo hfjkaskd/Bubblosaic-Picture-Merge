@@ -22,23 +22,7 @@ public class TipNativeBridge : MonoBehaviour
         }
     }
 
-    void OnEnable()
-    {
-        BizzaEventSystem.Set(EventDefine.AdEvent.InterAdStart, OnAdStart, true);
-        BizzaEventSystem.Set(EventDefine.AdEvent.RewardAdStart, OnAdStart, true);
-    }
-
-    void OnDisable()
-    {
-        BizzaEventSystem.Set(EventDefine.AdEvent.InterAdStart, OnAdStart, false);
-        BizzaEventSystem.Set(EventDefine.AdEvent.RewardAdStart, OnAdStart, false);
-    }
-
-    private void OnAdStart()
-    {
-        // ShowTips(LanguageUtils.GetText("ADShow_Hint"));
-    }
-
+    // AdShowHint on the persistent scene object owns advertisement event subscriptions.
     public static void ShowTips(string tips)
     {
 #if BIZZA_REAL_WITHDRAW && UNITY_ANDROID && !UNITY_EDITOR && BIZZA_HTTP_AD

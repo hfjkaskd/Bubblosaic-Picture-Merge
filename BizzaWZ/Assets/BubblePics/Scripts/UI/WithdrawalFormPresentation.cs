@@ -46,6 +46,13 @@ namespace BubblePics
         void OnEnable(){Localization.LocaleChanged+=RefreshPrompts;}
         void OnDisable(){Localization.LocaleChanged-=RefreshPrompts;}
         void RefreshPrompts(){if(current?.prompts!=null)foreach(var state in current.prompts)state.Apply();if(current!=null&&controller!=null)controller.RefreshLocalizedInputHints();}
+        public bool RefreshInputPrompt(AdvancedInputFieldPlugin.AdvancedInputField input)
+        {
+            if (current?.prompts == null) return false;
+            foreach (var prompt in current.prompts)
+                if (prompt.target == input) { prompt.Apply(); return true; }
+            return false;
+        }
         public bool FixedLayout=>current!=null&&current.fixedLayout;
         public WithdrawWay MethodPrefab=>current?.methodPrefab;
         public bool Select(string channel)

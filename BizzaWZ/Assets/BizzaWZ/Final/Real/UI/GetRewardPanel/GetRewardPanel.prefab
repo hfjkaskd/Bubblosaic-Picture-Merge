@@ -2391,7 +2391,7 @@ MonoBehaviour:
   LevelObj: {fileID: 2489661433163782044}
   titleText: {fileID: 1103395761537036007}
   alwaysShowLevel: 0
-  normalCollectRevealDelay: 3
+  normalCollectRevealDelay: 1
   itemATxt: {fileID: 8658496354416335874}
   itemBTxt: {fileID: 8191526687876451744}
   levelTxt: {fileID: 6965075440229259547}

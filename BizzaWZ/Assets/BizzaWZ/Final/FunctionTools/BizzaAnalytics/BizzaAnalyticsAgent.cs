@@ -18,7 +18,7 @@ public enum BizzaAnalyticsInitializationState
 public sealed class BizzaAnalyticsAgent : MonoBehaviour
 {
   private const string HostObjectName = "[BizzaAnalyticsHost]";
-  private const int MaxPendingOperations = 256;
+  private const int MaxPendingOperations = BizzaAnalyticsLimits.MaxPreInitRecords;
   private const int MaxActiveLoadStages = 64;
   private const string GameStartEventName = "game_start";
   private const string GameLoadStageStartEventName = "game_load_stage_start";
@@ -31,6 +31,10 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
   private readonly Dictionary<string, LoadStageState> _activeLoadStages
     = new Dictionary<string, LoadStageState>();
   private BizzaAnalyticsRuntime _runtime;
+  private int _pendingRecordCount;
+  private int _pendingBytes;
+  private int _pendingFrame = -1;
+  private int _pendingFrameCalls;
   private Coroutine _initCoroutine;
   private string _configuredAppId = string.Empty;
   private string _lastError = string.Empty;
@@ -50,6 +54,10 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
   public string InitializedAppId => _configuredAppId;
   public bool IsReady => _runtime != null && _runtime.IsReady;
   public bool IsReportingEnabled => _runtime != null && _runtime.IsReportingEnabled;
+  public int QueuedRecordCount => (_runtime == null ? 0 : _runtime.QueuedRecords) + _pendingRecordCount;
+  public int QueuedDataBytes => (_runtime == null ? 0 : _runtime.QueuedBytes) + _pendingBytes;
+  public long DroppedRecordCount => _runtime == null ? 0 : _runtime.DroppedRecords;
+  public int CompletedSaveCount => _runtime == null || _runtime.StateStore == null ? 0 : _runtime.StateStore.SaveCount;
   public bool IsDisabled => InitializationState == BizzaAnalyticsInitializationState.Disabled
     || InitializationState == BizzaAnalyticsInitializationState.Failed;
   public string LastError => !string.IsNullOrEmpty(_lastError)
@@ -90,6 +98,7 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
   private void Update()
   {
     _runtime?.Tick(Time.unscaledDeltaTime);
+    FlushPendingOperations();
   }
 
   private void OnApplicationPause(bool pauseStatus)
@@ -146,12 +155,14 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
 
   public bool BTrack(string eventName, Dictionary<string, object> data)
   {
+    if (string.IsNullOrEmpty(eventName) || eventName.Length > 128 || string.IsNullOrWhiteSpace(eventName)) return false;
     if (_runtime != null && _runtime.IsReady)
     {
       _runtime.Track(eventName, data);
       return true;
     }
 
+    if (!CanQueueOperation(1)) return false;
     bool accepted = QueueOperation(PendingOperation.Track(eventName, data));
     if (accepted)
     {
@@ -168,6 +179,7 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
       return true;
     }
 
+    if (!CanQueueOperation(data == null ? 0 : data.Count)) return false;
     bool accepted = QueueOperation(PendingOperation.UserProp(data));
     if (accepted)
     {
@@ -257,6 +269,11 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
       }
 
       _runtime = new BizzaAnalyticsRuntime(this, config);
+      while (_runtime != null && !_runtime.IsReady && string.IsNullOrEmpty(_runtime.LastError))
+      {
+        if (_runtime.CompleteInitialization()) break;
+        yield return null;
+      }
       if (_runtime == null || !_runtime.IsReady)
       {
         DisableWithError(
@@ -271,6 +288,11 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
       _lastError = string.Empty;
       _initCoroutine = null;
       FlushPendingOperations();
+
+      // Log once after restoring the cache and accepting this launch's queued records, including in release builds.
+      Debug.Log(
+        "[BizzaAnalytics] startup_cache queued_records=" + QueuedRecordCount
+        + " max_records=" + BizzaAnalyticsLimits.MaxRecords);
     }
   }
 
@@ -283,15 +305,33 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
       return false;
     }
 
-    if (_pendingOperations.Count >= MaxPendingOperations)
-    {
-      Debug.LogWarning(
-        "[BizzaAnalytics] 初始化前事件缓存已达到上限，本次事件未被接受。请检查配置中的 AppId 和初始化错误。");
-      return false;
-    }
-
+    var records = operation.Kind == PendingOperationKind.Track ? 1 : operation.Data == null ? 0 : operation.Data.Count;
+    if (!CanQueueOperation(records)) return false;
+    // Failed/oversized attempts also consume the frame budget. Otherwise a
+    // full byte budget could cause unlimited repeated payload copies.
+    _pendingFrameCalls++;
+    object copy;
+    int bytes;
+    if (!BizzaAnalyticsLimits.TryCopy(operation.Data, BizzaAnalyticsLimits.MaxPayloadBytes, out copy, out bytes)) return false;
+    bytes += BizzaAnalyticsLimits.BatchOverheadBytes + 256 + (operation.EventName == null ? 0 : operation.EventName.Length * 6);
+    if (bytes > BizzaAnalyticsLimits.MaxPreInitBytes - _pendingBytes) return false;
+    operation.Data = copy as Dictionary<string, object>;
+    operation.RecordCount = records;
+    operation.Bytes = bytes;
+    _pendingRecordCount += records;
+    _pendingBytes += bytes;
     _pendingOperations.Add(operation);
     return true;
+  }
+
+  private bool CanQueueOperation(int records)
+  {
+    if (_pendingFrame != Time.frameCount) { _pendingFrame = Time.frameCount; _pendingFrameCalls = 0; }
+    return records > 0 && records <= MaxPendingOperations - _pendingRecordCount
+      && _pendingOperations.Count < MaxPendingOperations
+      && _pendingFrameCalls < BizzaAnalyticsLimits.MaxRecordsPerFrame
+      && InitializationState != BizzaAnalyticsInitializationState.Disabled
+      && InitializationState != BizzaAnalyticsInitializationState.Failed;
   }
 
   private bool EnsureGameStartTracked()
@@ -536,20 +576,39 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
       return;
     }
 
-    for (int i = 0; i < _pendingOperations.Count; i++)
+    // Initialization can accept 64 records over multiple frames. Drain only the
+    // runtime's remaining allowance so those accepted records are not dropped
+    // by its 16-record frame limit, including a property operation larger than it.
+    while (_pendingOperations.Count > 0 && _runtime.RemainingFrameWork > 0)
     {
-      PendingOperation operation = _pendingOperations[i];
+      PendingOperation operation = _pendingOperations[0];
       if (operation.Kind == PendingOperationKind.Track)
       {
         _runtime.Track(operation.EventName, operation.Data);
+        _pendingRecordCount -= operation.RecordCount;
+        operation.RecordCount = 0;
       }
       else
       {
-        _runtime.UpdateUserProperties(operation.Data);
+        var portion = new Dictionary<string, object>();
+        int allowance = _runtime.RemainingFrameWork;
+        foreach (var pair in operation.Data)
+        {
+          if (portion.Count >= allowance) break;
+          portion.Add(pair.Key, pair.Value);
+        }
+        _runtime.UpdateUserProperties(portion);
+        foreach (var key in portion.Keys) operation.Data.Remove(key);
+        operation.RecordCount -= portion.Count;
+        _pendingRecordCount -= portion.Count;
+      }
+
+      if (operation.RecordCount == 0)
+      {
+        _pendingBytes -= operation.Bytes;
+        _pendingOperations.RemoveAt(0);
       }
     }
-
-    _pendingOperations.Clear();
   }
 
   private void DisableWithError(string error)
@@ -557,6 +616,8 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
     _runtime = null;
     _initCoroutine = null;
     _pendingOperations.Clear();
+    _pendingRecordCount = 0;
+    _pendingBytes = 0;
     InitializationState = BizzaAnalyticsInitializationState.Disabled;
     ReportError(error);
   }
@@ -589,6 +650,8 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
 
   private sealed class PendingOperation
   {
+    public int RecordCount;
+    public int Bytes;
     public PendingOperationKind Kind;
     public string EventName;
     public Dictionary<string, object> Data;
@@ -614,7 +677,8 @@ public sealed class BizzaAnalyticsAgent : MonoBehaviour
 
     private static Dictionary<string, object> CloneData(Dictionary<string, object> data)
     {
-      return BizzaValueUtil.NormalizeDictionary(data);
+      // QueueOperation performs the bounded copy after checking capacity.
+      return data;
     }
   }
 }

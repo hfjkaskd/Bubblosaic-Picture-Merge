@@ -118,9 +118,19 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     [Space(10)]
     [SerializeField] private BizzaButton closeButton;
     [SerializeField] private BizzaButton withdrawButton;
+    [Header("巴西输入提示")]
+    [SerializeField] private GameObject accountNameTitle;
+    [SerializeField] private GameObject cpfNumberTitle;
+    [SerializeField] private GameObject pixAccountTitle;
+    [SerializeField] private GameObject brazilAccountNameTitle;
+    [SerializeField] private GameObject brazilCpfNumberTitle;
+    [SerializeField] private GameObject brazilPixAccountTitle;
+    private string defaultAccountNamePlaceholder;
+
     protected override void OnAwake()
     {
         base.OnAwake();
+        defaultAccountNamePlaceholder = accountNameInput.PlaceholderTextRenderer.Text;
         closeButton.onClick.AddListener(() => { CloseSelf(); });
         withdrawButton.onClick.AddListener(() => { OnClick_FillPage_ToComfirmBtn(); });
 
@@ -386,6 +396,59 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
 
         OnRefreshPos();
         LoadReadData(true);
+        RefreshBrazilianInputCopy(profile.PayType);
+    }
+
+    protected override void SetListener(bool enable)
+    {
+        base.SetListener(enable);
+        BizzaEventSystem.Set(EventDefine.Frame.LanguageChange, RefreshBrazilianInputHints, enable);
+    }
+
+    private void RefreshBrazilianInputHints()
+    {
+        if (TryGetProfile(out var profile)) RefreshBrazilianInputCopy(profile.PayType);
+    }
+
+    private void RefreshBrazilianInputCopy(E_PayeeAccountType payType)
+    {
+        bool useBrazilianCopy = AccountModule.CountryType == AccountModule.E_CountryType.BR
+                               && (payType == E_PayeeAccountType.PIX || payType == E_PayeeAccountType.Pagbank);
+        // Payment presets can reposition the original titles when switching channels.
+        MatchBrazilTitleRect(accountNameTitle, brazilAccountNameTitle);
+        MatchBrazilTitleRect(cpfNumberTitle, brazilCpfNumberTitle);
+        MatchBrazilTitleRect(pixAccountTitle, brazilPixAccountTitle);
+        accountNameTitle.SetActive(!useBrazilianCopy);
+        cpfNumberTitle.SetActive(!useBrazilianCopy);
+        pixAccountTitle.SetActive(!useBrazilianCopy);
+        brazilAccountNameTitle.SetActive(useBrazilianCopy);
+        brazilCpfNumberTitle.SetActive(useBrazilianCopy);
+        brazilPixAccountTitle.SetActive(useBrazilianCopy && payType == E_PayeeAccountType.PIX);
+        if (useBrazilianCopy)
+            accountNameInput.PlaceHolderText = BusinessPanelLoadingText.Select("Enter your full name", "Digite seu nome completo", "Masukkan nama lengkap Anda");
+        else if (presentation == null || !presentation.RefreshInputPrompt(accountNameInput))
+            accountNameInput.PlaceHolderText = defaultAccountNamePlaceholder;
+    }
+
+    private static void MatchBrazilTitleRect(GameObject original, GameObject brazil)
+    {
+        var source = (RectTransform)original.transform;
+        var target = (RectTransform)brazil.transform;
+        target.anchorMin = source.anchorMin;
+        target.anchorMax = source.anchorMax;
+        target.pivot = source.pivot;
+        target.anchoredPosition = source.anchoredPosition;
+        target.sizeDelta = source.sizeDelta;
+        target.localScale = source.localScale;
+        var originalText = original.GetComponent<TMP_Text>();
+        var brazilText = brazil.GetComponent<TMP_Text>();
+        brazilText.font = originalText.font;
+        brazilText.fontSharedMaterial = originalText.fontSharedMaterial;
+        brazilText.color = originalText.color;
+        brazilText.alignment = originalText.alignment;
+        brazilText.fontSizeMax = originalText.fontSizeMax;
+        brazilText.fontSizeMin = Mathf.Min(16f, originalText.fontSizeMin);
+        brazilText.enableAutoSizing = true;
     }
 
     private void OnRefreshPos()
@@ -817,7 +880,7 @@ public class UIWithdrawalPanel : UIPageBase<AccountModule.OceanShineWithdrawalPa
     protected override void OnClose()
     {
     }
-    public void RefreshLocalizedInputHints(){ApplyPlaceholder(GetWithdrawChannel());}
+    public void RefreshLocalizedInputHints(){ApplyPlaceholder(GetWithdrawChannel()); if (TryGetProfile(out var profile)) RefreshBrazilianInputCopy(profile.PayType);}
 
     public void OnSelectWithdrawWay(WithdrawWay way)
     {

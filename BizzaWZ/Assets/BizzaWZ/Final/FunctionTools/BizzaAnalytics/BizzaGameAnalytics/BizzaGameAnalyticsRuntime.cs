@@ -18,6 +18,7 @@ namespace Bizza.GameAnalytics
     private const string ActiveDaysKey = PlayerPrefsPrefix + "active_days";
     private const string LastActiveDateKey = PlayerPrefsPrefix + "last_active_date";
     private const float UserPropertyCoalesceSeconds = 1f;
+    private const float PlayTimePropertyIntervalSeconds = 300f;
     private const int TotalImpressionPropertyInterval = 10;
     private const int MaxCrashTextLength = 512;
     private const int MaxCrashStackLength = 4096;
@@ -46,6 +47,7 @@ namespace Bizza.GameAnalytics
     private double _foregroundElapsedSeconds;
     private double _totalGameTimeSeconds;
     private float _userPropertyElapsed;
+    private float _playTimePropertyElapsed;
     private float _performanceElapsed;
     private int _performanceFrames;
     private int _slowFrames;
@@ -184,6 +186,10 @@ namespace Bizza.GameAnalytics
     internal void TrackPageOpen(string pageName)
     {
       string normalizedPage = NormalizeText(pageName, "unknown", 128);
+      if (IsUntrackedPage(normalizedPage))
+      {
+        return;
+      }
       _pageOpenTimes[normalizedPage] = ActiveTimeNow();
 
       Dictionary<string, object> data = NewPayload(1);
@@ -194,6 +200,10 @@ namespace Bizza.GameAnalytics
     internal void TrackPageClose(string pageName)
     {
       string normalizedPage = NormalizeText(pageName, "unknown", 128);
+      if (IsUntrackedPage(normalizedPage))
+      {
+        return;
+      }
       double duration = 0d;
       if (_pageOpenTimes.TryGetValue(normalizedPage, out double openedAt))
       {
@@ -205,6 +215,11 @@ namespace Bizza.GameAnalytics
       data["page_name"] = normalizedPage;
       data["duration_seconds"] = RoundDuration(duration);
       Enqueue("page_close", data, false);
+    }
+
+    private static bool IsUntrackedPage(string pageName)
+    {
+      return pageName == "LoadingPanel" || pageName == "PausePanel";
     }
 
     internal void TrackItemUse(string itemId, string itemType, int quantity, string source)
@@ -504,6 +519,15 @@ namespace Bizza.GameAnalytics
       _sessionAccumulatedSeconds += deltaTime;
       _foregroundElapsedSeconds += deltaTime;
       _userPropertyElapsed += deltaTime;
+      _playTimePropertyElapsed += deltaTime;
+
+      if (_playTimePropertyElapsed >= PlayTimePropertyIntervalSeconds)
+      {
+        _playTimePropertyElapsed %= PlayTimePropertyIntervalSeconds;
+        double duration = Math.Max(0d, _sessionAccumulatedSeconds);
+        SetUserProperty("play_time", (long)Math.Floor(duration));
+        SetUserProperty("total_gametime", (long)Math.Floor(_totalGameTimeSeconds + duration));
+      }
 
       if (_options.EnablePerformanceTracking)
       {
@@ -589,6 +613,7 @@ namespace Bizza.GameAnalytics
       _sessionId = Guid.NewGuid().ToString("N");
       _sessionStartedAt = RealtimeNow();
       _sessionAccumulatedSeconds = 0d;
+      _playTimePropertyElapsed = 0f;
       _skipNextFrameDelta = true;
       _automaticExceptionCount = 0;
       ResetPerformanceSample();

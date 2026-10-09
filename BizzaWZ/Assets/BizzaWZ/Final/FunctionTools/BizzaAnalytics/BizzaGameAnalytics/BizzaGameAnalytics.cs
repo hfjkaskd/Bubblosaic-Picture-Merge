@@ -21,7 +21,7 @@ namespace Bizza.GameAnalytics
   internal sealed class BizzaGameAnalyticsOptions
   {
     public bool EnablePerformanceTracking = true;
-    public float PerformanceSampleIntervalSeconds = 60f;
+    public float PerformanceSampleIntervalSeconds = 300f;
     public float SlowFrameThresholdSeconds = 0.05f;
     public bool EnableAutomaticExceptionTracking = true;
     public int MaxAutomaticExceptionsPerSession = 3;

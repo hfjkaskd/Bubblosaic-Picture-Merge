@@ -31,7 +31,13 @@ namespace BizzaSdk
         public static bool IsRewardReady => AdSdk != null && AdSdk.IsRewardReady;
         public static bool IsRewardShowing => AdSdk != null && AdSdk.IsRewardShowing;
         public static bool CheckRewardAdReady(CheckAdReadyArgs args = default) => AdSdk != null && AdSdk.CheckRewardAdReady(args);
-        public static void ShowRewardAd(ShowAdArgs args) => AdSdk?.ShowRewardAd(args);
+        public static void ShowRewardAd(ShowAdArgs args)
+        {
+#if BIZZA_REAL_WITHDRAW
+            args.fakeDollarNum = WithdrawalUtil.NormalizeIndonesianReward(args.fakeDollarNum);
+#endif
+            AdSdk?.ShowRewardAd(args);
+        }
         public static void ShowRewardAd(string adPos, float dollarNum, Action<Bizza.Sdk.ShowAdResult> onFinish, float ecpmLimit = 0)
         {
             #if !COMMONGAME
@@ -66,6 +72,9 @@ namespace BizzaSdk
                 args.onFinish?.Invoke(default);
                 return;
             }
+#if BIZZA_REAL_WITHDRAW
+            args.fakeDollarNum = WithdrawalUtil.NormalizeIndonesianReward(args.fakeDollarNum);
+#endif
             AdSdk?.ShowInterAd(args);
         }
         public static void ShowInterAd(string adPos, float dollarNum, Action<Bizza.Sdk.ShowAdResult> onFinish, bool forceCount)
