@@ -101,6 +101,8 @@ namespace BubblePics.EditorTools
                 var original=component.presets!=null&&component.presets.Length>0?component.presets[0]:Capture(go,"Original",Array.Empty<string>(),model.withdrawWayItem,false,visibility.ToArray());ExcludePooled(original);original.Apply();
                 var retainedObjects=new List<Presentation.ActiveState>();foreach(var state in original.objects)if(state.target!=null){if(state.target.name.StartsWith("Pix",StringComparison.Ordinal)&&state.target!=pixArt.gameObject)UnityEngine.Object.DestroyImmediate(state.target);else retainedObjects.Add(state);}original.objects=retainedObjects.ToArray();visibility.RemoveAll(x=>x==null);
                 Clear(pixArt);pixArt.gameObject.SetActive(true);tr.Find("ReferenceBackdrop").gameObject.SetActive(false);var backdrop=a.Graphic(pixArt,"Backdrop");backdrop.GetComponent<Image>().material=null;backdrop.GetComponent<CoralResourceSprite>().SetSource("AllUI20260924/WithdrawBackdrop","");
+                // PageBackdrop already fills the viewport. A second fixed-width copy creates visible side seams on wider screens.
+                backdrop.gameObject.SetActive(false);
                 foreach(var caption in go.GetComponentsInChildren<ApprovedHudCaption>(true))caption.gameObject.SetActive(false);
                 foreach(var group in go.GetComponentsInChildren<CanvasGroup>(true))group.alpha=1;
                 foreach(var layout in body.GetComponentsInChildren<LayoutGroup>(true))layout.enabled=false;foreach(var fitter in body.GetComponentsInChildren<ContentSizeFitter>(true))fitter.enabled=false;
